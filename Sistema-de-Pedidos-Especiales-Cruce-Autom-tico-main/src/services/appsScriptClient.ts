@@ -2416,15 +2416,18 @@ class AppsScriptClientService {
       const timeoutId = controller ? setTimeout(() => controller.abort(), 6000) : null;
 
       try {
+        // Enviar vía append seguro para no sobreescribir la Matriz Central
         const resp = await fetch(this.config.webAppUrl, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           signal: controller ? controller.signal : undefined,
           body: JSON.stringify({
-            action: "bulkUploadMatriz",
+            action: "crearPedido",
             userEmail: "visionluxe58@gmail.com",
             operationId: operationId,
-            rows: filasMatriz
+            pedidoId: idAsignado,
+            ...cabecera,
+            items: items
           })
         });
 
