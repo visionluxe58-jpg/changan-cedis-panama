@@ -2165,6 +2165,7 @@ function onOpen() {
     .addSeparator()
     .addItem('⚡ Ejecutar Cruce Automático FIFO', 'sincronizarStockConMatriz')
     .addItem('📋 Generar Reporte de Asignaciones (Bodega)', 'sincronizarHojaAsignaciones')
+    .addItem('📦 Poblar Pestaña Despachos desde Observaciones / Matriz', 'migrarDespachosHistoricosDesdeObservaciones')
     .addItem('🧹 Depurar Pedidos Duplicados', 'depurarDuplicadosMatriz')
     .addToUi();
 }
@@ -2594,6 +2595,116 @@ function construirPestanaDespachosEnSheet() {
  * Catálogo de Asesores, Bodegueros y Personal Autorizado CEDIS Changan.
  * =========================================================================
  */
+
+/**
+ * =========================================================================
+ * MÓDULO: MIGRAR Y EXTRAER DESPACHOS HISTÓRICOS DESDE MATRIZ_CENTRAL
+ * Lee todas las filas de Matriz_Central donde la columna Observaciones (Col 18)
+ * o Estatus (Col 14) indique despacho, y las transfiere formalmente a la
+ * pestaña 'Despachos' estructurada con todos sus metadatos.
+ * =========================================================================
+ */
+function migrarDespachosHistoricosDesdeObservaciones() {
+  var ss = obtenerSpreadsheet();
+  if (!ss) throw new Error('No se pudo abrir el Spreadsheet activo.');
+
+  var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ || 'Matriz_Central');
+  if (!hMatriz) throw new Error('No se encontró la hoja Matriz_Central.');
+
+  // Asegurar que la pestaña Despachos exista y tenga cabeceras canónicas
+  construirPestanaDespachosEnSheet();
+  migrarDespachosHistoricosDesdeObservaciones();
+  var hDesp = ss.getSheetByName(CONFIG.HOJA_DESPACHOS || 'Despachos');
+
+  var mData = hMatriz.getDataRange().getValues();
+  if (mData.length <= 1) {
+    SpreadsheetApp.getActiveSpreadsheet().toast('Matriz_Central está vacía.', 'CEDIS Changan', 4);
+    return 'Sin datos en Matriz_Central';
+  }
+
+  // Leer despachos ya existentes para evitar duplicar
+  var despData = hDesp.getDataRange().getValues();
+  var despSet = {};
+  for (var d = 1; d < despData.length; d++) {
+    var pId = String(despData[d][0] || '').trim().toUpperCase();
+    var sSku = String(despData[d][4] || '').trim().toUpperCase();
+    if (pId) {
+      despSet[pId + '__' + sSku] = true;
+    }
+  }
+
+  var filasParaDespacho = [];
+  var totalMigrados = 0;
+
+  for (var r = 1; r < mData.length; r++) {
+    var fila = mData[r];
+    var idPedido = String(fila[0] || '').trim().toUpperCase();
+    var prioridad = String(fila[1] || '').trim();
+    var fechaHora = String(fila[2] || '').trim();
+    var sucursal = String(fila[3] || 'Central').trim();
+    var asesor = String(fila[4] || 'Personal CEDIS').trim();
+    var cliente = String(fila[5] || 'CLIENTE').trim();
+    var modelo = String(fila[6] || 'Changan').trim();
+    var vin = String(fila[7] || '').trim();
+    var cotizOr = String(fila[8] || '').trim();
+    var oem = String(fila[9] || '').trim().toUpperCase();
+    var descripcion = String(fila[10] || 'Repuesto Genuino Changan Despachado').trim();
+    var cantSol = Number(fila[11]) || 1;
+    var cantAsig = Number(fila[12]) || 0;
+    var estatusCruce = String(fila[13] || '').trim().toUpperCase();
+    var contenedor = String(fila[14] || 'CEDIS').trim();
+    var pallet = String(fila[15] || 'P001').trim();
+    var packageNo = String(fila[16] || '').trim();
+    var observaciones = String(fila[17] || '').trim();
+
+    var obsUpper = observaciones.toUpperCase();
+    var esDespacho = estatusCruce.includes('DESPACH') || 
+                     obsUpper.includes('DESPACH') || 
+                     obsUpper.includes('GUÍA DE DESPACHO') || 
+                     obsUpper.includes('GUIA DE DESPACHO') || 
+                     obsUpper.includes('ENVIADO') ||
+                     obsUpper.includes('ENTREGADA A RUTA');
+
+    if (esDespacho && idPedido) {
+      var key = idPedido + '__' + oem;
+      if (!despSet[key]) {
+        despSet[key] = true;
+        totalMigrados++;
+
+        var ahoraStr = Utilities.formatDate(new Date(), "GMT-5", "yyyy-MM-dd HH:mm");
+        var palletCont = (contenedor || pallet) ? (contenedor + ' / ' + pallet) : 'CEDIS';
+        var cantEfectiva = cantAsig > 0 ? cantAsig : cantSol;
+
+        filasParaDespacho.push([
+          idPedido,             // Col 1 (A): ID Pedido
+          sucursal,             // Col 2 (B): Sucursal Destino
+          cliente,              // Col 3 (C): Cliente
+          palletCont,           // Col 4 (D): Pallet / Contenedor
+          oem,                  // Col 5 (E): SKU / Repuesto
+          descripcion,          // Col 6 (F): Descripción Pieza
+          cantEfectiva,         // Col 7 (G): Cantidad Despachada
+          'DESPACHADO',         // Col 8 (H): Estado Despacho
+          fechaHora || ahoraStr,// Col 9 (I): Fecha/Hora Asignación
+          ahoraStr,             // Col 10 (J): Fecha/Hora Despacho
+          'Completado (<24h)',  // Col 11 (K): Tiempo Total Proceso
+          asesor,               // Col 12 (L): Usuario Responsable
+          observaciones         // Col 13 (M): Observaciones
+        ]);
+      }
+    }
+  }
+
+  if (filasParaDespacho.length > 0) {
+    var startRow = hDesp.getLastRow() + 1;
+    hDesp.getRange(startRow, 1, filasParaDespacho.length, filasParaDespacho[0].length).setValues(filasParaDespacho);
+    SpreadsheetApp.flush();
+  }
+
+  var msg = '🚀 Se identificaron y migraron ' + totalMigrados + ' registros de despachos hacia la pestaña Despachos.';
+  SpreadsheetApp.getActiveSpreadsheet().toast(msg, 'CEDIS Changan', 6);
+  return msg;
+}
+
 function construirPestanaEncargadosEnSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) throw new Error('No se pudo obtener el Spreadsheet activo.');
