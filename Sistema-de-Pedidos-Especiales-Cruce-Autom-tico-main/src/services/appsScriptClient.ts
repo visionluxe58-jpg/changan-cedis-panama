@@ -914,7 +914,7 @@ class AppsScriptClientService {
 
       const data = resJson.data;
 
-      // 1. Si recibimos data.matriz directa (hoja canónica de 25 columnas de Google Sheets):
+      // 1. Si recibimos data.matriz directa (hoja canónica de Google Sheets / Matriz_Central):
       if (Array.isArray(data.matriz) && data.matriz.length > 0) {
         // Filtrado preventivo estricto de duplicados en la ingesta de Google Sheets
         const seenExactIngesta = new Set<string>();
@@ -924,9 +924,10 @@ class AppsScriptClientService {
 
         rawMatrizFilas.forEach((r: any) => {
           const pId = String(getValFlexible(r, 'ID Pedido', 'Pedido_ID', 'pedidoId') || '').trim();
-          const codRep = String(getValFlexible(r, 'Código Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto') || '').trim().toUpperCase();
-          const cli = String(getValFlexible(r, 'Cliente', 'cliente') || '').trim();
-          const estL = normalizarEstatusLinea(getValFlexible(r, 'Estatus Línea', 'Estatus Linea', 'Estatus Cruce', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
+          // Soporta tanto 'Código OEM' (cabecera oficial del Sheet) como 'Código Repuesto' y variantes
+          const codRep = String(getValFlexible(r, 'Código OEM', 'Codigo OEM', 'Código Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto') || '').trim().toUpperCase();
+          const cli = String(getValFlexible(r, 'Cliente / Caso', 'Cliente/Caso', 'Cliente', 'cliente') || '').trim();
+          const estL = normalizarEstatusLinea(getValFlexible(r, 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
 
           if (!codRep) return;
 
@@ -944,7 +945,7 @@ class AppsScriptClientService {
           }
 
           // REGLA CRÍTICA CEDIS: Lo despachado queda retirado de la Matriz Central permanentemente
-          const rawEstatusRow = String(getValFlexible(r, 'Estatus Línea', 'Estatus Linea', 'Estatus Cruce', 'estatusLinea', 'Estatus') || '').toUpperCase();
+          const rawEstatusRow = String(getValFlexible(r, 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'estatusLinea', 'Estatus') || '').toUpperCase();
           if (rawEstatusRow.includes('DESPACH') || estL === 'Despachado' || this.isLineaDespachada(r.lineaId, pId, codRep)) {
             this.marcarLineaComoDespachada(r.lineaId, pId, codRep);
             return;
@@ -969,33 +970,36 @@ class AppsScriptClientService {
         matrizFiltrada.forEach((r: any, idx: number) => {
           const pId = getValFlexible(r, 'ID Pedido', 'Pedido_ID', 'pedidoId') || `PED-${idx + 1}`;
           const linId = getValFlexible(r, 'Linea_ID', 'lineaId') || `LIN-${idx + 1}`;
-          const fch = getValFlexible(r, 'Fecha Registro', 'Fecha_Creacion', 'fechaCreacion') || new Date().toISOString();
-          const suc = getValFlexible(r, 'Sucursal Solicitante', 'Sucursal', 'sucursal') || 'Bodega Central';
-          const col = getValFlexible(r, 'Colaborador', 'Colaborador_Asesor', 'colaborador') || 'Usuario CEDIS';
-          const tip = (getValFlexible(r, 'Tipo Pedido', 'Tipo_Solicitud_Prioridad', 'tipoPedido') || 'Especial') as any;
-          const cot = getValFlexible(r, 'Cotización', 'Cotizacion', 'cotizacion');
-          const cli = getValFlexible(r, 'Cliente', 'cliente');
+          const fch = getValFlexible(r, 'Fecha / Hora', 'Fecha/Hora', 'Fecha Registro', 'Fecha_Creacion', 'fechaCreacion') || new Date().toISOString();
+          const suc = getValFlexible(r, 'Sucursal', 'Sucursal Solicitante', 'sucursal') || 'Bodega Central';
+          const col = getValFlexible(r, 'Asesor / Solicitante', 'Asesor/Solicitante', 'Colaborador', 'Colaborador_Asesor', 'colaborador') || 'Usuario CEDIS';
+          const tip = (getValFlexible(r, 'Prioridad', 'Tipo Pedido', 'Tipo_Solicitud_Prioridad', 'tipoPedido') || 'Especial') as any;
+          const cot = getValFlexible(r, 'No. O.R.', 'Cotización', 'Cotizacion', 'cotizacion');
+          const cli = getValFlexible(r, 'Cliente / Caso', 'Cliente/Caso', 'Cliente', 'cliente');
           const plc = getValFlexible(r, 'Placa', 'placa');
-          const mod = getValFlexible(r, 'Modelo Changan', 'Modelo_Changan', 'modeloChangan');
-          const vin = getValFlexible(r, 'VIN', 'VIN_Chasis', 'vin');
-          const nor = getValFlexible(r, 'N° OR', 'Numero_OR', 'numeroOR', 'N OR');
+          const mod = getValFlexible(r, 'Modelo', 'Modelo Changan', 'Modelo_Changan', 'modeloChangan');
+          const vin = getValFlexible(r, 'VIN / Chasis', 'VIN/Chasis', 'VIN', 'VIN_Chasis', 'vin');
+          const nor = getValFlexible(r, 'No. O.R.', 'No O.R.', 'Numero OR', 'N° OR', 'Numero_OR', 'numeroOR', 'N OR');
 
-          const codRep = getValFlexible(r, 'Código Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto');
+          const codRep = getValFlexible(r, 'Código OEM', 'Codigo OEM', 'Código Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto');
           const codAct = getValFlexible(r, 'Código Actualizado', 'Codigo Actualizado', 'Codigo_Actualizado', 'codigoActualizado') || codRep;
-          const descOf = getValFlexible(r, 'Descripción Oficial', 'Descripcion Oficial', 'Descripcion_Oficial', 'descripcionOficial');
-          let cSol = Number(getValFlexible(r, 'Cant Solicitada', 'Cantidad Solicitada', 'Cantidad_Solicitada', 'cantidadSolicitada')) || 1;
-          // Sanitización estricta: Pedidos especiales de repuestos son de 1 a 4 unidades máximo.
-          // Valores mayores a 4 corresponden a anomalías de importación (días transcurridos o costos).
-          if (cSol > 4) {
+          const descOf = getValFlexible(r, 'Descripción Repuesto', 'Descripcion Repuesto', 'Descripción Oficial', 'Descripcion Oficial', 'descripcionOficial');
+          
+          const rawSol = getValFlexible(r, 'Cant Solicitada', 'Cantidad Solicitada', 'Cantidad_Solicitada', 'cantidadSolicitada');
+          let cSol = parseFloat(String(rawSol).replace(/[^0-9.]/g, '')) || 1;
+          // Sanitización estricta de cantidad razonable para pedidos especiales de repuestos
+          if (cSol > 20) {
             cSol = 1;
           }
-          const cAsig = Number(getValFlexible(r, 'Cant Asignada', 'Cantidad Asignada', 'Cantidad_Asignada', 'cantidadAsignada')) || 0;
-                    let cDesp = Number(getValFlexible(r, 'Cant Despachada', 'Cantidad Despachada', 'Cantidad_Despachada', 'cantidadDespachada')) || 0;
-          let estL = normalizarEstatusLinea(getValFlexible(r, 'Estatus Línea', 'Estatus Linea', 'Estatus Cruce', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
+
+          const rawAsig = getValFlexible(r, 'Cant Asignada', 'Cantidad Asignada', 'Cantidad_Asignada', 'cantidadAsignada');
+          let cAsig = parseFloat(String(rawAsig).replace(/[^0-9.]/g, '')) || 0;
+          let cDesp = Number(getValFlexible(r, 'Cant Despachada', 'Cantidad Despachada', 'Cantidad_Despachada', 'cantidadDespachada')) || 0;
+          let estL = normalizarEstatusLinea(getValFlexible(r, 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
           const estG = normalizarEstatusGeneral(getValFlexible(r, 'Estatus General', 'Estado General', 'estatusGeneral', 'PENDIENTE'));
           let cAsignado = getValFlexible(r, 'Contenedor Asignado', 'Contenedor_Asignado', 'contenedorAsignado');
           let pAsignado = getValFlexible(r, 'Pallet Asignado', 'Pallet_Asignado', 'palletAsignado');
-          let pkgNo = getValFlexible(r, 'Nº Paquete', 'Package No', 'Package_No', 'packageNo', 'N Paquete');
+          let pkgNo = getValFlexible(r, 'Package No', 'Package_No', 'packageNo', 'Nº Paquete', 'N Paquete');
 
           // Verificación automática con BD histórica de despachos (V1 y V2)
           const histKey = `${pId}___${codRep}`;
@@ -1026,7 +1030,7 @@ class AppsScriptClientService {
               modeloChangan: mod,
               vin: vin,
               numeroOR: nor,
-              estadoPago: 'Pendiente',
+              estadoPago: 'Aprobado',
               documentoPagoFactura: '',
               facturadoFinal: 'No',
               estatusGeneral: estG,
@@ -1123,7 +1127,6 @@ class AppsScriptClientService {
           }));
         }
       }
-
       // 3. Manifiestos (Fusión de Sheets + 8 Contenedores Reales Históricos)
       const sheetMans = Array.isArray(data.manifiestos) ? data.manifiestos.map((m: any) => {
         const cId = getValFlexible(m, 'contenedorId', 'contenedor', 'Contenedor', 'ID Contenedor', 'Factura', 'Invoice');
