@@ -30,8 +30,8 @@ import {
 } from 'lucide-react';
 import { UsuarioActivo, ModeloChangan } from '../types/cedis';
 import { appsScriptClient } from '../services/appsScriptClient';
-import { playOrderAlertSound } from '../utils/apiSync';
-import { ModalComprobantePDF, ComprobantePedidoData } from './ModalComprobantePDF';
+// Alerta de sonido reservada exclusivamente para CEDIS Central / Operador
+import { ModalComprobantePDF, ComprobantePedidoData, generarPdfNativoDirecto } from './ModalComprobantePDF';
 import { agenteCotizacionesService, ResultadoAnalisisCotizacion } from '../services/agenteCotizacionesService';
 import { SelectorModeloChangan } from './SelectorModeloChangan';
 import { CATALOGO_MODELOS_CHANGAN } from '../data/sucursalesData';
@@ -581,12 +581,18 @@ export const FormularioRequisicion: React.FC<FormularioRequisicionProps> = ({
           }))
         };
 
+        // 1. Descarga automática inmediata del comprobante PDF oficial para el asesor
+        try {
+          generarPdfNativoDirecto(datosDoc);
+        } catch (errPdf) {
+          console.warn('Error al auto-descargar PDF:', errPdf);
+        }
+
+        // 2. Abrir modal visual para el asesor (sin sonido ni sacarlo abruptamente)
         setDatosComprobante(datosDoc);
         setPedidoRadicadoExitosoId(idFinal);
         setModalComprobanteAbierto(true);
-        if (onPedidoCreado) onPedidoCreado(idFinal);
         if (onTransmisionCompleta) onTransmisionCompleta(datosDoc);
-        try { playOrderAlertSound(); } catch (e) {}
       } else {
         setMensajeAlerta({
           tipo: 'error',
@@ -621,12 +627,18 @@ export const FormularioRequisicion: React.FC<FormularioRequisicionProps> = ({
         }))
       };
 
+      // 1. Descarga automática inmediata del comprobante PDF oficial para el asesor
+      try {
+        generarPdfNativoDirecto(datosDoc);
+      } catch (errPdf) {
+        console.warn('Error al auto-descargar PDF:', errPdf);
+      }
+
+      // 2. Abrir modal visual para el asesor (sin sonido ni sacarlo abruptamente)
       setDatosComprobante(datosDoc);
       setPedidoRadicadoExitosoId(idFinal);
       setModalComprobanteAbierto(true);
-      if (onPedidoCreado) onPedidoCreado(idFinal);
       if (onTransmisionCompleta) onTransmisionCompleta(datosDoc);
-      try { playOrderAlertSound(); } catch (e) {}
     } finally {
       setEnviando(false);
     }

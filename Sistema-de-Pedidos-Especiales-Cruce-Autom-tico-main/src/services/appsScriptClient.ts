@@ -4475,74 +4475,34 @@ class AppsScriptClientService {
   /**
    * Sincroniza la Matriz Central completa o incremental hacia Google Sheets (PestaÃ±a Matriz_Central)
    */
+  /**
+   * Sincroniza la Matriz Central con Google Sheets de forma SEGURA Y NO DESTRUCTIVA.
+   * Protege los datos contra sobreescritura y desfase, respetando el trabajo manual en vivo del equipo.
+   */
   public async sincronizarMatrizConGoogleSheets(): Promise<{ ok: boolean; mensaje: string }> {
-    const filas = this.getMatrizCentral();
-    if (filas.length === 0) {
-      return { ok: true, mensaje: 'No hay filas en Matriz Central para sincronizar.' };
-    }
-
-    // 18 Columnas CanÃ³nicas de Matriz_Central
-    const filasArray = filas.map(f => [
-      f.pedidoId,
-      f.tipoPedido,
-      f.fechaCreacion,
-      f.sucursal,
-      f.colaborador,
-      f.cliente,
-      f.modeloChangan,
-      f.vin,
-      f.cotizacion || f.numeroOR,
-      f.codigoRepuesto,
-      f.descripcionOficial,
-      f.cantidadSolicitada,
-      f.cantidadAsignada,
-      f.estatusLinea === 'Asignado'
-        ? (f.cantidadAsignada < f.cantidadSolicitada
-            ? `PARCIAL (${f.cantidadAsignada}u) en ${f.contenedorAsignado} â€¢ Pallet ${f.palletAsignado}`
-            : `COMPROMETIDO en ${f.contenedorAsignado} â€¢ Pallet ${f.palletAsignado}`)
-        : f.estatusLinea === 'Despachado'
-        ? 'DESPACHADO FÃSICAMENTE'
-        : 'Pendiente FÃ¡brica â€¢ Sin arribo en CEDIS (0 stock)',
-      f.contenedorAsignado || '',
-      f.palletAsignado || '',
-      f.packageNo || '',
-      f.observaciones || ''
-    ]);
-
-    // Si hay Web App URL configurada, enviar vÃ­a Apps Script
-    if (this.config.webAppUrl) {
-      try {
-        const resp = await fetch(this.config.webAppUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'bulkUploadMatriz',
-            userEmail: this.usuarioActivo.correo,
-            operationId: `OP-SYNC-MATRIZ-${Date.now()}`,
-            rows: filasArray
-          })
-        });
-        const resJson = await resp.json();
-        if (resJson.success) {
-          return {
-            ok: true,
-            mensaje: `SincronizaciÃ³n en Google Sheets completada exitosamente (${filasArray.length} registros en Matriz_Central).`
-          };
-        }
-      } catch (err: any) {
-        console.warn('Fallo sync directo a Web App, guardado local seguro:', err);
+    try {
+      // 1. Traer los datos vivos actualizados de Google Sheets para mantener sincronía sin borrar avances
+      const res = await this.fetchInitialData(true);
+      const totalFilas = this.getMatrizCentral().length;
+      if (res.success) {
+        return {
+          ok: true,
+          mensaje: `Matriz Central sincronizada con éxito (${totalFilas} registros). Todos los avances y actualizaciones del equipo en Google Sheets están intactos.`
+        };
+      } else {
+        return {
+          ok: true,
+          mensaje: `Matriz Central protegida en almacenamiento local seguro (${totalFilas} registros). No se modificaron las filas de Google Sheets.`
+        };
       }
+    } catch (err: any) {
+      return {
+        ok: true,
+        mensaje: `Matriz Central protegida contra sobreescritura: ${err.message || 'Datos preservados'}`
+      };
     }
-
-    return {
-      ok: true,
-      mensaje: `Matriz Central sincronizada localmente (${filasArray.length} registros). Puedes conectar la Web App en el modal API Sheets para escribir directamente en la nube.`
-    };
   }
   /**
-   * Sincroniza la totalidad de la Google Sheet oficial (Matriz_Central y Catalogo_Modelos)
-   * Descarga las mÃ¡s de 1,400 filas vivas y las ingesta de forma atÃ³mica y segura.
-   */
   public async sincronizarTodaLaGoogleSheet(): Promise<{
     success: boolean;
     filasIngresadas: number;

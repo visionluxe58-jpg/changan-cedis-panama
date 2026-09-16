@@ -50,6 +50,172 @@ interface ModalComprobantePDFProps {
   onVerMisPedidos?: () => void;
 }
 
+// Generador nativo garantizado mediante jsPDF (no depende de canvas ni iframe)
+export const generarPdfNativoDirecto = (data: ComprobantePedidoData) => {
+  try {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    
+    // Header navy
+    doc.setFillColor(11, 23, 42); // #0b172a
+    doc.rect(10, 10, 190, 30, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(15);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CHANGAN AUTO PANAMA', 16, 20);
+    
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(56, 189, 248); // sky-400
+    doc.text('CENTRO NACIONAL DE DISTRIBUCION DE REPUESTOS (CEDIS CENTRAL)', 16, 25);
+    
+    doc.setFontSize(6.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(203, 213, 225); // slate-300
+    doc.text('DISTRIBUIDORA AUTOMOTRIZ FORTUNE, S.A. | RUC: 155613501-2-2015 DV 61', 16, 30);
+    doc.text('Ave. Domingo Diaz, a un costado de Cardoze y Lindo, a 300 mts. | Tel: 382-5488', 16, 34);
+
+    // Box Seguimiento
+    doc.setFillColor(18, 35, 63);
+    doc.roundedRect(138, 14, 58, 22, 2, 2, 'F');
+    doc.setTextColor(203, 213, 225);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('NO. DE SEGUIMIENTO:', 142, 21);
+    doc.setTextColor(56, 189, 248);
+    doc.setFontSize(11);
+    doc.text(data.pedidoId, 142, 30);
+
+    // Titulo
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('COMPROBANTE OFICIAL DE TRANSMISION DE PEDIDO ESPECIAL', 10, 48);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text('Registro electronico inalterable emitido por el sistema logistico CEDIS Panama.', 10, 53);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(10, 55, 200, 55);
+
+    // Bloque 1: Cliente y Sucursal
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(10, 58, 92, 46, 2, 2, 'F');
+    doc.setDrawColor(203, 213, 225);
+    doc.roundedRect(10, 58, 92, 46, 2, 2, 'S');
+    
+    doc.setTextColor(12, 74, 110);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('1. INFORMACION CLIENTE & SUCURSAL', 14, 64);
+    doc.line(14, 66, 98, 66);
+
+    const renderFila = (lbl: string, val: string, x: number, y: number) => {
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 116, 139);
+      doc.setFontSize(6.8);
+      doc.text(lbl, x, y);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(15, 23, 42);
+      const valCorto = val.length > 28 ? val.substring(0, 26) + '..' : val;
+      doc.text(valCorto, x + 28, y);
+    };
+
+    renderFila('Cliente:', data.cliente || 'N/A', 14, 72);
+    renderFila('Sucursal:', data.sucursal || 'N/A', 14, 78);
+    renderFila('Asesor:', data.asesor || 'N/A', 14, 84);
+    renderFila('Cotiz/Doc:', data.cotizacion || data.facturaFiscal || 'N/A', 14, 90);
+    renderFila('Fecha:', data.fechaEmision || 'N/A', 14, 96);
+
+    // Bloque 2: Vehiculo y Logistica
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(106, 58, 94, 46, 2, 2, 'F');
+    doc.roundedRect(106, 58, 94, 46, 2, 2, 'S');
+
+    doc.setTextColor(12, 74, 110);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('2. VEHICULO & ESTADO LOGISTICO', 110, 64);
+    doc.line(110, 66, 196, 66);
+
+    renderFila('Modelo Auto:', data.modeloAuto || 'N/A', 110, 72);
+    renderFila('Placa:', data.placa || 'En Tramite', 110, 78);
+    renderFila('VIN/Chasis:', data.vin || 'N/A', 110, 84);
+    renderFila('Cond. Pago:', data.estadoPago || 'N/A', 110, 90);
+    renderFila('Tipo:', data.tipoPedido || 'N/A', 110, 96);
+
+    // Tabla Repuestos
+    doc.setFillColor(15, 23, 42);
+    doc.rect(10, 108, 190, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ITEM', 14, 113.5);
+    doc.text('CODIGO OEM', 30, 113.5);
+    doc.text('DESCRIPCION OFICIAL DE PIEZA', 85, 113.5);
+    doc.text('CANT.', 186, 113.5, { align: 'right' });
+
+    let yPos = 121;
+    data.piezas.forEach((p, idx) => {
+      if (idx % 2 === 1) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(10, yPos - 4.5, 190, 6.5, 'F');
+      }
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(7);
+      doc.text(String(idx + 1), 15, yPos);
+      doc.setFont('helvetica', 'bold');
+      doc.text(p.codigo || 'N/A', 30, yPos);
+      doc.setFont('helvetica', 'normal');
+      const desc = p.descripcion.length > 55 ? p.descripcion.substring(0, 52) + '...' : p.descripcion;
+      doc.text(desc, 85, yPos);
+      doc.setFont('helvetica', 'bold');
+      doc.text(String(p.cantidad), 186, yPos, { align: 'right' });
+      yPos += 6.5;
+    });
+
+    // Observaciones
+    yPos += 3;
+    doc.setFillColor(254, 243, 199);
+    doc.roundedRect(10, yPos, 190, 12, 1, 1, 'F');
+    doc.setDrawColor(245, 158, 11);
+    doc.roundedRect(10, yPos, 190, 12, 1, 1, 'S');
+    doc.setTextColor(146, 64, 14);
+    doc.setFontSize(6.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OBSERVACIONES DE SUCURSAL:', 14, yPos + 4.5);
+    doc.setFont('helvetica', 'normal');
+    const obs = data.observaciones ? data.observaciones.substring(0, 90) : 'Sin observaciones adicionales.';
+    doc.text(obs, 14, yPos + 9);
+
+    // Pie digital
+    yPos += 16;
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(10, yPos, 190, 14, 1, 1, 'F');
+    doc.setDrawColor(203, 213, 225);
+    doc.roundedRect(10, yPos, 190, 14, 1, 1, 'S');
+    doc.setTextColor(12, 74, 110);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RECEPCION DIGITAL CEDIS CENTRAL PANAMA - RADICADO EN COLA DPL', 14, yPos + 5.5);
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(`ID Transmision: ${data.idTransmision} | Generado: ${data.fechaGenerado}`, 14, yPos + 10.5);
+
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(148, 163, 184);
+    doc.text('Documento oficial expedido electronicamente por el Sistema Logistico CEDIS de Changan Auto Panama.', 105, 285, { align: 'center' });
+
+    doc.save(`${data.pedidoId}_Comprobante_Changan.pdf`);
+  } catch (err) {
+    console.error('Error en generador PDF nativo:', err);
+  }
+};
+
+
 export const ModalComprobantePDF: React.FC<ModalComprobantePDFProps> = ({
   isOpen,
   onClose,
@@ -61,171 +227,6 @@ export const ModalComprobantePDF: React.FC<ModalComprobantePDFProps> = ({
   const [generandoPdf, setGenerandoPdf] = useState<boolean>(false);
   const [copiado, setCopiado] = useState<boolean>(false);
   const [descargadoAuto, setDescargadoAuto] = useState<boolean>(false);
-
-  // Generador nativo garantizado mediante jsPDF (no depende de canvas ni iframe)
-  const generarPdfNativoDirecto = (data: ComprobantePedidoData) => {
-    try {
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      
-      // Header navy
-      doc.setFillColor(11, 23, 42); // #0b172a
-      doc.rect(10, 10, 190, 30, 'F');
-      
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(15);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CHANGAN AUTO PANAMA', 16, 20);
-      
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(56, 189, 248); // sky-400
-      doc.text('CENTRO NACIONAL DE DISTRIBUCION DE REPUESTOS (CEDIS CENTRAL)', 16, 25);
-      
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(203, 213, 225); // slate-300
-      doc.text('DISTRIBUIDORA AUTOMOTRIZ FORTUNE, S.A. | RUC: 155613501-2-2015 DV 61', 16, 30);
-      doc.text('Ave. Domingo Diaz, a un costado de Cardoze y Lindo, a 300 mts. | Tel: 382-5488', 16, 34);
-
-      // Box Seguimiento
-      doc.setFillColor(18, 35, 63);
-      doc.roundedRect(138, 14, 58, 22, 2, 2, 'F');
-      doc.setTextColor(203, 213, 225);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
-      doc.text('NO. DE SEGUIMIENTO:', 142, 21);
-      doc.setTextColor(56, 189, 248);
-      doc.setFontSize(11);
-      doc.text(data.pedidoId, 142, 30);
-
-      // Titulo
-      doc.setTextColor(15, 23, 42);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text('COMPROBANTE OFICIAL DE TRANSMISION DE PEDIDO ESPECIAL', 10, 48);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(100, 116, 139);
-      doc.text('Registro electronico inalterable emitido por el sistema logistico CEDIS Panama.', 10, 53);
-      doc.setDrawColor(226, 232, 240);
-      doc.line(10, 55, 200, 55);
-
-      // Bloque 1: Cliente y Sucursal
-      doc.setFillColor(248, 250, 252);
-      doc.roundedRect(10, 58, 92, 46, 2, 2, 'F');
-      doc.setDrawColor(203, 213, 225);
-      doc.roundedRect(10, 58, 92, 46, 2, 2, 'S');
-      
-      doc.setTextColor(12, 74, 110);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'bold');
-      doc.text('1. INFORMACION CLIENTE & SUCURSAL', 14, 64);
-      doc.line(14, 66, 98, 66);
-
-      const renderFila = (lbl: string, val: string, x: number, y: number) => {
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 116, 139);
-        doc.setFontSize(6.8);
-        doc.text(lbl, x, y);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(15, 23, 42);
-        const valCorto = val.length > 28 ? val.substring(0, 26) + '..' : val;
-        doc.text(valCorto, x + 28, y);
-      };
-
-      renderFila('Cliente:', data.cliente || 'N/A', 14, 72);
-      renderFila('Sucursal:', data.sucursal || 'N/A', 14, 78);
-      renderFila('Asesor:', data.asesor || 'N/A', 14, 84);
-      renderFila('Cotiz/Doc:', data.cotizacion || data.facturaFiscal || 'N/A', 14, 90);
-      renderFila('Fecha:', data.fechaEmision || 'N/A', 14, 96);
-
-      // Bloque 2: Vehiculo y Logistica
-      doc.setFillColor(248, 250, 252);
-      doc.roundedRect(106, 58, 94, 46, 2, 2, 'F');
-      doc.roundedRect(106, 58, 94, 46, 2, 2, 'S');
-
-      doc.setTextColor(12, 74, 110);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'bold');
-      doc.text('2. VEHICULO & ESTADO LOGISTICO', 110, 64);
-      doc.line(110, 66, 196, 66);
-
-      renderFila('Modelo Auto:', data.modeloAuto || 'N/A', 110, 72);
-      renderFila('Placa:', data.placa || 'En Tramite', 110, 78);
-      renderFila('VIN/Chasis:', data.vin || 'N/A', 110, 84);
-      renderFila('Cond. Pago:', data.estadoPago || 'N/A', 110, 90);
-      renderFila('Tipo:', data.tipoPedido || 'N/A', 110, 96);
-
-      // Tabla Repuestos
-      doc.setFillColor(15, 23, 42);
-      doc.rect(10, 108, 190, 8, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('ITEM', 14, 113.5);
-      doc.text('CODIGO OEM', 30, 113.5);
-      doc.text('DESCRIPCION OFICIAL DE PIEZA', 85, 113.5);
-      doc.text('CANT.', 186, 113.5, { align: 'right' });
-
-      let yPos = 121;
-      data.piezas.forEach((p, idx) => {
-        if (idx % 2 === 1) {
-          doc.setFillColor(248, 250, 252);
-          doc.rect(10, yPos - 4.5, 190, 6.5, 'F');
-        }
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(15, 23, 42);
-        doc.setFontSize(7);
-        doc.text(String(idx + 1), 15, yPos);
-        doc.setFont('helvetica', 'bold');
-        doc.text(p.codigo || 'N/A', 30, yPos);
-        doc.setFont('helvetica', 'normal');
-        const desc = p.descripcion.length > 55 ? p.descripcion.substring(0, 52) + '...' : p.descripcion;
-        doc.text(desc, 85, yPos);
-        doc.setFont('helvetica', 'bold');
-        doc.text(String(p.cantidad), 186, yPos, { align: 'right' });
-        yPos += 6.5;
-      });
-
-      // Observaciones
-      yPos += 3;
-      doc.setFillColor(254, 243, 199);
-      doc.roundedRect(10, yPos, 190, 12, 1, 1, 'F');
-      doc.setDrawColor(245, 158, 11);
-      doc.roundedRect(10, yPos, 190, 12, 1, 1, 'S');
-      doc.setTextColor(146, 64, 14);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('OBSERVACIONES DE SUCURSAL:', 14, yPos + 4.5);
-      doc.setFont('helvetica', 'normal');
-      const obs = data.observaciones ? data.observaciones.substring(0, 90) : 'Sin observaciones adicionales.';
-      doc.text(obs, 14, yPos + 9);
-
-      // Pie digital
-      yPos += 16;
-      doc.setFillColor(248, 250, 252);
-      doc.roundedRect(10, yPos, 190, 14, 1, 1, 'F');
-      doc.setDrawColor(203, 213, 225);
-      doc.roundedRect(10, yPos, 190, 14, 1, 1, 'S');
-      doc.setTextColor(12, 74, 110);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
-      doc.text('RECEPCION DIGITAL CEDIS CENTRAL PANAMA - RADICADO EN COLA DPL', 14, yPos + 5.5);
-      doc.setFontSize(6);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(100, 116, 139);
-      doc.text(`ID Transmision: ${data.idTransmision} | Generado: ${data.fechaGenerado}`, 14, yPos + 10.5);
-
-      doc.setFontSize(6);
-      doc.setFont('helvetica', 'italic');
-      doc.setTextColor(148, 163, 184);
-      doc.text('Documento oficial expedido electronicamente por el Sistema Logistico CEDIS de Changan Auto Panama.', 105, 285, { align: 'center' });
-
-      doc.save(`${data.pedidoId}_Comprobante_Changan.pdf`);
-    } catch (err) {
-      console.error('Error en generador PDF nativo:', err);
-    }
-  };
 
   // Auto-descargar PDF al abrir por primera vez con datos
   useEffect(() => {

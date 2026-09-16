@@ -193,10 +193,13 @@ export default function App() {
       }
       if (data && data.pedidoId) {
         recargarDatos();
-        try {
-          playOrderAlertSound();
-        } catch (err) {}
-        setAlertaNuevoPedido(data);
+        // La alerta con sonido y banner es EXCLUSIVA para CEDIS Central / Operador (no para asesores)
+        if (usuarioActivo.rol !== 'SUCURSAL_ASESOR') {
+          try {
+            playOrderAlertSound();
+          } catch (err) {}
+          setAlertaNuevoPedido(data);
+        }
       }
     };
 
@@ -213,17 +216,20 @@ export default function App() {
           const nuevos = actuales.filter(p => !idsPrevios.has(p.pedidoId));
           if (nuevos.length > 0) {
             recargarDatos();
-            try {
-              playOrderAlertSound();
-            } catch (e) {}
-            const primerNuevo = nuevos[0];
-            setAlertaNuevoPedido({
-              pedidoId: primerNuevo.pedidoId,
-              sucursal: primerNuevo.sucursal,
-              cliente: primerNuevo.cliente,
-              fecha: new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' })
-            });
-            mostrarNotificacion('info', `🔔 ¡Nuevo Pedido Recibido en CEDIS! ${primerNuevo.pedidoId} (${primerNuevo.sucursal}).`);
+            // Alerta exclusiva para operador CEDIS Central
+            if (usuarioActivo.rol !== 'SUCURSAL_ASESOR') {
+              try {
+                playOrderAlertSound();
+              } catch (e) {}
+              const primerNuevo = nuevos[0];
+              setAlertaNuevoPedido({
+                pedidoId: primerNuevo.pedidoId,
+                sucursal: primerNuevo.sucursal,
+                cliente: primerNuevo.cliente,
+                fecha: new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' })
+              });
+              mostrarNotificacion('info', `🔔 ¡Nuevo Pedido Recibido en CEDIS! ${primerNuevo.pedidoId} (${primerNuevo.sucursal}).`);
+            }
           }
         }
       } catch (e) {}
@@ -264,22 +270,23 @@ export default function App() {
     const cliente = pedidoReciente?.cliente || 'Cliente';
     const sucursal = pedidoReciente?.sucursal || usuarioActivo.sucursal || 'Sucursal';
 
-    try {
-      playOrderAlertSound();
-    } catch (e) {}
+    // Alerta y sonido SOLO para el operador CEDIS Central
+    if (usuarioActivo.rol !== 'SUCURSAL_ASESOR') {
+      try {
+        playOrderAlertSound();
+      } catch (e) {}
 
-    setAlertaNuevoPedido({
-      pedidoId,
-      sucursal,
-      cliente,
-      fecha: new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' })
-    });
+      setAlertaNuevoPedido({
+        pedidoId,
+        sucursal,
+        cliente,
+        fecha: new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' })
+      });
 
-    mostrarNotificacion('exito', `Requisicion ${pedidoId} registrada y enviada a CEDIS (${sucursal}).`);
-    if (usuarioActivo.rol === 'SUCURSAL_ASESOR') {
-      setModuloActivo('historial');
-    } else {
+      mostrarNotificacion('exito', `Requisición ${pedidoId} recibida en CEDIS Central (${sucursal}).`);
       setModuloActivo('matriz');
+    } else {
+      mostrarNotificacion('exito', `Requisición ${pedidoId} registrada exitosamente. Comprobante PDF descargado.`);
     }
   };
 
@@ -358,7 +365,7 @@ export default function App() {
     <div className="flex h-screen w-screen overflow-hidden bg-[#050914] text-slate-100 font-sans selection:bg-sky-500 selection:text-white">
       {/* Toast de Notificaciones Flotante */}
             {/* ALERTA EN VIVO: NUEVO PEDIDO RECIBIDO (CON SONIDO Y BANNER FLOTANTE) */}
-      {alertaNuevoPedido && (
+      {alertaNuevoPedido && usuarioActivo.rol !== 'SUCURSAL_ASESOR' && (
         <div className="fixed top-4 right-6 z-[9999] max-w-md w-full animate-bounce-short shadow-2xl rounded-2xl border border-amber-500/60 bg-gradient-to-r from-[#0b1220] via-[#111c33] to-[#1a1708] p-4 text-white backdrop-blur-xl ring-2 ring-amber-400/40">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
