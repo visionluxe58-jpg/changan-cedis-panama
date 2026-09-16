@@ -1,6 +1,6 @@
-import { CABECERAS_MATRIZ_SINCRONIZADA, DETALLES_MATRIZ_SINCRONIZADA } from '../data/matrizBaseSincronizada';
+﻿import { CABECERAS_MATRIZ_SINCRONIZADA, DETALLES_MATRIZ_SINCRONIZADA } from '../data/matrizBaseSincronizada';
 import { InsforgeService } from './insforgeClient';
-﻿import { SecurityUtils } from '../utils/security';
+ï»¿import { SecurityUtils } from '../utils/security';
 import { 
   SolicitudCabecera, 
   DetalleRepuesto, 
@@ -72,7 +72,7 @@ export const USUARIOS_OFICIALES: BDEncargado[] = [
     nombre: 'Edwin Blanco',
     correo: 'repuestos4@changanpanama.com',
     sucursal: 'Villa Lucre',
-    canal: 'Chapistería',
+    canal: 'ChapisterÃ­a',
     cargo: 'Ejecutivo de Venta de Repuestos Chapisteria',
     telefono: '6374-8911',
     rol: 'SUCURSAL_ASESOR',
@@ -84,7 +84,7 @@ export const USUARIOS_OFICIALES: BDEncargado[] = [
     nombre: 'Pedro Guerrel',
     correo: 'taller.vl@changanpanama.com',
     sucursal: 'Villa Lucre',
-    canal: 'Taller Mecánico',
+    canal: 'Taller MecÃ¡nico',
     cargo: 'Facturador de taller',
     telefono: '6511-1363',
     rol: 'SUCURSAL_ASESOR',
@@ -196,7 +196,7 @@ export const CONTENEDORES_CANONICOS: DPLManifiesto[] = [
     proveedor: 'Mobitech Changan China Co., Ltd',
     fechaArribo: '2026-08-15',
     poReferencia: 'PO-2026-CH-089',
-    tipoTransporte: 'Marítimo 40HQ',
+    tipoTransporte: 'MarÃ­timo 40HQ',
     totalPiezas: 120,
     skusUnicos: 6,
     totalPallets: 4,
@@ -209,7 +209,7 @@ export const CONTENEDORES_CANONICOS: DPLManifiesto[] = [
     proveedor: 'Mobitech Changan China Co., Ltd',
     fechaArribo: '2026-09-02',
     poReferencia: 'PO-2026-CH-112',
-    tipoTransporte: 'Marítimo 40HQ',
+    tipoTransporte: 'MarÃ­timo 40HQ',
     totalPiezas: 85,
     skusUnicos: 5,
     totalPallets: 3,
@@ -222,11 +222,11 @@ export const CONTENEDORES_CANONICOS: DPLManifiesto[] = [
     proveedor: 'Mobitech Changan China Co., Ltd',
     fechaArribo: '2026-09-18',
     poReferencia: 'PO-2026-CH-125',
-    tipoTransporte: 'Marítimo 40HQ',
+    tipoTransporte: 'MarÃ­timo 40HQ',
     totalPiezas: 140,
     skusUnicos: 8,
     totalPallets: 5,
-    estado: 'EN TRÁNSITO',
+    estado: 'EN TRÃNSITO',
     creadoPor: 'Administrador CEDIS',
     creadoEn: '2026-09-05 11:00:00'
   },
@@ -235,7 +235,7 @@ export const CONTENEDORES_CANONICOS: DPLManifiesto[] = [
     proveedor: 'Mobitech Changan China Co., Ltd',
     fechaArribo: '2026-09-14',
     poReferencia: 'PO-2026-CH-131',
-    tipoTransporte: 'Marítimo 40HQ',
+    tipoTransporte: 'MarÃ­timo 40HQ',
     totalPiezas: 95,
     skusUnicos: 6,
     totalPallets: 3,
@@ -257,7 +257,7 @@ export const DPL_DETALLE_CANONICO: DPLDetalle[] = [
     cantidadAsignada: 1,
     cantidadDespachada: 2,
     saldoDisponible: 3, // 6 - 1 - 2 = 3
-    ubicacionCedis: 'Bahía A-01 / Pallet P001'
+    ubicacionCedis: 'BahÃ­a A-01 / Pallet P001'
   },
   {
     inventarioId: 'INV-CN-8902_2',
@@ -270,7 +270,7 @@ export const DPL_DETALLE_CANONICO: DPLDetalle[] = [
     cantidadAsignada: 2,
     cantidadDespachada: 0,
     saldoDisponible: 6, // 8 - 2 - 0 = 6
-    ubicacionCedis: 'Bahía A-02 / Pallet P001'
+    ubicacionCedis: 'BahÃ­a A-02 / Pallet P001'
   },
   {
     inventarioId: 'INV-CN-8902_3',
@@ -309,7 +309,7 @@ export const DPL_DETALLE_CANONICO: DPLDetalle[] = [
     cantidadAsignada: 2,
     cantidadDespachada: 0,
     saldoDisponible: 13, // 15 - 2 - 0 = 13
-    ubicacionCedis: 'Bahía D-01 / Pallet P101'
+    ubicacionCedis: 'BahÃ­a D-01 / Pallet P101'
   },
   {
     inventarioId: 'INV-CN-9140_2',
@@ -330,12 +330,12 @@ export const DPL_DETALLE_CANONICO: DPLDetalle[] = [
     palletCaseNo: 'P201',
     packageNo: 'PKG-01',
     codigoRepuesto: 'K999F120000',
-    descripcion: 'Juego de Espejos Retrovisores Eléctricos Hunter/CS55',
+    descripcion: 'Juego de Espejos Retrovisores ElÃ©ctricos Hunter/CS55',
     cantidadTotal: 10,
     cantidadAsignada: 0,
     cantidadDespachada: 0,
     saldoDisponible: 10,
-    ubicacionCedis: 'En Tránsito Marítimo (No Asignable hasta Arribo)'
+    ubicacionCedis: 'En TrÃ¡nsito MarÃ­timo (No Asignable hasta Arribo)'
   },
   {
     inventarioId: 'INV-CN-9310_1',
@@ -368,7 +368,7 @@ export const CABECERAS_BASE_9_SEP: SolicitudCabecera[] = [
     numeroOR: 'OR-8921',
     estadoPago: 'Aprobado',
     documentoPagoFactura: 'FAC-09-112',
-    facturadoFinal: 'Sí',
+    facturadoFinal: 'SÃ­',
     estatusGeneral: 'Asignado Total',
     estatusFabrica: 'Asignado en CEDIS',
     origen: 'PORTAL_CEDIS',
@@ -385,7 +385,7 @@ export const CABECERAS_BASE_9_SEP: SolicitudCabecera[] = [
     sucursal: 'Costa Verde',
     colaborador: 'Carlos Mendoza',
     canal: 'Taller',
-    tipoPedido: 'Chapistería y Colisión',
+    tipoPedido: 'ChapisterÃ­a y ColisiÃ³n',
     cotizacion: 'COT-CV-442',
     cliente: 'Aseguradora Fedpa / Auto Express',
     placa: 'CG-8812',
@@ -403,15 +403,15 @@ export const CABECERAS_BASE_9_SEP: SolicitudCabecera[] = [
     creadoEn: '2026-09-08 11:15:00',
     actualizadoPor: 'Administrador CEDIS',
     actualizadoEn: '2026-09-08 11:20:00',
-    observaciones: 'Reparación de frente por colisión'
+    observaciones: 'ReparaciÃ³n de frente por colisiÃ³n'
   },
   {
     pedidoId: 'PED-TM-2103',
     fechaCreacion: '2026-09-09 14:00:00',
     sucursal: 'Tumba Muerto',
     colaborador: 'Alexis Rios',
-    canal: 'Colisión',
-    tipoPedido: 'Taller Mecánico',
+    canal: 'ColisiÃ³n',
+    tipoPedido: 'Taller MecÃ¡nico',
     cotizacion: 'COT-TM-112',
     cliente: 'Flotas Corporativas Changan',
     placa: 'FL-4001',
@@ -420,7 +420,7 @@ export const CABECERAS_BASE_9_SEP: SolicitudCabecera[] = [
     numeroOR: 'MT-1092',
     estadoPago: 'Facturado',
     documentoPagoFactura: 'FAC-FL-889',
-    facturadoFinal: 'Sí',
+    facturadoFinal: 'SÃ­',
     estatusGeneral: 'Despachado Total',
     estatusFabrica: 'Completado',
     origen: 'PORTAL_CEDIS',
@@ -436,26 +436,26 @@ export const CABECERAS_BASE_9_SEP: SolicitudCabecera[] = [
     fechaCreacion: '2026-09-09 16:45:00',
     sucursal: 'Calle 50',
     colaborador: 'Valeria Castillo',
-    canal: 'Garantías',
-    tipoPedido: 'Garantía',
+    canal: 'GarantÃ­as',
+    tipoPedido: 'GarantÃ­a',
     cotizacion: 'GAR-C50-990',
     cliente: 'Roberto Gonzalez',
     placa: 'RG-7711',
     modeloChangan: 'CS35 Plus Turbo',
     vin: 'LS4A1A666PA048192',
     numeroOR: 'GAR-3329',
-    estadoPago: 'Exento (Garantía)',
+    estadoPago: 'Exento (GarantÃ­a)',
     documentoPagoFactura: 'GAR-CH-2026-11',
     facturadoFinal: 'No',
     estatusGeneral: 'Asignado Total',
-    estatusFabrica: 'Aprobado Fábrica',
+    estatusFabrica: 'Aprobado FÃ¡brica',
     origen: 'PORTAL_CEDIS',
     version: 1,
     creadoPor: 'Valeria Castillo',
     creadoEn: '2026-09-09 16:45:00',
     actualizadoPor: 'Administrador CEDIS',
     actualizadoEn: '2026-09-09 16:50:00',
-    observaciones: 'Reclamo aprobado por fábrica'
+    observaciones: 'Reclamo aprobado por fÃ¡brica'
   },
   // Pedido ausente preservado (1 de los 5)
   {
@@ -473,7 +473,7 @@ export const CABECERAS_BASE_9_SEP: SolicitudCabecera[] = [
     numeroOR: 'OR-9001',
     estadoPago: 'Aprobado',
     documentoPagoFactura: 'FAC-CV-781',
-    facturadoFinal: 'Sí',
+    facturadoFinal: 'SÃ­',
     estatusGeneral: 'Asignado Total',
     estatusFabrica: 'Asignado en CEDIS',
     origen: 'PORTAL_CEDIS',
@@ -482,7 +482,7 @@ export const CABECERAS_BASE_9_SEP: SolicitudCabecera[] = [
     creadoEn: '2026-09-07 10:00:00',
     actualizadoPor: 'Administrador CEDIS',
     actualizadoEn: '2026-09-07 10:15:00',
-    observaciones: 'Control 9-Sep: Preservado sin borrado automático'
+    observaciones: 'Control 9-Sep: Preservado sin borrado automÃ¡tico'
   }
 ];
 
@@ -499,7 +499,7 @@ export const DETALLES_BASE_9_SEP: DetalleRepuesto[] = [
     contenedorAsignado: 'INV-CN-8902',
     palletAsignado: 'P001',
     packageNo: 'PKG-01',
-    ubicacionCedis: 'Bahía A-01 / Pallet P001',
+    ubicacionCedis: 'BahÃ­a A-01 / Pallet P001',
     estatusLinea: 'Asignado'
   },
   {
@@ -514,7 +514,7 @@ export const DETALLES_BASE_9_SEP: DetalleRepuesto[] = [
     contenedorAsignado: 'INV-CN-8902',
     palletAsignado: 'P001',
     packageNo: 'PKG-02',
-    ubicacionCedis: 'Bahía A-02 / Pallet P001',
+    ubicacionCedis: 'BahÃ­a A-02 / Pallet P001',
     estatusLinea: 'Asignado'
   },
   {
@@ -544,7 +544,7 @@ export const DETALLES_BASE_9_SEP: DetalleRepuesto[] = [
     contenedorAsignado: 'INV-CN-9140',
     palletAsignado: 'P101',
     packageNo: 'PKG-01',
-    ubicacionCedis: 'Bahía D-01 / Pallet P101',
+    ubicacionCedis: 'BahÃ­a D-01 / Pallet P101',
     estatusLinea: 'Asignado'
   },
   {
@@ -672,7 +672,7 @@ function normalizarEstatusGeneral(val: string): EstatusPedidoGeneral {
 
 class AppsScriptClientService {
   /**
-   * Envía peticiones POST seguras a Google Apps Script evitando preflight CORS (Content-Type: text/plain)
+   * EnvÃ­a peticiones POST seguras a Google Apps Script evitando preflight CORS (Content-Type: text/plain)
    */
   private async postToAppsScript(payload: Record<string, any>): Promise<any> {
     if (!this.config.webAppUrl || this.config.modoOfflineSimulado) {
@@ -689,7 +689,7 @@ class AppsScriptClientService {
       }
       return await resp.json();
     } catch (err: any) {
-      console.warn(`Error al enviar acción ${payload.action} a Google Apps Script:`, err);
+      console.warn(`Error al enviar acciÃ³n ${payload.action} a Google Apps Script:`, err);
       return { success: false, error: err.message || String(err) };
     }
   }
@@ -697,7 +697,7 @@ class AppsScriptClientService {
   private config: AppsScriptApiConfig;
   private usuarioActivo: UsuarioActivo;
   
-  // Base de datos canónica local
+  // Base de datos canÃ³nica local
   private cabeceras: SolicitudCabecera[] = [];
   private detalles: DetalleRepuesto[] = [];
   private manifiestos: DPLManifiesto[] = [];
@@ -707,6 +707,7 @@ class AppsScriptClientService {
   private auditoria: AuditoriaKardex[] = [];
 
   private tombstonesPedidos: Set<string> = new Set<string>();
+  private despachosDesdeSheetsTab: FilaMatrizCentral[] = [];
   private tombstonesClientes: Set<string> = new Set<string>();
 
   private cargarTombstones(): void {
@@ -718,7 +719,7 @@ class AppsScriptClientService {
 
       // Pre-cargar permanentemente clientes y pedidos eliminados por el usuario
       const defaultP = ['PED-CV-001', 'PED-CV-002', 'PED-CV-023'];
-      const defaultC = ['JOSE GONZALEZ', 'JOSÉ GONZÁLEZ'];
+      const defaultC = ['JOSE GONZALEZ', 'JOSÃ‰ GONZÃLEZ'];
 
       defaultP.forEach(id => arrP.push(id));
       defaultC.forEach(c => arrC.push(c));
@@ -729,7 +730,7 @@ class AppsScriptClientService {
     } catch (e) {
       console.warn('Error cargando tombstones:', e);
       this.tombstonesPedidos = new Set(['PED-CV-001', 'PED-CV-002', 'PED-CV-023']);
-      this.tombstonesClientes = new Set(['JOSE GONZALEZ', 'JOSÉ GONZÁLEZ']);
+      this.tombstonesClientes = new Set(['JOSE GONZALEZ', 'JOSÃ‰ GONZÃLEZ']);
     }
   }
 
@@ -764,8 +765,8 @@ class AppsScriptClientService {
     }
     if (cliente && cliente.trim().length >= 3) {
       const cliNorm = cliente.trim().toUpperCase();
-      // Si el cliente es Jose Gonzalez o se eliminó deliberadamente
-      if (cliNorm.includes('JOSE GONZALEZ') || cliNorm.includes('JOSÉ GONZÁLEZ')) {
+      // Si el cliente es Jose Gonzalez o se eliminÃ³ deliberadamente
+      if (cliNorm.includes('JOSE GONZALEZ') || cliNorm.includes('JOSÃ‰ GONZÃLEZ')) {
         this.tombstonesClientes.add(cliNorm);
       }
     }
@@ -791,6 +792,8 @@ class AppsScriptClientService {
     this.usuarioActivo = this.cargarUsuarioActivo();
     this.cargarTombstones();
     this.cargarDatosLocales();
+    // Cargar despachos de Google Sheets en background (no bloqueante)
+    this.fetchDespachosDesdeSheetsTab().catch(() => {});
   }
 
   private memoryStore: Map<string, string> = new Map();
@@ -850,7 +853,7 @@ class AppsScriptClientService {
   }
 
   /**
-   * Ejecuta el diagnóstico de conectividad, CORS y preflight OPTIONS para validar la API
+   * Ejecuta el diagnÃ³stico de conectividad, CORS y preflight OPTIONS para validar la API
    */
   public async diagnosticarConexion(urlCustom?: string, timeoutMs?: number): Promise<ResultadoDiagnosticoCORS> {
     const targetUrl = urlCustom !== undefined ? urlCustom : this.config.webAppUrl;
@@ -869,8 +872,8 @@ class AppsScriptClientService {
   }
 
   /**
-   * Sincronización Canónica Bidireccional: Trae datos vivos desde Google Apps Script (Endpoint getInitialData)
-   * e hidrata el estado local de la aplicación.
+   * SincronizaciÃ³n CanÃ³nica Bidireccional: Trae datos vivos desde Google Apps Script (Endpoint getInitialData)
+   * e hidrata el estado local de la aplicaciÃ³n.
    */
   public async fetchInitialData(forzar: boolean = false): Promise<{
     success: boolean;
@@ -888,7 +891,7 @@ class AppsScriptClientService {
     if (!this.config.webAppUrl || this.config.modoOfflineSimulado) {
       return {
         success: true,
-        error: 'Modo local activo (no se contactó Google Sheets porque no hay URL configurada o está en modo offline).'
+        error: 'Modo local activo (no se contactÃ³ Google Sheets porque no hay URL configurada o estÃ¡ en modo offline).'
       };
     }
 
@@ -913,13 +916,13 @@ class AppsScriptClientService {
       if (!resJson.success || !resJson.data) {
         return {
           success: false,
-          error: resJson.error || 'Respuesta inválida del backend de Google Apps Script.'
+          error: resJson.error || 'Respuesta invÃ¡lida del backend de Google Apps Script.'
         };
       }
 
       const data = resJson.data;
 
-      // 1. Si recibimos data.matriz directa (hoja canónica de Google Sheets / Matriz_Central):
+      // 1. Si recibimos data.matriz directa (hoja canÃ³nica de Google Sheets / Matriz_Central):
       if (Array.isArray(data.matriz) && data.matriz.length > 0) {
         // Filtrado preventivo estricto de duplicados en la ingesta de Google Sheets
         const seenExactIngesta = new Set<string>();
@@ -929,14 +932,14 @@ class AppsScriptClientService {
 
         rawMatrizFilas.forEach((r: any) => {
           const pId = String(getValFlexible(r, 'ID Pedido', 'Pedido_ID', 'pedidoId') || '').trim();
-          // Soporta tanto 'Código OEM' (cabecera oficial del Sheet) como 'Código Repuesto' y variantes
-          const codRep = String(getValFlexible(r, 'Código OEM', 'Codigo OEM', 'Código Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto') || '').trim().toUpperCase();
+          // Soporta tanto 'CÃ³digo OEM' (cabecera oficial del Sheet) como 'CÃ³digo Repuesto' y variantes
+          const codRep = String(getValFlexible(r, 'CÃ³digo OEM', 'Codigo OEM', 'CÃ³digo Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto') || '').trim().toUpperCase();
           const cli = String(getValFlexible(r, 'Cliente / Caso', 'Cliente/Caso', 'Cliente', 'cliente') || '').trim();
-          const estL = normalizarEstatusLinea(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
+          const estL = normalizarEstatusLinea(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus LÃ­nea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
 
           if (!codRep) return;
 
-          // 1. Eliminar líneas idénticas exactas en el mismo pedido
+          // 1. Eliminar lÃ­neas idÃ©nticas exactas en el mismo pedido
           const exactKey = `${pId}__${codRep}`;
           if (seenExactIngesta.has(exactKey)) {
             return;
@@ -944,13 +947,13 @@ class AppsScriptClientService {
           seenExactIngesta.add(exactKey);
 
           // 2. Eliminar solicitudes duplicadas activas para el mismo cliente y repuesto
-          // PROTECCIÓN PERMANENTE: Si el pedido o cliente fue eliminado, NO RESUCITAR NUNCA
+          // PROTECCIÃ“N PERMANENTE: Si el pedido o cliente fue eliminado, NO RESUCITAR NUNCA
           if (this.isPedidoTombstoned(pId) || this.isClienteTombstoned(cli)) {
             return;
           }
 
-          // REGLA CRÍTICA CEDIS: Lo despachado queda retirado de la Matriz Central permanentemente
-          const rawEstatusRow = String(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'estatusLinea', 'Estatus') || '').toUpperCase();
+          // REGLA CRÃTICA CEDIS: Lo despachado queda retirado de la Matriz Central permanentemente
+          const rawEstatusRow = String(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus LÃ­nea', 'Estatus Linea', 'estatusLinea', 'Estatus') || '').toUpperCase();
           if (rawEstatusRow.includes('DESPACH') || estL === 'Despachado' || this.isLineaDespachada(r.lineaId, pId, codRep)) {
             this.marcarLineaComoDespachada(r.lineaId, pId, codRep);
             return;
@@ -979,20 +982,20 @@ class AppsScriptClientService {
           const suc = getValFlexible(r, 'Sucursal', 'Sucursal Solicitante', 'sucursal') || 'Bodega Central';
           const col = getValFlexible(r, 'Asesor / Solicitante', 'Asesor/Solicitante', 'Colaborador', 'Colaborador_Asesor', 'colaborador') || 'Usuario CEDIS';
           const tip = (getValFlexible(r, 'Prioridad', 'Tipo Pedido', 'Tipo_Solicitud_Prioridad', 'tipoPedido') || 'Especial') as any;
-          const cot = getValFlexible(r, 'No. O.R.', 'Cotización', 'Cotizacion', 'cotizacion');
+          const cot = getValFlexible(r, 'No. O.R.', 'CotizaciÃ³n', 'Cotizacion', 'cotizacion');
           const cli = getValFlexible(r, 'Cliente / Caso', 'Cliente/Caso', 'Cliente', 'cliente');
           const plc = getValFlexible(r, 'Placa', 'placa');
           const mod = getValFlexible(r, 'Modelo', 'Modelo Changan', 'Modelo_Changan', 'modeloChangan');
           const vin = getValFlexible(r, 'VIN / Chasis', 'VIN/Chasis', 'VIN', 'VIN_Chasis', 'vin');
-          const nor = getValFlexible(r, 'No. O.R.', 'No O.R.', 'Numero OR', 'N° OR', 'Numero_OR', 'numeroOR', 'N OR');
+          const nor = getValFlexible(r, 'No. O.R.', 'No O.R.', 'Numero OR', 'NÂ° OR', 'Numero_OR', 'numeroOR', 'N OR');
 
-          const codRep = getValFlexible(r, 'Código OEM', 'Codigo OEM', 'Código Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto');
-          const codAct = getValFlexible(r, 'Código Actualizado', 'Codigo Actualizado', 'Codigo_Actualizado', 'codigoActualizado') || codRep;
-          const descOf = getValFlexible(r, 'Descripción Repuesto', 'Descripcion Repuesto', 'Descripción Oficial', 'Descripcion Oficial', 'descripcionOficial');
+          const codRep = getValFlexible(r, 'CÃ³digo OEM', 'Codigo OEM', 'CÃ³digo Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto');
+          const codAct = getValFlexible(r, 'CÃ³digo Actualizado', 'Codigo Actualizado', 'Codigo_Actualizado', 'codigoActualizado') || codRep;
+          const descOf = getValFlexible(r, 'DescripciÃ³n Repuesto', 'Descripcion Repuesto', 'DescripciÃ³n Oficial', 'Descripcion Oficial', 'descripcionOficial');
           
           const rawSol = getValFlexible(r, 'Cant Solicitada', 'Cantidad Solicitada', 'Cantidad_Solicitada', 'cantidadSolicitada');
           let cSol = parseFloat(String(rawSol).replace(/[^0-9.]/g, '')) || 1;
-          // Sanitización estricta de cantidad razonable para pedidos especiales de repuestos
+          // SanitizaciÃ³n estricta de cantidad razonable para pedidos especiales de repuestos
           if (cSol > 20) {
             cSol = 1;
           }
@@ -1000,13 +1003,13 @@ class AppsScriptClientService {
           const rawAsig = getValFlexible(r, 'Cant Asignada', 'Cantidad Asignada', 'Cantidad_Asignada', 'cantidadAsignada');
           let cAsig = parseFloat(String(rawAsig).replace(/[^0-9.]/g, '')) || 0;
           let cDesp = Number(getValFlexible(r, 'Cant Despachada', 'Cantidad Despachada', 'Cantidad_Despachada', 'cantidadDespachada')) || 0;
-          let estL = normalizarEstatusLinea(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
+          let estL = normalizarEstatusLinea(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus LÃ­nea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
           const estG = normalizarEstatusGeneral(getValFlexible(r, 'Estatus General', 'Estado General', 'estatusGeneral', 'PENDIENTE'));
           let cAsignado = getValFlexible(r, 'Contenedor Asignado', 'Contenedor_Asignado', 'contenedorAsignado');
           let pAsignado = getValFlexible(r, 'Pallet Asignado', 'Pallet_Asignado', 'palletAsignado');
-          let pkgNo = getValFlexible(r, 'Package No', 'Package_No', 'packageNo', 'Nº Paquete', 'N Paquete');
+          let pkgNo = getValFlexible(r, 'Package No', 'Package_No', 'packageNo', 'NÂº Paquete', 'N Paquete');
 
-          // Verificación automática con BD histórica de despachos (V1 y V2)
+          // VerificaciÃ³n automÃ¡tica con BD histÃ³rica de despachos (V1 y V2)
           const histKey = `${pId}___${codRep}`;
           const hist = (despachosHistoricos as Record<string, any>)[histKey];
           if (hist) {
@@ -1018,7 +1021,7 @@ class AppsScriptClientService {
           } else if (estL === 'Despachado' && cDesp === 0) {
             cDesp = cSol;
           }
-          const ubi = getValFlexible(r, 'Ubicación CEDIS', 'Ubicacion CEDIS', 'Ubicacion_CEDIS', 'ubicacionCedis');
+          const ubi = getValFlexible(r, 'UbicaciÃ³n CEDIS', 'Ubicacion CEDIS', 'Ubicacion_CEDIS', 'ubicacionCedis');
           const obs = getValFlexible(r, 'Observaciones', 'observaciones');
 
           if (!mapCab[pId]) {
@@ -1067,7 +1070,7 @@ class AppsScriptClientService {
           });
         });
 
-        // Calcular estatus general de pedidos considerando estados de líneas, inventario y despachos
+        // Calcular estatus general de pedidos considerando estados de lÃ­neas, inventario y despachos
         const pedidosMetricas: Record<string, { total: number; despachados: number; asignados: number; enBodega: number }> = {};
         arrDet.forEach(d => {
           if (!pedidosMetricas[d.pedidoId]) pedidosMetricas[d.pedidoId] = { total: 0, despachados: 0, asignados: 0, enBodega: 0 };
@@ -1102,7 +1105,7 @@ class AppsScriptClientService {
           }
         });
 
-        // PRESERVACIÓN ESTRICTA: Si el usuario modificó estatus individualmente en la sesión, preservarlo
+        // PRESERVACIÃ“N ESTRICTA: Si el usuario modificÃ³ estatus individualmente en la sesiÃ³n, preservarlo
         const mapaEstatusLocales = new Map<string, any>();
         this.detalles.forEach(d => {
           mapaEstatusLocales.set(`${d.pedidoId}__${(d.codigoRepuesto || '').trim().toUpperCase()}`, {
@@ -1125,7 +1128,7 @@ class AppsScriptClientService {
           }
         });
 
-        // Filtrar nuevamente cualquier línea que haya sido despachada
+        // Filtrar nuevamente cualquier lÃ­nea que haya sido despachada
         const detallesActivos = arrDet.filter(d => d.estatusLinea !== 'Despachado' && !this.isLineaDespachada(d.lineaId, d.pedidoId, d.codigoRepuesto));
 
         this.cabeceras = Object.values(mapCab);
@@ -1148,7 +1151,7 @@ class AppsScriptClientService {
           }));
         }
       }
-      // 3. Manifiestos (Fusión de Sheets + 8 Contenedores Reales Históricos)
+      // 3. Manifiestos (FusiÃ³n de Sheets + 8 Contenedores Reales HistÃ³ricos)
       const sheetMans = Array.isArray(data.manifiestos) ? data.manifiestos.map((m: any) => {
         const cId = getValFlexible(m, 'contenedorId', 'contenedor', 'Contenedor', 'ID Contenedor', 'Factura', 'Invoice');
         return {
@@ -1157,17 +1160,17 @@ class AppsScriptClientService {
           proveedor: m.proveedor || 'Mobitech Changan China Co., Ltd',
           fechaArribo: m.fechaArribo || '',
           poReferencia: m.poReferencia || (cId ? `PO-${cId}` : ''),
-          tipoTransporte: m.tipoTransporte || 'Marítimo 40HQ',
+          tipoTransporte: m.tipoTransporte || 'MarÃ­timo 40HQ',
           totalPiezas: Number(m.totalPiezas) || 0,
           skusUnicos: Number(m.skusUnicos) || 0,
           totalPallets: Number(m.totalPallets) || 1,
-          estado: normalizarEstatusDPL(m.estado || 'EN TRÁNSITO')
+          estado: normalizarEstatusDPL(m.estado || 'EN TRÃNSITO')
         };
       }).filter((m: any) => Boolean(m.contenedorId)) : [];
 
       const manMap = new Map<string, DPLManifiesto>();
       (contenedoresHistoricos.manifiestos as DPLManifiesto[]).forEach(m => manMap.set(m.contenedorId, m));
-      // Preservar estatus locales actualizados por el usuario si ya existían
+      // Preservar estatus locales actualizados por el usuario si ya existÃ­an
       this.manifiestos.forEach(m => {
         if (manMap.has(m.contenedorId)) {
           manMap.set(m.contenedorId, { ...manMap.get(m.contenedorId)!, estado: m.estado });
@@ -1176,10 +1179,10 @@ class AppsScriptClientService {
       sheetMans.forEach((m: DPLManifiesto) => manMap.set(m.contenedorId, m));
       this.manifiestos = Array.from(manMap.values());
 
-      // 4. DPL Detalle (Inventario Físico con 2,028 ítems reales de los 8 contenedores)
+      // 4. DPL Detalle (Inventario FÃ­sico con 2,028 Ã­tems reales de los 8 contenedores)
       const sheetDpl = Array.isArray(data.dplDetalle) ? data.dplDetalle.map((i: any, idx: number) => {
         const cId = getValFlexible(i, 'contenedorId', 'contenedor', 'Contenedor', 'ID Contenedor');
-        const cod = getValFlexible(i, 'codigoRepuesto', 'codigo', 'Codigo Repuesto', 'Código Repuesto');
+        const cod = getValFlexible(i, 'codigoRepuesto', 'codigo', 'Codigo Repuesto', 'CÃ³digo Repuesto');
         const cantTot = Number(i.cantidadTotal) || 0;
         const cantAsig = Number(i.cantidadAsignada) || 0;
         const cantDesp = Number(i.cantidadDespachada) || 0;
@@ -1195,7 +1198,7 @@ class AppsScriptClientService {
           cantidadAsignada: cantAsig,
           cantidadDespachada: cantDesp,
           saldoDisponible: i.saldoDisponible !== undefined ? Number(i.saldoDisponible) : Math.max(0, cantTot - cantAsig - cantDesp),
-          ubicacionCedis: i.ubicacionCedis || 'Bahía CEDIS'
+          ubicacionCedis: i.ubicacionCedis || 'BahÃ­a CEDIS'
         };
       }).filter((i: any) => Boolean(i.contenedorId && i.codigoRepuesto)) : [];
 
@@ -1218,7 +1221,7 @@ class AppsScriptClientService {
         this.encargados = data.encargados;
       }
 
-      // 7. Auditoría
+      // 7. AuditorÃ­a
       if (Array.isArray(data.auditoria) && data.auditoria.length > 0) {
         this.auditoria = data.auditoria;
       }
@@ -1242,7 +1245,7 @@ class AppsScriptClientService {
         }
       };
     } catch (err: any) {
-      console.warn('Fallo al obtener datos vivos desde Google Sheets (manteniendo caché local):', err);
+      console.warn('Fallo al obtener datos vivos desde Google Sheets (manteniendo cachÃ© local):', err);
       return {
         success: false,
         error: `Error de red al consultar Google Sheets: ${err.message || err}`
@@ -1320,10 +1323,10 @@ class AppsScriptClientService {
       const aud = this.safeGet(STORAGE_KEYS.AUDITORIA);
       this.auditoria = aud ? JSON.parse(aud) : AUDITORIA_INICIAL;
 
-      // Depuración y protección automática de integridad contra datos inflados
+      // DepuraciÃ³n y protecciÃ³n automÃ¡tica de integridad contra datos inflados
       this.depurarDuplicadosEnMemoria();
     } catch (e) {
-      console.error('Error cargando almacén canónico:', e);
+      console.error('Error cargando almacÃ©n canÃ³nico:', e);
       this.cabeceras = CABECERAS_MATRIZ_SINCRONIZADA;
       this.detalles = DETALLES_MATRIZ_SINCRONIZADA;
       this.manifiestos = CONTENEDORES_CANONICOS;
@@ -1336,16 +1339,16 @@ class AppsScriptClientService {
 
   
   /**
-   * Depura y elimina automáticamente pedidos duplicados en memoria y almacén local:
-   * 1. Elimina líneas idénticas repetidas en la misma orden (mismo pedidoId + mismo repuesto)
-   * 2. Elimina órdenes activas redundantes para el mismo cliente y repuesto (Regla de No Duplicados)
+   * Depura y elimina automÃ¡ticamente pedidos duplicados en memoria y almacÃ©n local:
+   * 1. Elimina lÃ­neas idÃ©nticas repetidas en la misma orden (mismo pedidoId + mismo repuesto)
+   * 2. Elimina Ã³rdenes activas redundantes para el mismo cliente y repuesto (Regla de No Duplicados)
    */
   public depurarDuplicadosEnMemoria(): { exactosEliminados: number; clientesDuplicadosEliminados: number; totalRestantes: number } {
     const seenExact = new Set<string>();
     let exactosEliminados = 0;
     const detallesSinExactos: DetalleRepuesto[] = [];
 
-    // Paso 1: Eliminar líneas idénticas exactas (mismo pedido + mismo repuesto)
+    // Paso 1: Eliminar lÃ­neas idÃ©nticas exactas (mismo pedido + mismo repuesto)
     for (const d of this.detalles) {
       const cod = (d.codigoRepuesto || '').trim().toUpperCase();
       const pId = (d.pedidoId || '').trim();
@@ -1392,7 +1395,7 @@ class AppsScriptClientService {
 
     this.detalles = detallesFinales;
 
-    // Limpiar cabeceras huérfanas que se hayan quedado sin ningún detalle
+    // Limpiar cabeceras huÃ©rfanas que se hayan quedado sin ningÃºn detalle
     const pedidosConDetalles = new Set(this.detalles.map(d => d.pedidoId));
     this.cabeceras = this.cabeceras.filter(c => pedidosConDetalles.has(c.pedidoId));
 
@@ -1429,7 +1432,7 @@ class AppsScriptClientService {
         });
         const resJson = await resp.json();
         if (resJson && resJson.success) {
-          console.log('[Google Sheets] Depuración en la nube completada:', resJson);
+          console.log('[Google Sheets] DepuraciÃ³n en la nube completada:', resJson);
         }
       } catch (err) {
         console.warn('[Google Sheets] Aviso al invocar depurarDuplicados en Google Sheets:', err);
@@ -1441,7 +1444,7 @@ class AppsScriptClientService {
       exactosEliminados: stats.exactosEliminados,
       clientesDuplicadosEliminados: stats.clientesDuplicadosEliminados,
       totalRestantes: stats.totalRestantes,
-      mensaje: `Depuración completada exitosamente. Se eliminaron ${stats.exactosEliminados} líneas repetidas exactas y ${stats.clientesDuplicadosEliminados} pedidos redundantes activos. Total actual de líneas válidas: ${stats.totalRestantes}.`
+      mensaje: `DepuraciÃ³n completada exitosamente. Se eliminaron ${stats.exactosEliminados} lÃ­neas repetidas exactas y ${stats.clientesDuplicadosEliminados} pedidos redundantes activos. Total actual de lÃ­neas vÃ¡lidas: ${stats.totalRestantes}.`
     };
   }
 
@@ -1508,7 +1511,7 @@ class AppsScriptClientService {
     const seenLineasMatriz = new Set<string>();
 
     this.detalles.forEach(d => {
-      // REGLA CRÍTICA CEDIS: Todo lo despachado se retira de la Matriz Central permanentemente
+      // REGLA CRÃTICA CEDIS: Todo lo despachado se retira de la Matriz Central permanentemente
       if (d.estatusLinea === 'Despachado' || this.isLineaDespachada(d.lineaId, d.pedidoId, d.codigoRepuesto)) {
         return; // Omitir repuesto despachado de la Matriz Central
       }
@@ -1559,8 +1562,8 @@ class AppsScriptClientService {
 
   
   /**
-   * Obtiene la lista oficial de todos los repuestos despachados para la pestaña "Despachados"
-   * Incluye los despachos de la sesión actual, los guardados en almacenamiento y el histórico verificado
+   * Obtiene la lista oficial de todos los repuestos despachados para la pestaÃ±a "Despachados"
+   * Incluye los despachos de la sesiÃ³n actual, los guardados en almacenamiento y el histÃ³rico verificado
    */
   public getFilasDespachadas(): FilaMatrizCentral[] {
     const cabMap = new Map<string, SolicitudCabecera>();
@@ -1604,7 +1607,7 @@ class AppsScriptClientService {
             estatusLinea: 'Despachado',
             estatusGeneral: 'Despachado Total',
             origen: cab ? cab.origen : 'PORTAL_CEDIS',
-            observaciones: 'Despachado físicamente',
+            observaciones: 'Despachado fÃ­sicamente',
             fechaDespacho: cab?.fechaDespacho || (d as any).fechaDespacho || new Date().toISOString().substring(0, 10)
           });
         }
@@ -1651,7 +1654,7 @@ class AppsScriptClientService {
             estatusLinea: 'Despachado',
             estatusGeneral: 'Despachado Total',
             origen: 'HISTORICO_DESPACHOS',
-            observaciones: rowMatriz?.observaciones || 'Despachado y entregado físicamente a sucursal',
+            observaciones: rowMatriz?.observaciones || 'Despachado y entregado fÃ­sicamente a sucursal',
             fechaDespacho: (h.dispatchedAt || '').substring(0, 10) || '2026-09-09'
           });
         }
@@ -1660,7 +1663,95 @@ class AppsScriptClientService {
       console.warn('Error cargando despachosHistoricos en getFilasDespachadas:', e);
     }
 
+    // 3. Despachos leidos directamente de la pestaña "Despachos" de Google Sheets
+    this.despachosDesdeSheetsTab.forEach(d => {
+      const key = ${d.pedidoId}__;
+      if (!seenDespKeys.has(key)) {
+        seenDespKeys.add(key);
+        resultado.push(d);
+      }
+    });
+
     return resultado;
+  }
+
+  /**
+   * Lee la pestaña "Despachos" de Google Sheets y la almacena en memoria
+   */
+  public async fetchDespachosDesdeSheetsTab(): Promise<void> {
+    try {
+      const url = 'https://docs.google.com/spreadsheets/d/1YcV3D-d9zk_oqmHrgG4blnC05ElejvYZ7RT47nrJqfM/gviz/tq?tqx=out:json&sheet=Despachos';
+      const resp = await fetch(url);
+      if (!resp.ok) return;
+      const rawText = await resp.text();
+      const jsonStr = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
+      const data = JSON.parse(jsonStr);
+      const rows = data?.table?.rows;
+      if (!Array.isArray(rows) || rows.length === 0) return;
+
+      const cabMap = new Map<string, SolicitudCabecera>();
+      this.cabeceras.forEach(c => cabMap.set(c.pedidoId, c));
+
+      const nuevos: FilaMatrizCentral[] = [];
+      rows.forEach((row: any) => {
+        const c = row.c || [];
+        const getV = (i: number) => (c[i] && c[i].v != null) ? String(c[i].v).trim() : '';
+        const pedidoId = getV(0);
+        const sucursal = getV(1);
+        const cliente = getV(2);
+        const palletContenedor = getV(3);
+        const codigoRepuesto = getV(4);
+        const descripcion = getV(5);
+        const cantDesp = parseFloat(getV(6)) || 1;
+        const estado = getV(7);
+        const fechaDesp = getV(9) ? getV(9).substring(0, 10) : new Date().toISOString().substring(0, 10);
+        const asesor = getV(11);
+        const obs = getV(12);
+
+        if (!pedidoId || !codigoRepuesto) return;
+        if (!estado.toUpperCase().includes('DESPACH')) return;
+
+        const cab = cabMap.get(pedidoId);
+        // Marcar en tombstones usando el combo pedidoId+codigoRepuesto para que salga de Matriz Central
+        this.marcarLineaComoDespachada('', pedidoId, codigoRepuesto);
+
+        nuevos.push({
+          lineaId: ${pedidoId}-L-DESP,
+          pedidoId,
+          fechaCreacion: cab?.fechaCreacion || '2026-09-01',
+          sucursal: sucursal || (cab?.sucursal ?? 'Sucursal'),
+          colaborador: asesor || (cab?.colaborador ?? 'CEDIS'),
+          tipoPedido: cab?.tipoPedido ?? 'Especial',
+          cotizacion: cab?.cotizacion ?? '',
+          cliente: cliente || (cab?.cliente ?? 'Cliente'),
+          placa: cab?.placa ?? '',
+          modeloChangan: cab?.modeloChangan ?? 'Changan',
+          vin: cab?.vin ?? '',
+          numeroOR: cab?.numeroOR ?? '',
+          codigoRepuesto,
+          codigoActualizado: codigoRepuesto,
+          descripcionOficial: descripcion,
+          cantidadSolicitada: cantDesp,
+          cantidadAsignada: 0,
+          cantidadDespachada: cantDesp,
+          saldoPendiente: 0,
+          contenedorAsignado: palletContenedor.split('/')[0]?.trim() || 'CEDIS',
+          palletAsignado: palletContenedor.split('/')[1]?.trim() || 'P001',
+          packageNo: '',
+          ubicacionCedis: 'Despachado a Sucursal',
+          estatusLinea: 'Despachado',
+          estatusGeneral: 'Despachado Total',
+          origen: 'EXCEL',
+          observaciones: obs || 'Despachado físicamente a sucursal',
+          fechaDespacho: fechaDesp
+        } as any);
+      });
+
+      this.despachosDesdeSheetsTab = nuevos;
+      console.log([DESPACHOS]  despachos cargados desde pestaña Sheets.);
+    } catch (e) {
+      console.warn('[DESPACHOS] Error leyendo pestaña Despachos de Sheets:', e);
+    }
   }
 
   public getCabeceras(): SolicitudCabecera[] {
@@ -1728,7 +1819,7 @@ class AppsScriptClientService {
   }
 
   /**
-   * Cálculo de KPIs con la fórmula estricta:
+   * CÃ¡lculo de KPIs con la fÃ³rmula estricta:
    * saldoDisponible = cantidadTotal - cantidadAsignada - cantidadDespachada
    */
   public getKPIs() {
@@ -1765,10 +1856,10 @@ class AppsScriptClientService {
 
   /**
    * Actualiza el estatus de un Manifiesto / Contenedor DPL:
-   * Ciclo de Vida: 'EN TRÁNSITO' -> 'ADUANA' -> 'RECIBIDO'
+   * Ciclo de Vida: 'EN TRÃNSITO' -> 'ADUANA' -> 'RECIBIDO'
    * REGLA DE NEGOCIO OBLIGATORIA:
-   * - Solamente cuando el estatus pasa a 'RECIBIDO' se ejecuta el matching automático FIFO y se asignan repuestos a pedidos.
-   * - Si está en 'EN TRÁNSITO' o 'ADUANA', los repuestos NO se asignan a órdenes, pero quedan registrados en historial y disponibles para rastreo universal.
+   * - Solamente cuando el estatus pasa a 'RECIBIDO' se ejecuta el matching automÃ¡tico FIFO y se asignan repuestos a pedidos.
+   * - Si estÃ¡ en 'EN TRÃNSITO' o 'ADUANA', los repuestos NO se asignan a Ã³rdenes, pero quedan registrados en historial y disponibles para rastreo universal.
    */
   public async actualizarEstatusManifiesto(
     contenedorId: string,
@@ -1793,17 +1884,17 @@ class AppsScriptClientService {
       if (!esAdmin) {
         return {
           success: false,
-          nuevoEstado: this.manifiestos[contIndex]?.estado || 'EN TRÁNSITO',
+          nuevoEstado: this.manifiestos[contIndex]?.estado || 'EN TRÃNSITO',
           asignacionesEjecutadas: false,
-          error: 'ACCESO DENEGADO: Solo el Administrador de CEDIS tiene autorización para recibir físicamente un contenedor y ejecutar el cruce automático.',
-          mensaje: 'Solo el Administrador de CEDIS puede autorizar la recepción del contenedor.'
+          error: 'ACCESO DENEGADO: Solo el Administrador de CEDIS tiene autorizaciÃ³n para recibir fÃ­sicamente un contenedor y ejecutar el cruce automÃ¡tico.',
+          mensaje: 'Solo el Administrador de CEDIS puede autorizar la recepciÃ³n del contenedor.'
         };
       }
     }
     const ahora = new Date().toISOString().replace('T', ' ').substring(0, 19);
     const operationId = `OP-MAN-STATUS-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-    // 1. Si hay Web App URL configurada, enviar mutación a Apps Script
+    // 1. Si hay Web App URL configurada, enviar mutaciÃ³n a Apps Script
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
       try {
         const resJson = await this.postToAppsScript({
@@ -1822,7 +1913,7 @@ class AppsScriptClientService {
     }
     
     if (contIndex === -1) {
-      // Auto-registrar cabecera de manifiesto si no existía
+      // Auto-registrar cabecera de manifiesto si no existÃ­a
       const itemsLote = this.dplDetalle.filter(i => (i.contenedorId || '').trim().toUpperCase() === idTarget);
       const totalPiezas = itemsLote.reduce((acc, it) => acc + (Number(it.cantidadTotal) || 0), 0);
       const skus = new Set(itemsLote.map(it => (it.codigoRepuesto || '').toUpperCase())).size;
@@ -1833,7 +1924,7 @@ class AppsScriptClientService {
         proveedor: 'Mobitech Changan China Co., Ltd',
         fechaArribo: new Date().toISOString().split('T')[0],
         poReferencia: `PO-${idTarget}`,
-        tipoTransporte: 'Marítimo 40HQ',
+        tipoTransporte: 'MarÃ­timo 40HQ',
         totalPiezas: totalPiezas || 1,
         skusUnicos: skus || 1,
         totalPallets: pallets || 1,
@@ -1848,17 +1939,17 @@ class AppsScriptClientService {
     const estadoAnterior = this.manifiestos[contIndex].estado;
     this.manifiestos[contIndex].estado = estadoNormalizado;
 
-    // Actualizar ubicación descriptiva de los items si corresponde
+    // Actualizar ubicaciÃ³n descriptiva de los items si corresponde
     this.dplDetalle.forEach(item => {
       if ((item.contenedorId || '').trim().toUpperCase() === idTarget) {
         const ubi = item.ubicacionCedis || '';
-        if (estadoNormalizado === 'EN TRÁNSITO') {
-          item.ubicacionCedis = 'En Tránsito Marítimo / Altamar (Rastreo Activo)';
+        if (estadoNormalizado === 'EN TRÃNSITO') {
+          item.ubicacionCedis = 'En TrÃ¡nsito MarÃ­timo / Altamar (Rastreo Activo)';
         } else if (estadoNormalizado === 'ADUANA') {
-          item.ubicacionCedis = 'En Trámites de Aduana / Puerto (Rastreo Activo)';
+          item.ubicacionCedis = 'En TrÃ¡mites de Aduana / Puerto (Rastreo Activo)';
         } else if (estadoNormalizado === 'RECIBIDO') {
-          if (ubi.includes('Tránsito') || ubi.includes('Aduana') || !ubi) {
-            item.ubicacionCedis = `Bahía CEDIS / Pallet ${item.palletCaseNo || item.pallet || 'P001'}`;
+          if (ubi.includes('TrÃ¡nsito') || ubi.includes('Aduana') || !ubi) {
+            item.ubicacionCedis = `BahÃ­a CEDIS / Pallet ${item.palletCaseNo || item.pallet || 'P001'}`;
           }
         }
       }
@@ -1868,7 +1959,7 @@ class AppsScriptClientService {
     const reporteMatching = this.ejecutarMatchingGlobal();
     const asignacionesEjecutadas = estadoNormalizado === 'RECIBIDO';
 
-    // Registro en auditoría inmutable
+    // Registro en auditorÃ­a inmutable
     this.auditoria.unshift({
       auditoriaId: `AUD-DPL-${Date.now()}`,
       timestamp: ahora,
@@ -1882,16 +1973,16 @@ class AppsScriptClientService {
       operationId: operationId,
       notas: `Estatus de contenedor ${idTarget} actualizado a ${estadoNormalizado}.${
         estadoNormalizado === 'RECIBIDO' 
-          ? ` Asignación automática ejecutada: ${reporteMatching.piezasAsignadas} piezas asignadas.` 
-          : ' Piezas reservadas para validación en Rastreador Universal (sin asignación a órdenes).'
+          ? ` AsignaciÃ³n automÃ¡tica ejecutada: ${reporteMatching.piezasAsignadas} piezas asignadas.` 
+          : ' Piezas reservadas para validaciÃ³n en Rastreador Universal (sin asignaciÃ³n a Ã³rdenes).'
       }`
     });
 
     this.persistirDatos();
 
     const mensaje = estadoNormalizado === 'RECIBIDO'
-      ? `Contenedor ${idTarget} marcado como RECIBIDO en Bodega CEDIS. Se han asignado automáticamente repuestos a las requisiciones pendientes por prioridad FIFO.`
-      : `Contenedor ${idTarget} actualizado a estatus "${estadoNormalizado}". Sus repuestos están disponibles para consulta en el Rastreador Universal y se asignarán cuando cambie a "RECIBIDO".`;
+      ? `Contenedor ${idTarget} marcado como RECIBIDO en Bodega CEDIS. Se han asignado automÃ¡ticamente repuestos a las requisiciones pendientes por prioridad FIFO.`
+      : `Contenedor ${idTarget} actualizado a estatus "${estadoNormalizado}". Sus repuestos estÃ¡n disponibles para consulta en el Rastreador Universal y se asignarÃ¡n cuando cambie a "RECIBIDO".`;
 
     return {
       success: true,
@@ -1903,7 +1994,7 @@ class AppsScriptClientService {
   }
 
   /**
-   * Importación de un nuevo Manifiesto / DPL con selección de estatus inicial
+   * ImportaciÃ³n de un nuevo Manifiesto / DPL con selecciÃ³n de estatus inicial
    */
   public async importarManifiestoDPL(payload: {
     contenedorId: string;
@@ -1940,7 +2031,7 @@ class AppsScriptClientService {
         contenedorId: '',
         totalLineas: 0,
         totalPiezas: 0,
-        estado: 'EN TRÁNSITO',
+        estado: 'EN TRÃNSITO',
         asignacionesEjecutadas: false,
         error: 'El ID de Contenedor es obligatorio.',
         mensaje: 'El ID de Contenedor es obligatorio.'
@@ -1953,27 +2044,27 @@ class AppsScriptClientService {
         contenedorId: idCont,
         totalLineas: 0,
         totalPiezas: 0,
-        estado: 'EN TRÁNSITO',
+        estado: 'EN TRÃNSITO',
         asignacionesEjecutadas: false,
-        error: 'El archivo DPL no contiene filas de repuestos válidas.',
-        mensaje: 'El archivo DPL no contiene filas de repuestos válidas.'
+        error: 'El archivo DPL no contiene filas de repuestos vÃ¡lidas.',
+        mensaje: 'El archivo DPL no contiene filas de repuestos vÃ¡lidas.'
       };
     }
 
-    let estadoNormalizado = normalizarEstatusDPL(payload.estado || 'EN TRÁNSITO');
+    let estadoNormalizado = normalizarEstatusDPL(payload.estado || 'EN TRÃNSITO');
     if (estadoNormalizado === 'RECIBIDO') {
       const esAdmin = this.usuarioActivo.rol === 'ADMINISTRADOR_CEDIS' || 
                       this.usuarioActivo.correo === 'admin@changan.com.pa' || 
                       this.usuarioActivo.nombre.includes('Joel');
       if (!esAdmin) {
-        console.warn('No admin: forzando contenedor nuevo a EN TRÁNSITO');
-        estadoNormalizado = 'EN TRÁNSITO';
+        console.warn('No admin: forzando contenedor nuevo a EN TRÃNSITO');
+        estadoNormalizado = 'EN TRÃNSITO';
       }
     }
     const ahora = new Date().toISOString().replace('T', ' ').substring(0, 19);
     const operationId = `OP-DPL-UPLOAD-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-    // 1. Si hay Web App URL configurada, enviar mutación a Apps Script
+    // 1. Si hay Web App URL configurada, enviar mutaciÃ³n a Apps Script
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
       try {
         const resJson = await this.postToAppsScript({
@@ -1996,7 +2087,7 @@ class AppsScriptClientService {
       }
     }
 
-    // Eliminar versión previa del mismo contenedor si ya existía para sobrescribir limpiamente
+    // Eliminar versiÃ³n previa del mismo contenedor si ya existÃ­a para sobrescribir limpiamente
     this.manifiestos = this.manifiestos.filter(m => (m?.contenedorId || '').trim().toUpperCase() !== idCont);
     this.dplDetalle = this.dplDetalle.filter(i => (i?.contenedorId || '').trim().toUpperCase() !== idCont);
 
@@ -2018,12 +2109,12 @@ class AppsScriptClientService {
 
       let ubicacion = it.ubicacionCedis;
       if (!ubicacion) {
-        if (estadoNormalizado === 'EN TRÁNSITO') {
-          ubicacion = 'En Tránsito Marítimo / Altamar';
+        if (estadoNormalizado === 'EN TRÃNSITO') {
+          ubicacion = 'En TrÃ¡nsito MarÃ­timo / Altamar';
         } else if (estadoNormalizado === 'ADUANA') {
-          ubicacion = 'En Trámites de Aduana / Puerto';
+          ubicacion = 'En TrÃ¡mites de Aduana / Puerto';
         } else {
-          ubicacion = `Bahía CEDIS / Pallet ${pallet}`;
+          ubicacion = `BahÃ­a CEDIS / Pallet ${pallet}`;
         }
       }
 
@@ -2050,7 +2141,7 @@ class AppsScriptClientService {
       proveedor: (payload.proveedor || 'Mobitech Changan China Co., Ltd').trim(),
       fechaArribo: payload.fechaArribo || ahora.substring(0, 10),
       poReferencia: (payload.poReferencia || `PO-${idCont}`).trim(),
-      tipoTransporte: payload.tipoTransporte || 'Marítimo 40HQ',
+      tipoTransporte: payload.tipoTransporte || 'MarÃ­timo 40HQ',
       totalPiezas: totalPiezas,
       skusUnicos: skusSet.size,
       totalPallets: palletsSet.size || 1,
@@ -2074,7 +2165,7 @@ class AppsScriptClientService {
       reporteMatching = this.ejecutarMatchingGlobal();
       asignacionesEjecutadas = true;
     } else {
-      // Re-sincronizar matching para asegurar que las órdenes pendientes no tengan cosas fantasmas
+      // Re-sincronizar matching para asegurar que las Ã³rdenes pendientes no tengan cosas fantasmas
       reporteMatching = this.ejecutarMatchingGlobal();
     }
 
@@ -2097,16 +2188,16 @@ class AppsScriptClientService {
       operationId: operationId,
       notas: `DPL ${idCont} importado con ${totalPiezas} piezas en estatus ${estadoNormalizado}.${
         estadoNormalizado === 'RECIBIDO' 
-          ? ' Asignación FIFO ejecutada.' 
-          : ' Repuestos en espera de arribo físico en CEDIS.'
+          ? ' AsignaciÃ³n FIFO ejecutada.' 
+          : ' Repuestos en espera de arribo fÃ­sico en CEDIS.'
       }`
     });
 
     this.persistirDatos();
 
     const mensaje = estadoNormalizado === 'RECIBIDO'
-      ? `DPL ${idCont} cargado con éxito como RECIBIDO (${totalPiezas} piezas). Se asignaron repuestos a requisiciones pendientes.`
-      : `DPL ${idCont} cargado con éxito en estatus "${estadoNormalizado}" (${totalPiezas} piezas). Los repuestos quedan registrados en historial y Rastreador Universal, sin asignar hasta recibir en CEDIS.`;
+      ? `DPL ${idCont} cargado con Ã©xito como RECIBIDO (${totalPiezas} piezas). Se asignaron repuestos a requisiciones pendientes.`
+      : `DPL ${idCont} cargado con Ã©xito en estatus "${estadoNormalizado}" (${totalPiezas} piezas). Los repuestos quedan registrados en historial y Rastreador Universal, sin asignar hasta recibir en CEDIS.`;
 
     return {
       success: true,
@@ -2136,7 +2227,7 @@ class AppsScriptClientService {
         d.palletAsignado = '';
         d.packageNo = '';
         d.estatusLinea = 'Pendiente';
-        d.ubicacionCedis = 'Sin Stock en CEDIS • Requiere Fábrica';
+        d.ubicacionCedis = 'Sin Stock en CEDIS â€¢ Requiere FÃ¡brica';
       }
     });
 
@@ -2145,13 +2236,13 @@ class AppsScriptClientService {
 
     return {
       success: true,
-      mensaje: `Contenedor ${idTarget} eliminado del sistema. Reasignación de stock ejecutada.`
+      mensaje: `Contenedor ${idTarget} eliminado del sistema. ReasignaciÃ³n de stock ejecutada.`
     };
   }
 
   /**
-   * Generación automática e inalterable de Número de Pedido Único Oficial
-   * Garantiza correlativo único por sucursal sin repetición alguna.
+   * GeneraciÃ³n automÃ¡tica e inalterable de NÃºmero de Pedido Ãšnico Oficial
+   * Garantiza correlativo Ãºnico por sucursal sin repeticiÃ³n alguna.
    */
   public generarNumeroPedidoUnico(prefijoOSucursal: string): string {
     let prefijo = 'CEN';
@@ -2161,13 +2252,13 @@ class AppsScriptClientService {
     else if (pUpper.includes('50') || pUpper === 'C50') prefijo = 'C50';
     else if (pUpper.includes('MUERTO') || pUpper === 'TM') prefijo = 'TM';
     else if (pUpper.includes('CHIRI') || pUpper === 'CH') prefijo = 'CH';
-    else if (pUpper.includes('MARIA') || pUpper.includes('MARÍA') || pUpper === 'SM') prefijo = 'SM';
+    else if (pUpper.includes('MARIA') || pUpper.includes('MARÃA') || pUpper === 'SM') prefijo = 'SM';
 
     const existingIds = new Set<string>();
     this.cabeceras.forEach(c => c.pedidoId && existingIds.add(c.pedidoId.toUpperCase().trim()));
     this.detalles.forEach(d => d.pedidoId && existingIds.add(d.pedidoId.toUpperCase().trim()));
 
-    // Buscar el número correlativo más alto existente para este prefijo
+    // Buscar el nÃºmero correlativo mÃ¡s alto existente para este prefijo
     let maxCorrelativo = 2045;
     const year = 2026;
     const regexCompleta = new RegExp(`^PED-${prefijo}-(?:${year}-)?(\\d+)$`, 'i');
@@ -2183,7 +2274,7 @@ class AppsScriptClientService {
     }
 
     let siguiente = maxCorrelativo + 1;
-    // Formato con año si es > 9000 o estándar como PED-CV-2026-XXXX o PED-VL-XXXX
+    // Formato con aÃ±o si es > 9000 o estÃ¡ndar como PED-CV-2026-XXXX o PED-VL-XXXX
     let candidato = siguiente > 5000 
       ? `PED-${prefijo}-${year}-${siguiente}` 
       : `PED-${prefijo}-${siguiente}`;
@@ -2199,7 +2290,7 @@ class AppsScriptClientService {
   }
 
   /**
-   * Creación Canónica de Pedidos Multi-Línea
+   * CreaciÃ³n CanÃ³nica de Pedidos Multi-LÃ­nea
    * Genera 1 fila en Solicitudes_Cabecera y N filas en Detalle_Repuestos
    */
     public async crearPedido(
@@ -2207,14 +2298,14 @@ class AppsScriptClientService {
     items: Array<{ codigoRepuesto: string; descripcionOficial: string; cantidadSolicitada: number }>
   ): Promise<{ success: boolean; pedidoId?: string; error?: string; nota?: string }> {
     const operationId = `OP-CREA-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    // CONTROL ESTRICTO DE DUPLICADOS EN CREACIÓN
+    // CONTROL ESTRICTO DE DUPLICADOS EN CREACIÃ“N
     for (const it of items) {
       const dup = this.verificarDuplicadoActivo(cabecera.cliente, cabecera.vin, cabecera.numeroOR, it.codigoRepuesto);
       if (dup) {
         console.warn(`[DUPLICADO BLOQUEADO] Cliente: ${cabecera.cliente} - Repuesto: ${it.codigoRepuesto} - Ya en ${dup.pedidoId}`);
         return {
           success: false,
-          error: `SOLICITUD RECHAZADA POR DUPLICIDAD: El cliente "${dup.cliente}" ya tiene la orden activa "${dup.pedidoId}" con el repuesto "${dup.repuesto}". No está permitido registrar pedidos duplicados.`
+          error: `SOLICITUD RECHAZADA POR DUPLICIDAD: El cliente "${dup.cliente}" ya tiene la orden activa "${dup.pedidoId}" con el repuesto "${dup.repuesto}". No estÃ¡ permitido registrar pedidos duplicados.`
         };
       }
     }
@@ -2333,7 +2424,7 @@ class AppsScriptClientService {
 
 
   /**
-   * Asignación Atómica de Inventario Físico DPL a una Línea de Repuesto
+   * AsignaciÃ³n AtÃ³mica de Inventario FÃ­sico DPL a una LÃ­nea de Repuesto
    */
   public async asignarStock(
     lineaId: string,
@@ -2349,7 +2440,7 @@ class AppsScriptClientService {
     const ahora = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
     const detIndex = this.detalles.findIndex(d => d.lineaId === lineaId);
-    if (detIndex === -1) return Promise.resolve({ success: false, error: 'Línea de pedido no encontrada.' });
+    if (detIndex === -1) return Promise.resolve({ success: false, error: 'LÃ­nea de pedido no encontrada.' });
 
     const invIndex = this.dplDetalle.findIndex(i => i.inventarioId === inventarioId);
     if (invIndex === -1) return Promise.resolve({ success: false, error: 'Lote de inventario no encontrado.' });
@@ -2365,7 +2456,7 @@ class AppsScriptClientService {
       });
     }
 
-    // 1. Actualización canónica inmediata local (< 5ms)
+    // 1. ActualizaciÃ³n canÃ³nica inmediata local (< 5ms)
     const prevAsig = linea.cantidadAsignada;
     const nuevaAsig = prevAsig + cantidadAsignar;
 
@@ -2405,12 +2496,12 @@ class AppsScriptClientService {
       valoresAnteriores: JSON.stringify({ cantAsignada: prevAsig }),
       valoresNuevos: JSON.stringify({ cantAsignada: nuevaAsig, contenedor: lote.contenedorId, pallet: lote.palletCaseNo }),
       operationId: operationId,
-      notas: `Asignación de ${cantidadAsignar} u. desde pallet ${lote.palletCaseNo}`
+      notas: `AsignaciÃ³n de ${cantidadAsignar} u. desde pallet ${lote.palletCaseNo}`
     });
 
     this.persistirDatos();
 
-    // 2. Sincronización en segundo plano (Fire-and-forget)
+    // 2. SincronizaciÃ³n en segundo plano (Fire-and-forget)
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
       fetch(this.config.webAppUrl, {
         method: 'POST',
@@ -2428,25 +2519,25 @@ class AppsScriptClientService {
       });
     }
 
-    return Promise.resolve({ success: true, message: `Asignación exitosa de ${cantidadAsignar} u. en pallet ${lote.palletCaseNo}.` });
+    return Promise.resolve({ success: true, message: `AsignaciÃ³n exitosa de ${cantidadAsignar} u. en pallet ${lote.palletCaseNo}.` });
   }
 
   /**
-   * Despachar Línea individual (Optimistic)
+   * Despachar LÃ­nea individual (Optimistic)
    */
   public despacharLinea(
     lineaId: string,
     cantidadDespachar: number
   ): Promise<{ success: boolean; error?: string; message?: string }> {
     if (this.usuarioActivo.rol !== 'ADMINISTRADOR_CEDIS' && this.usuarioActivo.rol !== 'OPERADOR_CEDIS') {
-      return Promise.resolve({ success: false, error: 'Permisos insuficientes. Solo CEDIS puede ejecutar despachos físicos.' });
+      return Promise.resolve({ success: false, error: 'Permisos insuficientes. Solo CEDIS puede ejecutar despachos fÃ­sicos.' });
     }
 
     const operationId = `OP-DESP-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const ahora = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
     const detIndex = this.detalles.findIndex(d => d.lineaId === lineaId);
-    if (detIndex === -1) return Promise.resolve({ success: false, error: 'Línea de pedido no encontrada.' });
+    if (detIndex === -1) return Promise.resolve({ success: false, error: 'LÃ­nea de pedido no encontrada.' });
 
     const linea = this.detalles[detIndex];
     // REGLA ESTRICTA CEDIS: Solo se pueden despachar repuestos que tengan piezas asignadas
@@ -2459,10 +2550,10 @@ class AppsScriptClientService {
 
     const maxDespachable = Number(linea.cantidadAsignada) || 0;
     if (cantidadDespachar > maxDespachable) {
-      return Promise.resolve({ success: false, error: `No se puede despachar más de la cantidad asignada (${maxDespachable} u.).` });
+      return Promise.resolve({ success: false, error: `No se puede despachar mÃ¡s de la cantidad asignada (${maxDespachable} u.).` });
     }
 
-    // 1. Actualización canónica inmediata local (< 5ms)
+    // 1. ActualizaciÃ³n canÃ³nica inmediata local (< 5ms)
     const nuevaDesp = linea.cantidadDespachada + cantidadDespachar;
     const remAsig = linea.cantidadAsignada - cantidadDespachar;
 
@@ -2513,12 +2604,12 @@ class AppsScriptClientService {
       valoresAnteriores: JSON.stringify({ cantDespachada: linea.cantidadDespachada, cantAsignada: linea.cantidadAsignada }),
       valoresNuevos: JSON.stringify({ cantDespachada: nuevaDesp, cantAsignada: remAsig }),
       operationId: operationId,
-      notas: `Despacho físico irreversible completado hacia sucursal. Responsable: ${this.usuarioActivo.nombre}`
+      notas: `Despacho fÃ­sico irreversible completado hacia sucursal. Responsable: ${this.usuarioActivo.nombre}`
     });
 
     this.persistirDatos();
 
-    // 2. Sincronización en segundo plano (Fire-and-forget)
+    // 2. SincronizaciÃ³n en segundo plano (Fire-and-forget)
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
       fetch(this.config.webAppUrl, {
         method: 'POST',
@@ -2535,7 +2626,7 @@ class AppsScriptClientService {
       });
     }
 
-    return Promise.resolve({ success: true, message: `Despacho de ${cantidadDespachar} u. registrado canónicamente en Kardex.` });
+    return Promise.resolve({ success: true, message: `Despacho de ${cantidadDespachar} u. registrado canÃ³nicamente en Kardex.` });
   }
 
   /**
@@ -2568,7 +2659,7 @@ class AppsScriptClientService {
     const anterior = { ...this.cabeceras[cabIndex] };
     const operationId = `OP-UPD-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-    // 1. Mutación Optimista Inmediata Local (< 5ms)
+    // 1. MutaciÃ³n Optimista Inmediata Local (< 5ms)
     this.cabeceras[cabIndex] = {
       ...this.cabeceras[cabIndex],
       ...datosCabecera,
@@ -2614,7 +2705,7 @@ class AppsScriptClientService {
 
     this.persistirDatos();
 
-    // 2. Sincronización en segundo plano (Fire-and-forget)
+    // 2. SincronizaciÃ³n en segundo plano (Fire-and-forget)
     try {
       InsforgeService.actualizarPedidosMasivo([pedidoId], {
         estatusGeneral: datosCabecera.estatusGeneral,
@@ -2655,12 +2746,12 @@ class AppsScriptClientService {
   }
 
   /**
-   * Cambiar estatus rápido de un pedido (Optimista + Sincronización en segundo plano)
+   * Cambiar estatus rÃ¡pido de un pedido (Optimista + SincronizaciÃ³n en segundo plano)
    */
   /**
-   * Cambiar estatus de una sola línea / repuesto individual sin alterar los demás repuestos del pedido ni del cliente.
+   * Cambiar estatus de una sola lÃ­nea / repuesto individual sin alterar los demÃ¡s repuestos del pedido ni del cliente.
    * Valida stock asignado/reservado: no permite dar por despachado si no tiene stock/reserva previa a menos que se fuerce.
-   * Recalcula automáticamente el estatusGeneral de la cabecera correspondiente según el estado de todas sus líneas.
+   * Recalcula automÃ¡ticamente el estatusGeneral de la cabecera correspondiente segÃºn el estado de todas sus lÃ­neas.
    */
   public async cambiarEstatusLinea(
     lineaId: string,
@@ -2669,7 +2760,7 @@ class AppsScriptClientService {
   ): Promise<{ success: boolean; error?: string; message?: string }> {
     const idxLinea = this.detalles.findIndex(d => d.lineaId === lineaId);
     if (idxLinea === -1) {
-      return { success: false, error: `Línea de repuesto ${lineaId} no encontrada.` };
+      return { success: false, error: `LÃ­nea de repuesto ${lineaId} no encontrada.` };
     }
 
     const detalle = this.detalles[idxLinea];
@@ -2704,7 +2795,7 @@ class AppsScriptClientService {
 
     this.detalles[idxLinea] = { ...detalle };
 
-    // 2. Recalcular estatusGeneral del pedido de manera coherente basada en todas sus líneas
+    // 2. Recalcular estatusGeneral del pedido de manera coherente basada en todas sus lÃ­neas
     const cabIndex = this.cabeceras.findIndex(c => c.pedidoId === pedidoId);
     if (cabIndex !== -1) {
       const lineasPedido = this.detalles.filter(d => d.pedidoId === pedidoId);
@@ -2729,9 +2820,9 @@ class AppsScriptClientService {
       this.cabeceras[cabIndex].actualizadoEn = ahora;
     }
 
-    // 3. Bitácora y Auditoría
+    // 3. BitÃ¡cora y AuditorÃ­a
     if (notaBitacora) {
-      this.agregarNotaPedido(pedidoId, notaBitacora, 'Cambio Estatus Línea');
+      this.agregarNotaPedido(pedidoId, notaBitacora, 'Cambio Estatus LÃ­nea');
     }
 
     this.auditoria.unshift({
@@ -2750,7 +2841,7 @@ class AppsScriptClientService {
 
     this.persistirDatos();
 
-    // 4. Sincronización remota Google Sheets / InsForge
+    // 4. SincronizaciÃ³n remota Google Sheets / InsForge
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
       fetch(this.config.webAppUrl, {
         method: 'POST',
@@ -2790,7 +2881,7 @@ class AppsScriptClientService {
     const ahora = new Date().toISOString().replace('T', ' ').substring(0, 19);
     const operationId = `OP-STATUS-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-    // 1. Mutación Optimista Inmediata (< 5ms)
+    // 1. MutaciÃ³n Optimista Inmediata (< 5ms)
     const estatusAnterior = this.cabeceras[cabIndex].estatusGeneral;
     this.cabeceras[cabIndex].estatusGeneral = nuevoEstatus as any;
     this.cabeceras[cabIndex].actualizadoPor = this.usuarioActivo.nombre;
@@ -2838,7 +2929,7 @@ class AppsScriptClientService {
 
     this.persistirDatos();
 
-    // 2. Sincronización en segundo plano asíncrona (Fire-and-forget)
+    // 2. SincronizaciÃ³n en segundo plano asÃ­ncrona (Fire-and-forget)
     try {
       InsforgeService.actualizarPedidosMasivo([pedidoId], { estatusGeneral: nuevoEstatus }).catch(err => {
         console.warn('[InsForge] Aviso en sync de estatus segundo plano:', err);
@@ -2869,7 +2960,7 @@ class AppsScriptClientService {
           }
         })
         .catch(err => {
-          console.warn('[Google Sheets] Sincronización en segundo plano completada con fallback local:', err);
+          console.warn('[Google Sheets] SincronizaciÃ³n en segundo plano completada con fallback local:', err);
         });
     }
 
@@ -2929,13 +3020,13 @@ class AppsScriptClientService {
 
     this.persistirDatos();
 
-    // Sincronización en segundo plano (Fire-and-forget)
+    // SincronizaciÃ³n en segundo plano (Fire-and-forget)
     try {
       InsforgeService.eliminarPedidosMasivo([pedidoId]).catch(err => {
         console.warn('[InsForge] Error eliminando en background:', err);
       });
     } catch (e) {
-      console.warn('[InsForge] Excepción al lanzar eliminación:', e);
+      console.warn('[InsForge] ExcepciÃ³n al lanzar eliminaciÃ³n:', e);
     }
 
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
@@ -2960,7 +3051,7 @@ class AppsScriptClientService {
         });
     }
 
-    return Promise.resolve({ success: true, message: `Pedido ${pedidoId} eliminado con éxito.` });
+    return Promise.resolve({ success: true, message: `Pedido ${pedidoId} eliminado con Ã©xito.` });
   }
 
   /**
@@ -2973,7 +3064,7 @@ class AppsScriptClientService {
    */
   public async eliminarClienteTotal(clienteNombre: string): Promise<{ success: boolean; totalPedidosEliminados: number; error?: string; message?: string }> {
     if (!clienteNombre || !clienteNombre.trim()) {
-      return Promise.resolve({ success: false, totalPedidosEliminados: 0, error: 'Nombre de cliente inválido.' });
+      return Promise.resolve({ success: false, totalPedidosEliminados: 0, error: 'Nombre de cliente invÃ¡lido.' });
     }
 
     const cNorm = clienteNombre.trim().toUpperCase();
@@ -3048,12 +3139,12 @@ class AppsScriptClientService {
       valoresAnteriores: JSON.stringify(pedidoIds),
       valoresNuevos: 'ELIMINADOS_MASIVO',
       operationId: operationId,
-      notas: `Eliminación masiva de ${eliminados} pedidos.`
+      notas: `EliminaciÃ³n masiva de ${eliminados} pedidos.`
     });
 
     this.persistirDatos();
 
-    // Sincronización en segundo plano (Fire-and-forget)
+    // SincronizaciÃ³n en segundo plano (Fire-and-forget)
     try {
       InsforgeService.eliminarPedidosMasivo(pedidoIds).catch(err => {
         console.warn('[InsForge] Error eliminando masivo en background:', err);
@@ -3109,7 +3200,7 @@ class AppsScriptClientService {
     const ahora = new Date().toISOString().replace('T', ' ').substring(0, 19);
     const operationId = `OP-EDIT-MASIVO-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-    // 1. Actualización inmediata local (< 5ms)
+    // 1. ActualizaciÃ³n inmediata local (< 5ms)
     let count = 0;
     this.cabeceras.forEach((c, idx) => {
       if (setIds.has(c.pedidoId)) {
@@ -3165,15 +3256,15 @@ class AppsScriptClientService {
       valoresAnteriores: JSON.stringify(pedidoIds),
       valoresNuevos: JSON.stringify(cambios),
       operationId: operationId,
-      notas: `Edición masiva de ${count} pedidos.`
+      notas: `EdiciÃ³n masiva de ${count} pedidos.`
     });
 
     this.persistirDatos();
 
-    // 2. Sincronización en segundo plano (Fire-and-forget)
+    // 2. SincronizaciÃ³n en segundo plano (Fire-and-forget)
     try {
       InsforgeService.actualizarPedidosMasivo(pedidoIds, cambios).catch(err => {
-        console.warn('[InsForge] Error en sincronización masiva segundo plano:', err);
+        console.warn('[InsForge] Error en sincronizaciÃ³n masiva segundo plano:', err);
       });
     } catch (e) {
       console.warn('InsforgeService.actualizarPedidosMasivo error:', e);
@@ -3214,8 +3305,8 @@ class AppsScriptClientService {
    */
   
   /**
-   * Despacha únicamente líneas/repuestos específicos seleccionados (Despacho Individual por Ítem)
-   * Permite despachar 1, 2 o N repuestos de un pedido sin afectar a los demás repuestos del mismo pedido.
+   * Despacha Ãºnicamente lÃ­neas/repuestos especÃ­ficos seleccionados (Despacho Individual por Ãtem)
+   * Permite despachar 1, 2 o N repuestos de un pedido sin afectar a los demÃ¡s repuestos del mismo pedido.
    */
   public async despacharLineasEspecificas(
     lineasKeys: { pedidoId: string; lineaId?: string; codigoRepuesto?: string }[],
@@ -3232,7 +3323,7 @@ class AppsScriptClientService {
     const fechaDespachoEfectiva = fechaDespacho || ahora;
     let totalDespachados = 0;
 
-    // 1. Actualizar detalles de las líneas específicas
+    // 1. Actualizar detalles de las lÃ­neas especÃ­ficas
     lineasKeys.forEach(target => {
       const dIndex = this.detalles.findIndex(d => {
         if (target.lineaId && d.lineaId === target.lineaId) return true;
@@ -3247,7 +3338,7 @@ class AppsScriptClientService {
         }
         const cantADespachar = Number(d.cantidadAsignada);
 
-        // Descontar inventario físico DPL si estaba asignado
+        // Descontar inventario fÃ­sico DPL si estaba asignado
         if (d.contenedorAsignado && d.palletAsignado && d.cantidadAsignada > 0) {
           const invIndex = this.dplDetalle.findIndex(
             i => i.contenedorId === d.contenedorAsignado &&
@@ -3326,7 +3417,7 @@ class AppsScriptClientService {
     const fechaDespachoEfectiva = fechaDespacho || ahora;
     const operationId = `OP-DESPACHO-MASIVO-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-    // 1. Actualización inmediata local de cabeceras (< 5ms)
+    // 1. ActualizaciÃ³n inmediata local de cabeceras (< 5ms)
     let count = 0;
     this.cabeceras.forEach((c, idx) => {
       if (setIds.has(c.pedidoId)) {
@@ -3393,12 +3484,12 @@ class AppsScriptClientService {
       valoresAnteriores: JSON.stringify(pedidoIds),
       valoresNuevos: JSON.stringify({ fechaDespacho: fechaDespachoEfectiva, total: count, guia: guiaTransporte }),
       operationId: operationId,
-      notas: `Despacho masivo de ${count} pedidos completado con fecha ${fechaDespachoEfectiva}. Responsable: ${responsable || this.usuarioActivo.nombre}. Guía: ${guiaTransporte}`
+      notas: `Despacho masivo de ${count} pedidos completado con fecha ${fechaDespachoEfectiva}. Responsable: ${responsable || this.usuarioActivo.nombre}. GuÃ­a: ${guiaTransporte}`
     });
 
     this.persistirDatos();
 
-    // 3. Sincronización en segundo plano (Fire-and-forget)
+    // 3. SincronizaciÃ³n en segundo plano (Fire-and-forget)
     try {
       InsforgeService.actualizarPedidosMasivo(pedidoIds, {
         estatusGeneral: 'Despachado'
@@ -3468,7 +3559,7 @@ class AppsScriptClientService {
     notas.unshift(nuevaNota);
     this.safeSet(`changan_bitacora_${pedidoId}`, JSON.stringify(notas));
 
-    // Sincronización asíncrona con backend
+    // SincronizaciÃ³n asÃ­ncrona con backend
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
       fetch(this.config.webAppUrl, {
         method: 'POST',
@@ -3502,7 +3593,7 @@ class AppsScriptClientService {
   }
 
   /**
-   * Ajuste de Merma / Daño
+   * Ajuste de Merma / DaÃ±o
    */
   public async ajustarMerma(
     inventarioId: string,
@@ -3524,13 +3615,13 @@ class AppsScriptClientService {
     const disponible = lote.cantidadTotal - lote.cantidadAsignada - lote.cantidadDespachada;
 
     if (disponible < cantidad) {
-      return { success: false, error: 'No se puede mermar más del saldo disponible (' + disponible + ' u.).' };
+      return { success: false, error: 'No se puede mermar mÃ¡s del saldo disponible (' + disponible + ' u.).' };
     }
 
     const operationId = 'OP-MERMA-' + Date.now();
     const ahora = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
-    // Actualización local inmediata (Optimistic UI ultra-rápida)
+    // ActualizaciÃ³n local inmediata (Optimistic UI ultra-rÃ¡pida)
     const nuevoTotal = lote.cantidadTotal - cantidad;
     const nuevoSaldo = nuevoTotal - lote.cantidadAsignada - lote.cantidadDespachada;
 
@@ -3551,12 +3642,12 @@ class AppsScriptClientService {
       valoresAnteriores: JSON.stringify({ cantidadTotal: lote.cantidadTotal, saldoDisponible: disponible }),
       valoresNuevos: JSON.stringify({ cantidadTotal: nuevoTotal, saldoDisponible: nuevoSaldo }),
       operationId: operationId,
-      notas: motivo || 'Ajuste de merma en bahía CEDIS'
+      notas: motivo || 'Ajuste de merma en bahÃ­a CEDIS'
     });
 
     this.persistirDatos();
 
-    // Sincronización en segundo plano con Google Sheets (no bloqueante, con timeout y fallback)
+    // SincronizaciÃ³n en segundo plano con Google Sheets (no bloqueante, con timeout y fallback)
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timeoutId = controller ? setTimeout(() => controller.abort(), 4000) : null;
@@ -3570,14 +3661,14 @@ class AppsScriptClientService {
           operationId: operationId,
           uidFila: lote.inventarioId || inventarioId,
           cantidadMerma: cantidad,
-          motivo: motivo || 'Ajuste de merma en bahía CEDIS',
+          motivo: motivo || 'Ajuste de merma en bahÃ­a CEDIS',
           responsable: this.usuarioActivo.nombre || 'Admin CEDIS'
         })
       })
       .then(resp => resp.json())
       .then(resJson => {
         if (timeoutId) clearTimeout(timeoutId);
-        if (!resJson.success) console.warn('Ajuste merma en Apps Script arrojó detalle:', resJson.error);
+        if (!resJson.success) console.warn('Ajuste merma en Apps Script arrojÃ³ detalle:', resJson.error);
       })
       .catch(err => {
         if (timeoutId) clearTimeout(timeoutId);
@@ -3599,7 +3690,7 @@ class AppsScriptClientService {
   }
 
   /**
-   * Aprobación Idempotente de Registros Conciliados de Staging hacia Producción
+   * AprobaciÃ³n Idempotente de Registros Conciliados de Staging hacia ProducciÃ³n
    */
   public async confirmarImportacionStaging(
     registrosAprobados: RegistroStaging[],
@@ -3607,16 +3698,16 @@ class AppsScriptClientService {
   ): Promise<{ success: boolean; pedidosAgregados: number; lineasAgregadas: number; error?: string }> {
     // Control de Rol
     if (this.usuarioActivo.rol !== 'ADMINISTRADOR_CEDIS') {
-      return { success: false, pedidosAgregados: 0, lineasAgregadas: 0, error: 'Solo el Administrador CEDIS puede aprobar la conciliación de staging hacia producción.' };
+      return { success: false, pedidosAgregados: 0, lineasAgregadas: 0, error: 'Solo el Administrador CEDIS puede aprobar la conciliaciÃ³n de staging hacia producciÃ³n.' };
     }
 
-    // 1. Verificación de Idempotencia: ¿Ya se procesó este operationId?
+    // 1. VerificaciÃ³n de Idempotencia: Â¿Ya se procesÃ³ este operationId?
     if (this.auditoria.some(a => a.operationId === operationId)) {
       return {
         success: true,
         pedidosAgregados: 0,
         lineasAgregadas: 0,
-        error: 'Operación previamente procesada (Idempotencia garantizada).'
+        error: 'OperaciÃ³n previamente procesada (Idempotencia garantizada).'
       };
     }
 
@@ -3638,7 +3729,7 @@ class AppsScriptClientService {
           return { success: false, pedidosAgregados: 0, lineasAgregadas: 0, error: resJson.error || 'Error al procesar commitImport en el servidor.' };
         }
       } catch (err) {
-        console.warn('Fallo llamada remota commitImport, aplicando fallback canónico local:', err);
+        console.warn('Fallo llamada remota commitImport, aplicando fallback canÃ³nico local:', err);
       }
     }
 
@@ -3666,8 +3757,8 @@ class AppsScriptClientService {
           pedidoId: pId,
           fechaCreacion: prim.fechaRegistro || ahora,
           sucursal: prim.sucursal || 'Desconocida',
-          colaborador: prim.colaborador || 'Importación Staging',
-          canal: 'Conciliación',
+          colaborador: prim.colaborador || 'ImportaciÃ³n Staging',
+          canal: 'ConciliaciÃ³n',
           tipoPedido: (prim.tipoPedido as any) || 'Stock Regular',
           cotizacion: prim.cotizacion || '',
           cliente: prim.cliente || '',
@@ -3686,13 +3777,13 @@ class AppsScriptClientService {
           creadoEn: ahora,
           actualizadoPor: this.usuarioActivo.nombre,
           actualizadoEn: ahora,
-          observaciones: `Importado tras resolución de conciliación (Lote ${operationId})`
+          observaciones: `Importado tras resoluciÃ³n de conciliaciÃ³n (Lote ${operationId})`
         });
         existingPedidos.add(pId);
         pedidosAgregados++;
       }
 
-      // Insertar Líneas de Detalle
+      // Insertar LÃ­neas de Detalle
       lineas.forEach((lin, idx) => {
         const lineaId = `${pId}-L${idx + 1}`;
         if (!existingLineas.has(lineaId)) {
@@ -3717,7 +3808,7 @@ class AppsScriptClientService {
       });
     });
 
-    // Registrar en Auditoría Inmutable
+    // Registrar en AuditorÃ­a Inmutable
     this.auditoria.unshift({
       auditoriaId: `AUD-${Date.now()}`,
       timestamp: ahora,
@@ -3729,7 +3820,7 @@ class AppsScriptClientService {
       valoresAnteriores: '{}',
       valoresNuevos: JSON.stringify({ pedidosAgregados, lineasAgregadas, totalRegistros: registrosAprobados.length }),
       operationId: operationId,
-      notas: `Aprobación de migración staging ejecutada por ${this.usuarioActivo.nombre}`
+      notas: `AprobaciÃ³n de migraciÃ³n staging ejecutada por ${this.usuarioActivo.nombre}`
     });
 
     this.persistirDatos();
@@ -3742,7 +3833,7 @@ class AppsScriptClientService {
   }
 
   /**
-   * Valida si un cliente ya tiene una orden activa para un repuesto específico
+   * Valida si un cliente ya tiene una orden activa para un repuesto especÃ­fico
    */
   public verificarDuplicadoActivo(
     cliente: string,
@@ -3788,10 +3879,10 @@ class AppsScriptClientService {
   }
 
   /**
-   * Motor Oficial de Conciliación y Matching FIFO Automático con Pallets y Contenedores DPL.
-   * Reconoce de forma automática:
-   * - En qué contenedor y en qué pallet viene cada repuesto.
-   * - El packageNo y la ubicación física en CEDIS.
+   * Motor Oficial de ConciliaciÃ³n y Matching FIFO AutomÃ¡tico con Pallets y Contenedores DPL.
+   * Reconoce de forma automÃ¡tica:
+   * - En quÃ© contenedor y en quÃ© pallet viene cada repuesto.
+   * - El packageNo y la ubicaciÃ³n fÃ­sica en CEDIS.
    * - Las cantidades asignadas y el saldo pendiente.
    * - Asocia todo al cliente, VIN y No. O.R.
    */
@@ -3824,12 +3915,12 @@ class AppsScriptClientService {
       'VOR / Unidad Parada': 1,
       'VOR': 1,
       'Urgente': 1,
-      'Garantía': 2,
+      'GarantÃ­a': 2,
       'Garantia': 2,
-      'Chapistería y Colisión': 3,
+      'ChapisterÃ­a y ColisiÃ³n': 3,
       'Chapisteria y Colision': 3,
-      'Colisión': 3,
-      'Taller Mecánico': 4,
+      'ColisiÃ³n': 3,
+      'Taller MecÃ¡nico': 4,
       'Taller Mecanico': 4,
       'Taller': 4,
       'Stock Regular': 5,
@@ -3847,7 +3938,7 @@ class AppsScriptClientService {
     const cabMap = new Map<string, SolicitudCabecera>();
     this.cabeceras.forEach(c => cabMap.set(c.pedidoId, c));
 
-    // 2. Extraer líneas pendientes que no hayan sido despachadas en su totalidad
+    // 2. Extraer lÃ­neas pendientes que no hayan sido despachadas en su totalidad
     const lineasEvaluables = this.detalles.map(d => {
       const cab = cabMap.get(d.pedidoId);
       const prioridadStr = cab ? cab.tipoPedido : 'Stock Regular';
@@ -3860,9 +3951,9 @@ class AppsScriptClientService {
         fechaNum
       };
     }).sort((a, b) => {
-      // Prioridad 1° (VOR > Garantía > Chapistería > Taller > Stock)
+      // Prioridad 1Â° (VOR > GarantÃ­a > ChapisterÃ­a > Taller > Stock)
       if (a.peso !== b.peso) return a.peso - b.peso;
-      // FIFO por fecha 2°
+      // FIFO por fecha 2Â°
       if (a.fechaNum !== b.fechaNum) return a.fechaNum - b.fechaNum;
       return a.detalle.lineaId.localeCompare(b.detalle.lineaId);
     });
@@ -3895,7 +3986,7 @@ class AppsScriptClientService {
       const cantSol = Number(d.cantidadSolicitada) || 1;
       const cantDesp = Number(d.cantidadDespachada) || 0;
 
-      // Si ya está despachada totalmente, mantener asignación de origen
+      // Si ya estÃ¡ despachada totalmente, mantener asignaciÃ³n de origen
       if (cantDesp >= cantSol) {
         resultadoLineas.push({
           pedidoId: d.pedidoId,
@@ -3919,12 +4010,12 @@ class AppsScriptClientService {
       const codTarget = (d.codigoRepuesto || '').trim().toUpperCase();
 
       for (const lote of this.dplDetalle) {
-        // REGLA CRÍTICA DPL: Solamente los contenedores en estatus RECIBIDO asignan repuestos.
-        // Los contenedores en EN TRÁNSITO o ADUANA quedan registrados para rastreo, pero NO asignan piezas.
+        // REGLA CRÃTICA DPL: Solamente los contenedores en estatus RECIBIDO asignan repuestos.
+        // Los contenedores en EN TRÃNSITO o ADUANA quedan registrados para rastreo, pero NO asignan piezas.
         const cont = this.manifiestos.find(m => (m?.contenedorId || '').trim().toLowerCase() === (lote?.contenedorId || '').trim().toLowerCase());
-        const estadoNorm = cont ? normalizarEstatusDPL(cont.estado) : 'EN TRÁNSITO';
+        const estadoNorm = cont ? normalizarEstatusDPL(cont.estado) : 'EN TRÃNSITO';
         if (estadoNorm !== 'RECIBIDO') {
-          continue; // No asignar repuestos de contenedores en tránsito o aduana
+          continue; // No asignar repuestos de contenedores en trÃ¡nsito o aduana
         }
 
         const codLote = (lote.codigoRepuesto || '').trim().toUpperCase();
@@ -3968,7 +4059,7 @@ class AppsScriptClientService {
         d.contenedorAsignado = '';
         d.palletAsignado = '';
         d.packageNo = '';
-        d.ubicacionCedis = 'Sin Stock en CEDIS • Requiere Fábrica';
+        d.ubicacionCedis = 'Sin Stock en CEDIS â€¢ Requiere FÃ¡brica';
         d.estatusLinea = 'Sin Stock';
         sinStock++;
       }
@@ -4008,7 +4099,7 @@ class AppsScriptClientService {
       }
     });
 
-    // 5. Registrar en Auditoría
+    // 5. Registrar en AuditorÃ­a
     const ahora = new Date().toISOString().replace('T', ' ').substring(0, 19);
     this.auditoria.unshift({
       auditoriaId: `AUD-MATCH-${Date.now()}`,
@@ -4027,7 +4118,7 @@ class AppsScriptClientService {
         sinStock
       }),
       operationId: `OP-MATCH-${Date.now()}`,
-      notas: `Matching automático FIFO ejecutado: ${totalPiezasAsignadas} piezas asignadas en pallets y contenedores de CEDIS.`
+      notas: `Matching automÃ¡tico FIFO ejecutado: ${totalPiezasAsignadas} piezas asignadas en pallets y contenedores de CEDIS.`
     });
 
     this.persistirDatos();
@@ -4043,12 +4134,12 @@ class AppsScriptClientService {
       palletsInvolucrados: Array.from(palletsSet),
       contenedoresInvolucrados: Array.from(contenedoresSet),
       detalles: resultadoLineas,
-      mensaje: `Matching completado: ${totalPiezasAsignadas} repuestos reconocidos y asignados automáticamente en ${palletsSet.size} pallets (${Array.from(contenedoresSet).join(', ') || 'CEDIS Central'}).`
+      mensaje: `Matching completado: ${totalPiezasAsignadas} repuestos reconocidos y asignados automÃ¡ticamente en ${palletsSet.size} pallets (${Array.from(contenedoresSet).join(', ') || 'CEDIS Central'}).`
     };
   }
 
   /**
-   * Importación Masiva de Pedidos a Matriz Central con Matching y Sincronización a Google Sheets
+   * ImportaciÃ³n Masiva de Pedidos a Matriz Central con Matching y SincronizaciÃ³n a Google Sheets
    */
   public async importarPedidosMasivos(
     pedidosRaw: Array<{
@@ -4100,8 +4191,8 @@ class AppsScriptClientService {
       'Villa Lucre': 'VL',
       'Calle 50': 'C50',
       'Tumba Muerto': 'TM',
-      'Chiriquí': 'CH',
-      'Santa María': 'SM',
+      'ChiriquÃ­': 'CH',
+      'Santa MarÃ­a': 'SM',
       'Bodega Central': 'CED'
     };
 
@@ -4176,7 +4267,7 @@ class AppsScriptClientService {
             creadoEn: ahora,
             actualizadoPor: this.usuarioActivo.nombre,
             actualizadoEn: ahora,
-            observaciones: raw.observaciones || 'Importado masivamente vía Excel/CSV'
+            observaciones: raw.observaciones || 'Importado masivamente vÃ­a Excel/CSV'
           },
           items: []
         });
@@ -4207,7 +4298,7 @@ class AppsScriptClientService {
         duplicadosOmitidos,
         error: duplicadosOmitidos > 0
           ? `Todos los registros (${duplicadosOmitidos}) fueron omitidos porque ya tienen pedidos activos en seguimiento.`
-          : 'No se encontraron registros válidos de repuestos con código OEM.'
+          : 'No se encontraron registros vÃ¡lidos de repuestos con cÃ³digo OEM.'
       };
     }
 
@@ -4246,7 +4337,7 @@ class AppsScriptClientService {
     this.cabeceras.unshift(...nuevasCabeceras);
     this.detalles.unshift(...nuevosDetalles);
 
-    // 2. Ejecutar matching automático FIFO si está habilitado
+    // 2. Ejecutar matching automÃ¡tico FIFO si estÃ¡ habilitado
     let reporteMatching: any = null;
     if (opciones.ejecutarMatching !== false) {
       reporteMatching = this.ejecutarMatchingGlobal();
@@ -4289,7 +4380,7 @@ class AppsScriptClientService {
       }
     }
 
-    // 4. Sincronizar Matriz Central completa si fue solicitado explícitamente
+    // 4. Sincronizar Matriz Central completa si fue solicitado explÃ­citamente
     let syncSheetsResult: { ok: boolean; mensaje: string } | undefined;
     if (opciones.sincronizarGoogleSheets) {
       syncSheetsResult = await this.sincronizarMatrizConGoogleSheets();
@@ -4308,7 +4399,7 @@ class AppsScriptClientService {
   }
 
   /**
-   * Sincroniza la Matriz Central completa o incremental hacia Google Sheets (Pestaña Matriz_Central)
+   * Sincroniza la Matriz Central completa o incremental hacia Google Sheets (PestaÃ±a Matriz_Central)
    */
   public async sincronizarMatrizConGoogleSheets(): Promise<{ ok: boolean; mensaje: string }> {
     const filas = this.getMatrizCentral();
@@ -4316,7 +4407,7 @@ class AppsScriptClientService {
       return { ok: true, mensaje: 'No hay filas en Matriz Central para sincronizar.' };
     }
 
-    // 18 Columnas Canónicas de Matriz_Central
+    // 18 Columnas CanÃ³nicas de Matriz_Central
     const filasArray = filas.map(f => [
       f.pedidoId,
       f.tipoPedido,
@@ -4333,18 +4424,18 @@ class AppsScriptClientService {
       f.cantidadAsignada,
       f.estatusLinea === 'Asignado'
         ? (f.cantidadAsignada < f.cantidadSolicitada
-            ? `PARCIAL (${f.cantidadAsignada}u) en ${f.contenedorAsignado} • Pallet ${f.palletAsignado}`
-            : `COMPROMETIDO en ${f.contenedorAsignado} • Pallet ${f.palletAsignado}`)
+            ? `PARCIAL (${f.cantidadAsignada}u) en ${f.contenedorAsignado} â€¢ Pallet ${f.palletAsignado}`
+            : `COMPROMETIDO en ${f.contenedorAsignado} â€¢ Pallet ${f.palletAsignado}`)
         : f.estatusLinea === 'Despachado'
-        ? 'DESPACHADO FÍSICAMENTE'
-        : 'Pendiente Fábrica • Sin arribo en CEDIS (0 stock)',
+        ? 'DESPACHADO FÃSICAMENTE'
+        : 'Pendiente FÃ¡brica â€¢ Sin arribo en CEDIS (0 stock)',
       f.contenedorAsignado || '',
       f.palletAsignado || '',
       f.packageNo || '',
       f.observaciones || ''
     ]);
 
-    // Si hay Web App URL configurada, enviar vía Apps Script
+    // Si hay Web App URL configurada, enviar vÃ­a Apps Script
     if (this.config.webAppUrl) {
       try {
         const resp = await fetch(this.config.webAppUrl, {
@@ -4361,7 +4452,7 @@ class AppsScriptClientService {
         if (resJson.success) {
           return {
             ok: true,
-            mensaje: `Sincronización en Google Sheets completada exitosamente (${filasArray.length} registros en Matriz_Central).`
+            mensaje: `SincronizaciÃ³n en Google Sheets completada exitosamente (${filasArray.length} registros en Matriz_Central).`
           };
         }
       } catch (err: any) {
@@ -4376,7 +4467,7 @@ class AppsScriptClientService {
   }
   /**
    * Sincroniza la totalidad de la Google Sheet oficial (Matriz_Central y Catalogo_Modelos)
-   * Descarga las más de 1,400 filas vivas y las ingesta de forma atómica y segura.
+   * Descarga las mÃ¡s de 1,400 filas vivas y las ingesta de forma atÃ³mica y segura.
    */
   public async sincronizarTodaLaGoogleSheet(): Promise<{
     success: boolean;
@@ -4386,6 +4477,8 @@ class AppsScriptClientService {
   }> {
     try {
       const modelos = await this.sincronizarModelosDesdeGoogleSheets();
+      // Leer pestaña Despachos de Google Sheets
+      await this.fetchDespachosDesdeSheetsTab();
 
       const urlMatriz = 'https://docs.google.com/spreadsheets/d/1YcV3D-d9zk_oqmHrgG4blnC05ElejvYZ7RT47nrJqfM/gviz/tq?tqx=out:json';
       const resp = await fetch(urlMatriz);
@@ -4470,7 +4563,7 @@ class AppsScriptClientService {
             documentoPagoFactura: cotizacion,
             facturadoFinal: 'No',
             estatusGeneral: (estatusGen as any) || 'En Proceso',
-            estatusFabrica: 'Pendiente Fábrica',
+            estatusFabrica: 'Pendiente FÃ¡brica',
             origen: 'PORTAL_CEDIS',
             version: 1,
             creadoPor: colaborador,
@@ -4508,10 +4601,10 @@ class AppsScriptClientService {
         success: true,
         filasIngresadas: nuevosDetalles.length,
         modelosActualizados: modelos.length,
-        mensaje: `Sincronización total exitosa: ${nuevosDetalles.length} líneas y ${pedidosMap.size} pedidos importados desde Matriz_Central.`
+        mensaje: `SincronizaciÃ³n total exitosa: ${nuevosDetalles.length} lÃ­neas y ${pedidosMap.size} pedidos importados desde Matriz_Central.`
       };
     } catch (err: any) {
-      console.warn('Fallo sincronización remota de Matriz_Central:', err);
+      console.warn('Fallo sincronizaciÃ³n remota de Matriz_Central:', err);
       return {
         success: false,
         filasIngresadas: this.detalles.length,
@@ -4522,11 +4615,11 @@ class AppsScriptClientService {
   }
 
   /**
-   * Recepción de Repuesto por QR desde Terminal Móvil PDT (Celular)
-   * Cumple con la especificación técnica oficial de Changan Auto Panamá:
-   * - Endpoint lógico: receivePart ({ qrId, operator, branch, deviceId })
-   * - Respuestas: RECEIVED (éxito), DUPLICATE (ya recibido), NOT_FOUND, ERROR
-   * - Persistencia atómica en matriz y log de auditoría 'REPUESTOS RECIBIDOS EN SUCURSAL'
+   * RecepciÃ³n de Repuesto por QR desde Terminal MÃ³vil PDT (Celular)
+   * Cumple con la especificaciÃ³n tÃ©cnica oficial de Changan Auto PanamÃ¡:
+   * - Endpoint lÃ³gico: receivePart ({ qrId, operator, branch, deviceId })
+   * - Respuestas: RECEIVED (Ã©xito), DUPLICATE (ya recibido), NOT_FOUND, ERROR
+   * - Persistencia atÃ³mica en matriz y log de auditorÃ­a 'REPUESTOS RECIBIDOS EN SUCURSAL'
    */
   public async recepcionarRepuestoQR(datos: {
     qrId: string;
@@ -4562,14 +4655,14 @@ class AppsScriptClientService {
       return {
         ok: false,
         status: 'NOT_FOUND',
-        message: 'QR NO VÁLIDO: El formato no corresponde a un Pedido Especial Changan.',
+        message: 'QR NO VÃLIDO: El formato no corresponde a un Pedido Especial Changan.',
         qrId: qrIdLimpio,
         timestamp: ahora,
         nextScan: true
       };
     }
 
-    // 2. Extraer identificadores del QR: PE-[AÑO]-[ID_PEDIDO]-[SECUENCIA]
+    // 2. Extraer identificadores del QR: PE-[AÃ‘O]-[ID_PEDIDO]-[SECUENCIA]
     const partes = qrIdLimpio.split('-');
     const idPedidoNormalizado = partes.slice(2, partes.length - 1).join('-');
     const secuencia = parseInt(partes[partes.length - 1]) || 1;
@@ -4602,7 +4695,7 @@ class AppsScriptClientService {
       return {
         ok: false,
         status: 'NOT_FOUND',
-        message: 'QR NO ENCONTRADO: El pedido "' + idPedidoNormalizado + '" no está registrado en el sistema.',
+        message: 'QR NO ENCONTRADO: El pedido "' + idPedidoNormalizado + '" no estÃ¡ registrado en el sistema.',
         qrId: qrIdLimpio,
         timestamp: ahora,
         nextScan: true
@@ -4625,7 +4718,7 @@ class AppsScriptClientService {
 
     if (recepcionPrevia || (linea && linea.estatusLinea === 'RECIBIDO EN SUCURSAL') || (pedido && pedido.estatusGeneral === 'RECIBIDO EN SUCURSAL')) {
       const prevTime = recepcionPrevia ? recepcionPrevia.fechaHora : (pedido ? pedido.actualizadoEn : ahora);
-      const prevUser = recepcionPrevia ? recepcionPrevia.recibidoPor : (pedido ? pedido.actualizadoPor : 'Operador Almacén');
+      const prevUser = recepcionPrevia ? recepcionPrevia.recibidoPor : (pedido ? pedido.actualizadoPor : 'Operador AlmacÃ©n');
       return {
         ok: false,
         status: 'DUPLICATE',
@@ -4648,7 +4741,7 @@ class AppsScriptClientService {
       };
     }
 
-    // 4. Si no está recibido: Actualizar estado a RECIBIDO EN SUCURSAL
+    // 4. Si no estÃ¡ recibido: Actualizar estado a RECIBIDO EN SUCURSAL
     if (linea) {
       const idxLinea = this.detalles.findIndex(d => d.lineaId === linea.lineaId);
       if (idxLinea !== -1) {
@@ -4665,7 +4758,7 @@ class AppsScriptClientService {
       }
     }
 
-    // 5. Agregar registro en la pestaña de Log: REPUESTOS RECIBIDOS EN SUCURSAL
+    // 5. Agregar registro en la pestaÃ±a de Log: REPUESTOS RECIBIDOS EN SUCURSAL
     const nuevoEvento = {
       fechaHora: ahora,
       qrId: qrIdLimpio,
@@ -4686,7 +4779,7 @@ class AppsScriptClientService {
 
     this.guardarEventoRecepcion(nuevoEvento);
 
-    // Auditoría central
+    // AuditorÃ­a central
     this.auditoria.unshift({
       auditoriaId: 'AUD-REC-' + Date.now(),
       timestamp: ahora,
@@ -4698,12 +4791,12 @@ class AppsScriptClientService {
       valoresAnteriores: '{}',
       valoresNuevos: JSON.stringify(nuevoEvento),
       operationId: 'OP-QR-' + Date.now(),
-      notas: 'Recepción física confirmada por terminal móvil PDT en ' + datos.sucursal
+      notas: 'RecepciÃ³n fÃ­sica confirmada por terminal mÃ³vil PDT en ' + datos.sucursal
     });
 
     this.persistirDatos();
 
-    // 6. Si hay conexión con Apps Script, enviar POST con action: receivePart
+    // 6. Si hay conexiÃ³n con Apps Script, enviar POST con action: receivePart
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
       try {
         fetch(this.config.webAppUrl, {
@@ -4719,7 +4812,7 @@ class AppsScriptClientService {
             sucursal: datos.sucursal,
             deviceId: datos.deviceId || 'PDT-MOVIL'
           })
-        }).catch(e => console.warn('Error asíncrono notificando Apps Script receivePart:', e));
+        }).catch(e => console.warn('Error asÃ­ncrono notificando Apps Script receivePart:', e));
       } catch (e) {
         // Fallback local garantizado
       }
@@ -4762,14 +4855,14 @@ class AppsScriptClientService {
       log.unshift(evento);
       this.safeSet('changan_repuestos_recibidos_sucursal', JSON.stringify(log.slice(0, 500)));
     } catch (e) {
-      console.warn('Error guardando evento de recepción:', e);
+      console.warn('Error guardando evento de recepciÃ³n:', e);
     }
   }
 
 
   /**
-   * Búsqueda Inteligente de Repuestos por Pallet o Contenedor (Exclusivo CEDIS)
-   * Cruza el código de bulto/pallet contra Matriz Central y DPL.
+   * BÃºsqueda Inteligente de Repuestos por Pallet o Contenedor (Exclusivo CEDIS)
+   * Cruza el cÃ³digo de bulto/pallet contra Matriz Central y DPL.
    */
   public buscarRepuestosPorPallet(codigoRaw: string): {
     encontrado: boolean;
@@ -4805,7 +4898,7 @@ class AppsScriptClientService {
       };
     }
 
-    // Extraer tokens en caso de que el código QR sea compuesto (ejemplo: 260106MS00060SF||P0001153940 o CONT||PALLET)
+    // Extraer tokens en caso de que el cÃ³digo QR sea compuesto (ejemplo: 260106MS00060SF||P0001153940 o CONT||PALLET)
     const tokens: string[] = [];
     if (rawClean.includes('||')) {
       rawClean.split('||').forEach(p => {
@@ -4819,13 +4912,13 @@ class AppsScriptClientService {
       tokens.push(rawClean.toUpperCase());
     }
 
-    // Pallet objetivo preferido (buscar el token que inicie con P o el último token)
+    // Pallet objetivo preferido (buscar el token que inicie con P o el Ãºltimo token)
     const palletToken = tokens.find(t => t.startsWith('P') && t.length >= 4) || tokens[tokens.length - 1];
     const contenedorToken = tokens.find(t => t !== palletToken) || '';
 
     const matriz = this.getMatrizCentral();
 
-    // 1. Filtrar filas de la Matriz Central que coincidan por cualquiera de los tokens (o código completo)
+    // 1. Filtrar filas de la Matriz Central que coincidan por cualquiera de los tokens (o cÃ³digo completo)
     const coincidenciasMatriz = matriz.filter(f => {
       const p = (f.pallet || '').toUpperCase();
       const pAsig = (f.palletAsignado || '').toUpperCase();
@@ -4870,7 +4963,7 @@ class AppsScriptClientService {
       };
     }
 
-    // 2. Si no está en matriz directa, buscar en dplDetalle por palletCaseNo, packageNo o contenedorId
+    // 2. Si no estÃ¡ en matriz directa, buscar en dplDetalle por palletCaseNo, packageNo o contenedorId
     const dplList = this.getDPLDetalle();
     const coincidenciasDPL = dplList.filter(d => {
       const pCase = (d.palletCaseNo || '').toUpperCase();
@@ -4909,21 +5002,21 @@ class AppsScriptClientService {
             });
           });
         } else {
-          // Si el repuesto del pallet físico no tiene pedido especial pendiente, se registra como stock de almacén físico
+          // Si el repuesto del pallet fÃ­sico no tiene pedido especial pendiente, se registra como stock de almacÃ©n fÃ­sico
           repuestosCruzados.push({
             pedidoId: `STOCK-${dpl.contenedorId}`,
             lineaId: dpl.inventarioId,
             codigo: dpl.codigoRepuesto,
             descripcion: dpl.descripcion,
             sucursal: 'CEDIS Central',
-            cliente: 'Stock Físico CEDIS',
+            cliente: 'Stock FÃ­sico CEDIS',
             vin: 'N/A',
             placa: 'S/P',
             cantidad: Number(dpl.cantidadTotal) || 1,
             estatusActual: 'En Bodega CEDIS',
             contenedor: dpl.contenedorId,
             pallet: dpl.palletCaseNo || palletToken,
-            ubicacionCedis: dpl.ubicacionCedis || `Bahía CEDIS / Pallet ${dpl.palletCaseNo || palletToken}`
+            ubicacionCedis: dpl.ubicacionCedis || `BahÃ­a CEDIS / Pallet ${dpl.palletCaseNo || palletToken}`
           });
         }
       });
@@ -4949,7 +5042,7 @@ class AppsScriptClientService {
   }
 
 /**
-   * Recepción de Pallet Completo en CEDIS (Bodega Central)
+   * RecepciÃ³n de Pallet Completo en CEDIS (Bodega Central)
    * Actualiza el estatus de todos los repuestos del pallet a 'En Almacen Central'
    * y sincroniza con Google Sheets.
    */
@@ -4994,7 +5087,7 @@ class AppsScriptClientService {
       }
     });
 
-    // 3. Registrar auditoría central
+    // 3. Registrar auditorÃ­a central
     this.auditoria.unshift({
       auditoriaId: 'AUD-PLT-' + Date.now(),
       timestamp: ahora,
@@ -5038,18 +5131,18 @@ class AppsScriptClientService {
 
     return {
       ok: true,
-      mensaje: 'Pallet ' + busqueda.codigoPallet + ' recibido en CEDIS exitosamente. ' + busqueda.repuestos.length + ' repuestos actualizados a "En Almacén Central".',
+      mensaje: 'Pallet ' + busqueda.codigoPallet + ' recibido en CEDIS exitosamente. ' + busqueda.repuestos.length + ' repuestos actualizados a "En AlmacÃ©n Central".',
       filasActualizadas: busqueda.repuestos.length,
       repuestos: busqueda.repuestos
     };
   }
 
   /**
-   * Sincroniza registro en pestaña oficial 'Despachos' de Google Sheets (Ticket 6)
+   * Sincroniza registro en pestaÃ±a oficial 'Despachos' de Google Sheets (Ticket 6)
    */
   
   /**
-   * Sincroniza la pestaña oficial 'Reporte_Asignaciones' en Google Sheets
+   * Sincroniza la pestaÃ±a oficial 'Reporte_Asignaciones' en Google Sheets
    */
   async sincronizarHojaAsignaciones(filas: any[]): Promise<{ success: boolean; error?: string; mensaje?: string }> {
     return this.postAction('sincronizarAsignaciones', { filas });
@@ -5078,10 +5171,10 @@ export const appsScriptClient = new AppsScriptClientService();
 
 
 /**
- * Función de diagnóstico integral para Google Apps Script.
- * Realiza una verificación de preflight OPTIONS y una solicitud GET con CORS a la URL
- * para validar que el CORS esté configurado correctamente y que la API esté accesible,
- * notificando cualquier error de conexión específico con diagnóstico técnico y recomendaciones.
+ * FunciÃ³n de diagnÃ³stico integral para Google Apps Script.
+ * Realiza una verificaciÃ³n de preflight OPTIONS y una solicitud GET con CORS a la URL
+ * para validar que el CORS estÃ© configurado correctamente y que la API estÃ© accesible,
+ * notificando cualquier error de conexiÃ³n especÃ­fico con diagnÃ³stico tÃ©cnico y recomendaciones.
  */
 export async function diagnosticarConexionAppsScript(
   urlCustom?: string,
@@ -5089,7 +5182,7 @@ export async function diagnosticarConexionAppsScript(
 ): Promise<ResultadoDiagnosticoCORS> {
   const url = (urlCustom || '').trim();
 
-  // 1. Validación de URL vacía (Modo local)
+  // 1. ValidaciÃ³n de URL vacÃ­a (Modo local)
   if (!url) {
     return {
       ok: false,
@@ -5099,15 +5192,15 @@ export async function diagnosticarConexionAppsScript(
       latenciaMs: 0,
       tipoError: 'URL_VACIA',
       mensaje: 'No se ha configurado ninguna URL de Google Apps Script.',
-      diagnosticoTecnico: 'Modo local seguro activo. La aplicación opera con persistencia local y emulación exacta de las reglas canónicas.',
+      diagnosticoTecnico: 'Modo local seguro activo. La aplicaciÃ³n opera con persistencia local y emulaciÃ³n exacta de las reglas canÃ³nicas.',
       pasosSugeridos: [
-        'Ingresa la URL pública de la Web App generada en Apps Script si deseas sincronizar en la nube.',
+        'Ingresa la URL pÃºblica de la Web App generada en Apps Script si deseas sincronizar en la nube.',
         'La URL debe iniciar con https://script.google.com/macros/s/ y finalizar en /exec.'
       ]
     };
   }
 
-  // 2. Validación de URLs erróneas comunes
+  // 2. ValidaciÃ³n de URLs errÃ³neas comunes
   if (url.includes('docs.google.com/spreadsheets')) {
     return {
       ok: false,
@@ -5116,14 +5209,14 @@ export async function diagnosticarConexionAppsScript(
       urlEvaluada: url,
       latenciaMs: 0,
       tipoError: 'ES_SPREADSHEET_NO_WEBAPP',
-      mensaje: 'La URL corresponde a la hoja de cálculo (Google Spreadsheet), no a la Aplicación Web.',
-      diagnosticoTecnico: 'Los endpoints de Google Sheets directos no son APIs REST públicas ni permiten CORS directo desde el navegador.',
+      mensaje: 'La URL corresponde a la hoja de cÃ¡lculo (Google Spreadsheet), no a la AplicaciÃ³n Web.',
+      diagnosticoTecnico: 'Los endpoints de Google Sheets directos no son APIs REST pÃºblicas ni permiten CORS directo desde el navegador.',
       pasosSugeridos: [
         'Abre tu Google Spreadsheet.',
         'Haz clic en "Extensiones" > "Apps Script".',
-        'Haz clic en el botón azul "Implementar" > "Nueva implementación" > Tipo: "Aplicación web".',
-        'Configura "Quién tiene acceso" como "Cualquier persona" (Anyone).',
-        'Copia la URL pública generada que finaliza en /exec.'
+        'Haz clic en el botÃ³n azul "Implementar" > "Nueva implementaciÃ³n" > Tipo: "AplicaciÃ³n web".',
+        'Configura "QuiÃ©n tiene acceso" como "Cualquier persona" (Anyone).',
+        'Copia la URL pÃºblica generada que finaliza en /exec.'
       ]
     };
   }
@@ -5137,10 +5230,10 @@ export async function diagnosticarConexionAppsScript(
       latenciaMs: 0,
       tipoError: 'TERMINA_EN_EDIT_O_DEV',
       mensaje: 'La URL ingresada es del editor o del entorno de desarrollo (/edit o /dev).',
-      diagnosticoTecnico: 'Las URLs que terminan en /edit o /dev exigen inicio de sesión interactivo de desarrollador de Google Workspace y no admiten llamadas CORS de aplicaciones web externas.',
+      diagnosticoTecnico: 'Las URLs que terminan en /edit o /dev exigen inicio de sesiÃ³n interactivo de desarrollador de Google Workspace y no admiten llamadas CORS de aplicaciones web externas.',
       pasosSugeridos: [
         'En Apps Script, ve a "Implementar" > "Gestionar implementaciones".',
-        'Copia la URL de producción que termina exactamente en /exec.'
+        'Copia la URL de producciÃ³n que termina exactamente en /exec.'
       ]
     };
   }
@@ -5153,11 +5246,11 @@ export async function diagnosticarConexionAppsScript(
       urlEvaluada: url,
       latenciaMs: 0,
       tipoError: 'FORMATO_URL_INVALIDO',
-      mensaje: 'El formato de la URL de Google Apps Script es inválido.',
-      diagnosticoTecnico: 'La URL no cumple con el patrón canónico https://script.google.com/macros/s/[DEPLOYMENT_ID]/exec',
+      mensaje: 'El formato de la URL de Google Apps Script es invÃ¡lido.',
+      diagnosticoTecnico: 'La URL no cumple con el patrÃ³n canÃ³nico https://script.google.com/macros/s/[DEPLOYMENT_ID]/exec',
       pasosSugeridos: [
         'Verifica que la URL empiece con https://script.google.com/macros/s/',
-        'Asegúrate de que no contenga espacios ni caracteres adicionales.',
+        'AsegÃºrate de que no contenga espacios ni caracteres adicionales.',
         'Verifica que finalice en /exec.'
       ]
     };
@@ -5206,7 +5299,7 @@ export async function diagnosticarConexionAppsScript(
     if (timeoutId) clearTimeout(timeoutId);
     const latenciaMs = Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - startPing);
 
-    // Verificar Códigos de Estado Específicos
+    // Verificar CÃ³digos de Estado EspecÃ­ficos
     if (resp.status === 403) {
       return {
         ok: false,
@@ -5219,10 +5312,10 @@ export async function diagnosticarConexionAppsScript(
         getRespuesta: { status: 403, statusText: resp.statusText, esJson: true },
         tipoError: 'NO_AUTORIZADO_403',
         mensaje: 'Acceso Prohibido (HTTP 403): Usuario no autorizado en la hoja.',
-        diagnosticoTecnico: 'CORS está habilitado, pero la regla de validación de Apps Script rechazó el correo porque no existe en la pestaña BD_Encargados.',
+        diagnosticoTecnico: 'CORS estÃ¡ habilitado, pero la regla de validaciÃ³n de Apps Script rechazÃ³ el correo porque no existe en la pestaÃ±a BD_Encargados.',
         pasosSugeridos: [
-          'Verifica que el correo con el que iniciaste sesión esté en la pestaña "BD_Encargados" de tu Google Sheet.',
-          'Revisa que la columna "activo" esté en "TRUE" o "Sí".'
+          'Verifica que el correo con el que iniciaste sesiÃ³n estÃ© en la pestaÃ±a "BD_Encargados" de tu Google Sheet.',
+          'Revisa que la columna "activo" estÃ© en "TRUE" o "SÃ­".'
         ]
       };
     }
@@ -5238,11 +5331,11 @@ export async function diagnosticarConexionAppsScript(
         optionsRespuesta,
         getRespuesta: { status: 404, statusText: resp.statusText, esJson: false },
         tipoError: 'NO_ENCONTRADO_404',
-        mensaje: 'Implementación No Encontrada (HTTP 404).',
+        mensaje: 'ImplementaciÃ³n No Encontrada (HTTP 404).',
         diagnosticoTecnico: 'La URL no apunta a un Deployment ID activo en Google Apps Script.',
         pasosSugeridos: [
           'En el editor de Apps Script, haz clic en "Implementar" > "Gestionar implementaciones".',
-          'Verifica que la implementación de tipo "Aplicación web" esté activa y copia su URL actual.'
+          'Verifica que la implementaciÃ³n de tipo "AplicaciÃ³n web" estÃ© activa y copia su URL actual.'
         ]
       };
     }
@@ -5258,11 +5351,11 @@ export async function diagnosticarConexionAppsScript(
         optionsRespuesta,
         getRespuesta: { status: resp.status, statusText: resp.statusText, esJson: false },
         tipoError: 'ERROR_SERVIDOR_500',
-        mensaje: `Error interno de ejecución en Google Apps Script (HTTP ${resp.status}).`,
-        diagnosticoTecnico: 'El script arrojó una excepción no capturada en doGet(). Posible falta de autorización de la hoja o error de sintaxis.',
+        mensaje: `Error interno de ejecuciÃ³n en Google Apps Script (HTTP ${resp.status}).`,
+        diagnosticoTecnico: 'El script arrojÃ³ una excepciÃ³n no capturada en doGet(). Posible falta de autorizaciÃ³n de la hoja o error de sintaxis.',
         pasosSugeridos: [
-          'En Apps Script, abre el menú izquierdo "Ejecuciones" (Executions) para ver el registro exacto del error.',
-          'Ejecuta la función setupSpreadsheetCanonica manualmente en el editor para otorgar permisos.'
+          'En Apps Script, abre el menÃº izquierdo "Ejecuciones" (Executions) para ver el registro exacto del error.',
+          'Ejecuta la funciÃ³n setupSpreadsheetCanonica manualmente en el editor para otorgar permisos.'
         ]
       };
     }
@@ -5282,11 +5375,11 @@ export async function diagnosticarConexionAppsScript(
         optionsRespuesta,
         getRespuesta: { status: resp.status, statusText: resp.statusText, esJson: false },
         tipoError: 'RESPUESTA_INVALIDA',
-        mensaje: 'La API respondió pero el cuerpo no es un JSON válido.',
-        diagnosticoTecnico: 'La respuesta no pudo ser parseada con JSON.parse. Es probable que se haya devuelto HTML de error o redirección.',
+        mensaje: 'La API respondiÃ³ pero el cuerpo no es un JSON vÃ¡lido.',
+        diagnosticoTecnico: 'La respuesta no pudo ser parseada con JSON.parse. Es probable que se haya devuelto HTML de error o redirecciÃ³n.',
         pasosSugeridos: [
           'Abre la URL directamente en el navegador agregando ?action=ping para inspeccionar la salida directa.',
-          'Asegúrate de que doGet() retorne ContentService.createTextOutput con MimeType.JSON.'
+          'AsegÃºrate de que doGet() retorne ContentService.createTextOutput con MimeType.JSON.'
         ]
       };
     }
@@ -5306,10 +5399,10 @@ export async function diagnosticarConexionAppsScript(
         spreadsheetId: data.spreadsheetId,
         totalPestanas: data.totalPestanas || (tabs.length > 0 ? tabs.length : undefined),
         pestanasDetectadas: tabs,
-        mensaje: `¡CORS válido y API accesible! Hoja vinculada: "${data.spreadsheetName || 'CEDIS_DB'}".`,
-        diagnosticoTecnico: `Conexión HTTP 200 exitosa. Cabeceras CORS aceptadas por el navegador en ${latenciaMs} ms.`,
+        mensaje: `Â¡CORS vÃ¡lido y API accesible! Hoja vinculada: "${data.spreadsheetName || 'CEDIS_DB'}".`,
+        diagnosticoTecnico: `ConexiÃ³n HTTP 200 exitosa. Cabeceras CORS aceptadas por el navegador en ${latenciaMs} ms.`,
         pasosSugeridos: [
-          'La conexión canónica está lista para sincronizar pedidos, asignaciones de stock e importaciones.'
+          'La conexiÃ³n canÃ³nica estÃ¡ lista para sincronizar pedidos, asignaciones de stock e importaciones.'
         ]
       };
     }
@@ -5324,10 +5417,10 @@ export async function diagnosticarConexionAppsScript(
       optionsRespuesta,
       getRespuesta: { status: 200, statusText: 'OK', esJson: true },
       tipoError: 'RESPUESTA_INVALIDA',
-      mensaje: data?.error || 'La API respondió con formato no reconocido.',
+      mensaje: data?.error || 'La API respondiÃ³ con formato no reconocido.',
       diagnosticoTecnico: `Respuesta recibida: ${JSON.stringify(data).substring(0, 150)}`,
       pasosSugeridos: [
-        'Verifica que la función doGet() en Code.gs maneje la acción "ping" retornando { success: true, status: "OK" }.'
+        'Verifica que la funciÃ³n doGet() en Code.gs maneje la acciÃ³n "ping" retornando { success: true, status: "OK" }.'
       ]
     };
 
@@ -5335,7 +5428,7 @@ export async function diagnosticarConexionAppsScript(
     if (timeoutId) clearTimeout(timeoutId);
     const latenciaMs = Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - startPing);
 
-    // Detección de Timeout
+    // DetecciÃ³n de Timeout
     if (fetchErr?.name === 'AbortError' || (fetchErr?.message && fetchErr.message.includes('abort'))) {
       return {
         ok: false,
@@ -5345,16 +5438,16 @@ export async function diagnosticarConexionAppsScript(
         latenciaMs,
         tipoError: 'TIMEOUT',
         mensaje: `Tiempo de espera agotado (${timeoutMs} ms) esperando respuesta de Google Apps Script.`,
-        diagnosticoTecnico: 'La petición fue abortada tras superar el límite de tiempo. Google Apps Script puede estar experimentando un cold-start o esperando autorización interactiva.',
+        diagnosticoTecnico: 'La peticiÃ³n fue abortada tras superar el lÃ­mite de tiempo. Google Apps Script puede estar experimentando un cold-start o esperando autorizaciÃ³n interactiva.',
         pasosSugeridos: [
-          'Prueba abrir la URL en una pestaña del navegador para calentar el contenedor de Google Apps Script.',
-          'Revisa en el editor de Apps Script que la función doGet() no tenga demoras excesivas.'
+          'Prueba abrir la URL en una pestaÃ±a del navegador para calentar el contenedor de Google Apps Script.',
+          'Revisa en el editor de Apps Script que la funciÃ³n doGet() no tenga demoras excesivas.'
         ]
       };
     }
 
-    // Detección de Bloqueo CORS / Failed to fetch
-    // Realizamos una verificación auxiliar JSONP si estamos en el navegador para saber si el script está activo en los servidores de Google
+    // DetecciÃ³n de Bloqueo CORS / Failed to fetch
+    // Realizamos una verificaciÃ³n auxiliar JSONP si estamos en el navegador para saber si el script estÃ¡ activo en los servidores de Google
     let scriptActivoConJsonp = false;
     if (typeof document !== 'undefined' && typeof window !== 'undefined') {
       try {
@@ -5398,13 +5491,13 @@ export async function diagnosticarConexionAppsScript(
         latenciaMs,
         optionsRespuesta,
         tipoError: 'CORS_BLOQUEADO_LOGIN_GOOGLE',
-        mensaje: 'CORS Bloqueado: La Web App está activa pero Google bloquea solicitudes web externas.',
-        diagnosticoTecnico: 'El script responde a través de etiquetas <script> (JSONP), pero las peticiones fetch/XHR son bloqueadas por políticas de CORS del navegador. Esto ocurre cuando "Quién tiene acceso" (Who has access) está configurado como "Solo yo" o "Usuarios con cuenta Google", lo cual redirige a la pantalla de login que rechaza orígenes cruzados.',
+        mensaje: 'CORS Bloqueado: La Web App estÃ¡ activa pero Google bloquea solicitudes web externas.',
+        diagnosticoTecnico: 'El script responde a travÃ©s de etiquetas <script> (JSONP), pero las peticiones fetch/XHR son bloqueadas por polÃ­ticas de CORS del navegador. Esto ocurre cuando "QuiÃ©n tiene acceso" (Who has access) estÃ¡ configurado como "Solo yo" o "Usuarios con cuenta Google", lo cual redirige a la pantalla de login que rechaza orÃ­genes cruzados.',
         pasosSugeridos: [
           'En el editor de Apps Script, haz clic en "Implementar" > "Gestionar implementaciones".',
-          'Haz clic en el icono de lápiz (Editar) de tu implementación.',
-          'Cambia "Quién tiene acceso" (Who has access) a "Cualquier persona" (Anyone).',
-          'En Versión, selecciona "Nueva versión".',
+          'Haz clic en el icono de lÃ¡piz (Editar) de tu implementaciÃ³n.',
+          'Cambia "QuiÃ©n tiene acceso" (Who has access) a "Cualquier persona" (Anyone).',
+          'En VersiÃ³n, selecciona "Nueva versiÃ³n".',
           'Haz clic en "Implementar".'
         ]
       };
@@ -5418,12 +5511,12 @@ export async function diagnosticarConexionAppsScript(
       latenciaMs,
       optionsRespuesta,
       tipoError: 'ERROR_RED_O_CORS',
-      mensaje: 'Fallo de conexión o CORS bloqueado (Failed to fetch).',
-      diagnosticoTecnico: `El navegador bloqueó la conexión: ${fetchErr?.message || 'TypeError: Failed to fetch'}. En Google Apps Script esto ocurre principalmente cuando "Quién tiene acceso" no es "Cualquier persona" o cuando la hoja aún no ha sido autorizada por el propietario.`,
+      mensaje: 'Fallo de conexiÃ³n o CORS bloqueado (Failed to fetch).',
+      diagnosticoTecnico: `El navegador bloqueÃ³ la conexiÃ³n: ${fetchErr?.message || 'TypeError: Failed to fetch'}. En Google Apps Script esto ocurre principalmente cuando "QuiÃ©n tiene acceso" no es "Cualquier persona" o cuando la hoja aÃºn no ha sido autorizada por el propietario.`,
       pasosSugeridos: [
-        'En Apps Script, ve a "Gestionar implementaciones" > Editar y cambia "Quién tiene acceso" a "Cualquier persona" (Anyone).',
-        'En el editor de Apps Script, selecciona la función setupSpreadsheetCanonica y haz clic en "Ejecutar" para autorizar permisos.',
-        'Abre la URL en una nueva pestaña del navegador agregando ?action=ping para confirmar si Google solicita autorización.'
+        'En Apps Script, ve a "Gestionar implementaciones" > Editar y cambia "QuiÃ©n tiene acceso" a "Cualquier persona" (Anyone).',
+        'En el editor de Apps Script, selecciona la funciÃ³n setupSpreadsheetCanonica y haz clic en "Ejecutar" para autorizar permisos.',
+        'Abre la URL en una nueva pestaÃ±a del navegador agregando ?action=ping para confirmar si Google solicita autorizaciÃ³n.'
       ]
     };
   }
@@ -5431,3 +5524,7 @@ export async function diagnosticarConexionAppsScript(
 
 
 }
+
+
+
+
