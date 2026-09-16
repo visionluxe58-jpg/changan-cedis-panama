@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   User,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Share2
 } from 'lucide-react';
 import { UsuarioActivo } from '../types/cedis';
 
