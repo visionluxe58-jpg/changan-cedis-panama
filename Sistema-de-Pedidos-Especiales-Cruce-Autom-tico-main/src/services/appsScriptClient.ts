@@ -659,11 +659,15 @@ function normalizarEstatusGeneral(val: string): EstatusPedidoGeneral {
   const s = (val || '').toUpperCase().trim();
   if (s.includes('ENTREG')) return 'Entregado';
   if (s.includes('DESPACHADO TOTAL')) return 'Despachado Total';
-  if (s.includes('DESPACH')) return 'Despachado Parcial';
+  if (s.includes('DESPACH')) return 'Despachado';
+  if (s.includes('BODEGA')) return 'EN BODEGA CEDIS';
+  if (s.includes('RECOLECT')) return 'EN BODEGA CEDIS';
+  if (s.includes('PARCIAL')) return 'PARCIAL';
   if (s.includes('ASIGNADO TOTAL')) return 'Asignado Total';
-  if (s.includes('ASIGN')) return 'Asignado Parcial';
+  if (s.includes('ASIGN')) return 'PARCIAL';
   if (s.includes('CANCEL')) return 'Cancelado';
-  return 'Pendiente';
+  if (s.includes('PENDIENTE')) return 'Pendiente';
+  return (val as any) || 'Pendiente';
 }
 
 class AppsScriptClientService {
@@ -928,7 +932,7 @@ class AppsScriptClientService {
           // Soporta tanto 'Código OEM' (cabecera oficial del Sheet) como 'Código Repuesto' y variantes
           const codRep = String(getValFlexible(r, 'Código OEM', 'Codigo OEM', 'Código Repuesto', 'Codigo Repuesto', 'Codigo_Repuesto_OEM', 'codigoRepuesto') || '').trim().toUpperCase();
           const cli = String(getValFlexible(r, 'Cliente / Caso', 'Cliente/Caso', 'Cliente', 'cliente') || '').trim();
-          const estL = normalizarEstatusLinea(getValFlexible(r, 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
+          const estL = normalizarEstatusLinea(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
 
           if (!codRep) return;
 
@@ -946,7 +950,7 @@ class AppsScriptClientService {
           }
 
           // REGLA CRÍTICA CEDIS: Lo despachado queda retirado de la Matriz Central permanentemente
-          const rawEstatusRow = String(getValFlexible(r, 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'estatusLinea', 'Estatus') || '').toUpperCase();
+          const rawEstatusRow = String(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'estatusLinea', 'Estatus') || '').toUpperCase();
           if (rawEstatusRow.includes('DESPACH') || estL === 'Despachado' || this.isLineaDespachada(r.lineaId, pId, codRep)) {
             this.marcarLineaComoDespachada(r.lineaId, pId, codRep);
             return;
@@ -996,7 +1000,7 @@ class AppsScriptClientService {
           const rawAsig = getValFlexible(r, 'Cant Asignada', 'Cantidad Asignada', 'Cantidad_Asignada', 'cantidadAsignada');
           let cAsig = parseFloat(String(rawAsig).replace(/[^0-9.]/g, '')) || 0;
           let cDesp = Number(getValFlexible(r, 'Cant Despachada', 'Cantidad Despachada', 'Cantidad_Despachada', 'cantidadDespachada')) || 0;
-          let estL = normalizarEstatusLinea(getValFlexible(r, 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
+          let estL = normalizarEstatusLinea(getValFlexible(r, 'estatusDetallado', 'Estatus Detallado', 'Estatus Cruce', 'Estatus Línea', 'Estatus Linea', 'Estatus_Linea', 'estatusLinea', 'Estatus', 'PENDIENTE'));
           const estG = normalizarEstatusGeneral(getValFlexible(r, 'Estatus General', 'Estado General', 'estatusGeneral', 'PENDIENTE'));
           let cAsignado = getValFlexible(r, 'Contenedor Asignado', 'Contenedor_Asignado', 'contenedorAsignado');
           let pAsignado = getValFlexible(r, 'Pallet Asignado', 'Pallet_Asignado', 'palletAsignado');
@@ -1063,21 +1067,37 @@ class AppsScriptClientService {
           });
         });
 
-        // Calcular estatus general de pedidos considerando despachos
-        const pedidosDespachos: Record<string, { total: number; despachados: number }> = {};
+        // Calcular estatus general de pedidos considerando estados de líneas, inventario y despachos
+        const pedidosMetricas: Record<string, { total: number; despachados: number; asignados: number; enBodega: number }> = {};
         arrDet.forEach(d => {
-          if (!pedidosDespachos[d.pedidoId]) pedidosDespachos[d.pedidoId] = { total: 0, despachados: 0 };
-          pedidosDespachos[d.pedidoId].total += 1;
-          if (d.estatusLinea === 'Despachado') pedidosDespachos[d.pedidoId].despachados += 1;
+          if (!pedidosMetricas[d.pedidoId]) pedidosMetricas[d.pedidoId] = { total: 0, despachados: 0, asignados: 0, enBodega: 0 };
+          pedidosMetricas[d.pedidoId].total += 1;
+          const estUpper = String(d.estatusLinea || '').toUpperCase();
+          if (estUpper.includes('DESPACH')) {
+            pedidosMetricas[d.pedidoId].despachados += 1;
+          } else if (estUpper.includes('BODEGA') || estUpper.includes('RECOLECT')) {
+            pedidosMetricas[d.pedidoId].enBodega += 1;
+            pedidosMetricas[d.pedidoId].asignados += 1;
+          } else if ((d.cantidadAsignada || 0) > 0 || estUpper.includes('ASIGN')) {
+            pedidosMetricas[d.pedidoId].asignados += 1;
+          }
         });
 
         Object.values(mapCab).forEach(cab => {
-          const st = pedidosDespachos[cab.pedidoId];
+          const st = pedidosMetricas[cab.pedidoId];
           if (st && st.total > 0) {
             if (st.despachados === st.total) {
-              cab.estatusGeneral = 'Despachado Total';
+              cab.estatusGeneral = 'Despachado';
             } else if (st.despachados > 0) {
-              cab.estatusGeneral = 'Despachado Parcial';
+              cab.estatusGeneral = 'PARCIAL';
+            } else if (st.enBodega === st.total) {
+              cab.estatusGeneral = 'EN BODEGA CEDIS';
+            } else if (st.asignados === st.total) {
+              cab.estatusGeneral = 'EN BODEGA CEDIS';
+            } else if (st.asignados > 0 || st.enBodega > 0) {
+              cab.estatusGeneral = 'PARCIAL';
+            } else if (!cab.estatusGeneral || cab.estatusGeneral === 'Pendiente') {
+              cab.estatusGeneral = 'Pendiente';
             }
           }
         });
