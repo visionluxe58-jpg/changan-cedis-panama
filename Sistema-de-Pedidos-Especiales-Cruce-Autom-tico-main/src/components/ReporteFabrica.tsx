@@ -12,7 +12,10 @@ import {
   exportarLibroExcelReporteFabrica 
 } from '../utils/clasificadorLogistica';
 import { 
-  FileSpreadsheet, 
+  Boxes,
+  X,
+  Layers,
+    FileSpreadsheet, 
   Download, 
   Copy, 
   Plus, 
@@ -42,6 +45,39 @@ interface ReporteFabricaProps {
 }
 
 type PestanaReporte = 'Ordering_Template' | 'Clasificacion_Envio' | 'Consolidado_Sucursales' | 'Detalle_Pedidos_Mes' | 'Protocolo_DGR_Airbag';
+
+
+// Función canónica para normalizar fechas a formato ISO YYYY-MM-DD
+function parseFechaISO(fechaStr?: string): string {
+  if (!fechaStr) return '';
+  const str = String(fechaStr).trim();
+  if (str.startsWith('Date(')) {
+    const parts = str.match(/\d+/g);
+    if (parts && parts.length >= 3) {
+      return `${parts[0]}-${String(Number(parts[1]) + 1).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
+    }
+  }
+  const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (dmyMatch) {
+    return `${dmyMatch[3]}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`;
+  }
+  const ymdMatch = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (ymdMatch) {
+    return `${ymdMatch[1]}-${ymdMatch[2].padStart(2, '0')}-${ymdMatch[3].padStart(2, '0')}`;
+  }
+  return str.substring(0, 10);
+}
+
+const PRESETS_PERIODOS: Record<string, { label: string; desde: string; hasta: string }> = {
+  '1Q_SEP_2026': { label: '1ra Quincena Septiembre 2026 (01/09 - 15/09)', desde: '2026-09-01', hasta: '2026-09-15' },
+  '2Q_SEP_2026': { label: '2da Quincena Septiembre 2026 (16/09 - 30/09)', desde: '2026-09-16', hasta: '2026-09-30' },
+  'MES_SEP_2026': { label: 'Mes Completo Septiembre 2026 (01/09 - 30/09)', desde: '2026-09-01', hasta: '2026-09-30' },
+  '1Q_AGO_2026': { label: '1ra Quincena Agosto 2026 (01/08 - 15/08)', desde: '2026-08-01', hasta: '2026-08-15' },
+  '2Q_AGO_2026': { label: '2da Quincena Agosto 2026 (16/08 - 31/08)', desde: '2026-08-16', hasta: '2026-08-31' },
+  'MES_AGO_2026': { label: 'Mes Completo Agosto 2026 (01/08 - 31/08)', desde: '2026-08-01', hasta: '2026-08-31' },
+  'CUSTOM': { label: 'Personalizado (Rango Libre)', desde: '', hasta: '' },
+  'ALL': { label: 'Todo el Historial', desde: '', hasta: '' }
+};
 
 export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
   cabeceras = [],
@@ -112,36 +148,93 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
     });
   }, [simuladorCodigo, simuladorDesc, simuladorPeso, simuladorLargo, simuladorAncho, simuladorAlto]);
 
-  // Ítems filtrados para la tabla Ordering_Template
-  const itemsFiltrados = useMemo(() => {
+  // 1. Filtrar los ítems del reporte por el rango de fechas seleccionado
+  const itemsEnRango = useMemo(() => {
     return items.filter((it) => {
+      if (periodoPreset === "ALL") return true;
+      if (!fechaDesde && !fechaHasta) return true;
+
+      // Obtener la fecha del ítem o resolverla desde la cabecera correspondiente
+      let fechaItem = parseFechaISO(it.fechaCreacion);
+      if (!fechaItem && it.pedidoId) {
+        const cab = cabeceras.find(c => c.pedidoId === it.pedidoId);
+        if (cab) fechaItem = parseFechaISO(cab.fechaCreacion);
+      }
+
+      // Si no tiene fecha asociada, lo mostramos para no perderlo
+      if (!fechaItem) return true;
+
+      if (fechaDesde && fechaItem < fechaDesde) return false;
+      if (fechaHasta && fechaItem > fechaHasta) return false;
+      return true;
+    });
+  }, [items, fechaDesde, fechaHasta, periodoPreset, cabeceras]);
+
+  // 2. Consolidación inteligente por SKU para fábrica
+  const itemsConsolidados = useMemo(() => {
+    if (!modoVistaConsolidada) return itemsEnRango;
+
+    const map = new Map<string, ItemOrderingTemplate>();
+
+    itemsEnRango.forEach((it) => {
+      const codigo = it.partsCode.trim().toUpperCase();
+      if (!map.has(codigo)) {
+        map.set(codigo, {
+          ...it,
+          id: `SKU-CONS-${codigo}`,
+          orderingQuantity: it.orderingQuantity,
+          pedidoId: it.pedidoId,
+          sucursal: it.sucursal,
+          cliente: it.cliente
+        });
+      } else {
+        const exist = map.get(codigo)!;
+        exist.orderingQuantity += it.orderingQuantity;
+        if (it.sucursal && !exist.sucursal?.includes(it.sucursal)) {
+          exist.sucursal = `${exist.sucursal || ""}, ${it.sucursal}`;
+        }
+        if (it.pedidoId && !exist.pedidoId?.includes(it.pedidoId)) {
+          exist.pedidoId = `${exist.pedidoId || ""}, ${it.pedidoId}`;
+        }
+      }
+    });
+
+    return Array.from(map.values());
+  }, [itemsEnRango, modoVistaConsolidada]);
+
+  // 3. Ítems filtrados para la tabla Ordering_Template (por búsqueda y transporte)
+  const itemsFiltrados = useMemo(() => {
+    const base = modoVistaConsolidada ? itemsConsolidados : itemsEnRango;
+    return base.filter((it) => {
       const coincideBusqueda = 
         it.partsCode.toLowerCase().includes(busqueda.toLowerCase()) ||
         it.comment.toLowerCase().includes(busqueda.toLowerCase()) ||
         (it.sucursal && it.sucursal.toLowerCase().includes(busqueda.toLowerCase())) ||
-        (it.modeloChangan && it.modeloChangan.toLowerCase().includes(busqueda.toLowerCase()));
+        (it.modeloChangan && it.modeloChangan.toLowerCase().includes(busqueda.toLowerCase())) ||
+        (it.pedidoId && it.pedidoId.toLowerCase().includes(busqueda.toLowerCase()));
 
       const coincideTransporte = 
-        filtroTransporte === 'TODOS' || it.categorizacion === filtroTransporte;
+        filtroTransporte === "TODOS" || it.categorizacion === filtroTransporte;
 
       return coincideBusqueda && coincideTransporte;
     });
-  }, [items, busqueda, filtroTransporte]);
+  }, [modoVistaConsolidada, itemsConsolidados, itemsEnRango, busqueda, filtroTransporte]);
 
-  // Totales ejecutivos para el Gerente
+  // Totales ejecutivos calculados exclusivamente para el rango seleccionado
   const metricasEjecutivas = useMemo(() => {
-    const totalLineas = items.length;
-    const totalPiezas = items.reduce((acc, curr) => acc + curr.orderingQuantity, 0);
-    const lineasAereo = items.filter((it) => it.categorizacion === 'Aereo').length;
-    const piezasAereo = items
-      .filter((it) => it.categorizacion === 'Aereo')
+    const base = itemsEnRango;
+    const totalLineas = base.length;
+    const totalPiezas = base.reduce((acc, curr) => acc + curr.orderingQuantity, 0);
+    const lineasAereo = base.filter((it) => it.categorizacion === "Aereo").length;
+    const piezasAereo = base
+      .filter((it) => it.categorizacion === "Aereo")
       .reduce((acc, curr) => acc + curr.orderingQuantity, 0);
-    const lineasMaritimo = items.filter((it) => it.categorizacion === 'Maritimo').length;
-    const piezasMaritimo = items
-      .filter((it) => it.categorizacion === 'Maritimo')
+    const lineasMaritimo = base.filter((it) => it.categorizacion === "Maritimo").length;
+    const piezasMaritimo = base
+      .filter((it) => it.categorizacion === "Maritimo")
       .reduce((acc, curr) => acc + curr.orderingQuantity, 0);
-    const pesoTotal = items.reduce((acc, curr) => acc + (curr.pesoUnitarioKg || 1) * curr.orderingQuantity, 0);
-    const itemsDgr = items.filter((it) => it.esDGR).length;
+    const pesoTotal = base.reduce((acc, curr) => acc + (curr.pesoUnitarioKg || 1) * curr.orderingQuantity, 0);
+    const itemsDgr = base.filter((it) => it.esDGR).length;
 
     return {
       totalLineas,
@@ -152,12 +245,12 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
       piezasMaritimo,
       pesoTotal: Number(pesoTotal.toFixed(2)),
       itemsDgr,
-      porcentajeAereo: totalPiezas > 0 ? ((piezasAereo / totalPiezas) * 100).toFixed(1) : '0',
-      porcentajeMaritimo: totalPiezas > 0 ? ((piezasMaritimo / totalPiezas) * 100).toFixed(1) : '0'
+      porcentajeAereo: totalPiezas > 0 ? ((piezasAereo / totalPiezas) * 100).toFixed(1) : "0",
+      porcentajeMaritimo: totalPiezas > 0 ? ((piezasMaritimo / totalPiezas) * 100).toFixed(1) : "0"
     };
-  }, [items]);
+  }, [itemsEnRango]);
 
-  // Consolidado quincenal por sucursal
+  // Consolidado quincenal por sucursal dentro del rango seleccionado
   const consolidadoSucursales = useMemo(() => {
     const map: Record<string, {
       sucursal: string;
@@ -169,8 +262,8 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
       urgenciasVor: number;
     }> = {};
 
-    items.forEach((it) => {
-      const suc = it.sucursal || 'Central CEDIS';
+    itemsEnRango.forEach((it) => {
+      const suc = it.sucursal || "Central CEDIS";
       if (!map[suc]) {
         map[suc] = {
           sucursal: suc,
@@ -185,73 +278,92 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
       map[suc].lineas += 1;
       map[suc].piezasTotales += it.orderingQuantity;
       map[suc].pesoTotalKg += (it.pesoUnitarioKg || 1) * it.orderingQuantity;
-      if (it.categorizacion === 'Aereo') {
+      if (it.categorizacion === "Aereo") {
         map[suc].piezasAereo += it.orderingQuantity;
       } else {
         map[suc].piezasMaritimo += it.orderingQuantity;
       }
-      if (it.tipoSolicitud === 'VOR / Unidad Parada') {
+      if (it.tipoSolicitud === "VOR / Unidad Parada") {
         map[suc].urgenciasVor += 1;
       }
     });
 
     return Object.values(map);
-  }, [items]);
+  }, [itemsEnRango]);
 
-  // Sincronizar pedidos pendientes de CEDIS al cuadro
+  // Cabeceras y detalles que pertenecen estrictamente a este rango de fechas
+  const cabecerasEnRango = useMemo(() => {
+    return cabeceras.filter(cab => {
+      if (periodoPreset === "ALL") return true;
+      const fecha = parseFechaISO(cab.fechaCreacion);
+      if (!fecha) return true;
+      if (fechaDesde && fecha < fechaDesde) return false;
+      if (fechaHasta && fecha > fechaHasta) return false;
+      return true;
+    });
+  }, [cabeceras, fechaDesde, fechaHasta, periodoPreset]);
+
+  const totalLineasDisponibles = useMemo(() => {
+    const ids = new Set(cabecerasEnRango.map(c => c.pedidoId));
+    return detalles.filter(d => ids.has(d.pedidoId)).length;
+  }, [cabecerasEnRango, detalles]);
+
+  // Abrir modal de sincronización por rango
   const handleSincronizarPedidosCEDIS = () => {
-    // Buscar detalles de repuestos sin stock o pendientes de pedido
-    let importados = 0;
-    const nuevosItems = [...items];
+    setModalSincronizarAbierto(true);
+  };
 
-    cabeceras.forEach((cab) => {
-      // Tomar solicitudes activas de taller, vor, garantia o colision
+  // Ejecutar sincronización en modo Reemplazar (Orden Limpia) o Anexar
+  const ejecutarSincronizacion = (modo: "reemplazar" | "anexar") => {
+    let nuevosItems: ItemOrderingTemplate[] = modo === "reemplazar" ? [] : [...items];
+    let importados = 0;
+    let duplicadosOmitidos = 0;
+
+    cabecerasEnRango.forEach((cab) => {
       const lineasDeEstePedido = detalles.filter((d) => d.pedidoId === cab.pedidoId);
       lineasDeEstePedido.forEach((lin) => {
-        // Verificar si ya existe en la lista para no duplicar
+        // Validación estricta anti-duplicados (por pedidoId + codigoRepuesto)
         const yaExiste = nuevosItems.some(
-          (it) => it.partsCode === lin.codigoRepuesto && it.pedidoId === cab.pedidoId
+          (it) => it.partsCode.trim().toUpperCase() === lin.codigoRepuesto.trim().toUpperCase() && it.pedidoId === cab.pedidoId
         );
-        if (!yaExiste) {
-          const desc = lin.descripcionOficial || lin.codigoActualizado || lin.codigoRepuesto;
-          const clasif = clasificarRepuesto(lin.codigoRepuesto, desc);
-          nuevosItems.push({
-            id: `REP-IMP-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-            partsCode: lin.codigoRepuesto,
-            orderingQuantity: lin.cantidadSolicitada || 1,
-            comment: desc.toUpperCase(),
-            categorizacion: clasif.categorizacion,
-            pesoUnitarioKg: clasif.pesoUnitarioKg,
-            largoCm: clasif.largoCm,
-            anchoCm: clasif.anchoCm,
-            altoCm: clasif.altoCm,
-            pesoVolumetricoKg: clasif.pesoVolumetricoKg,
-            categoriaEstructura: clasif.categoria,
-            motivoClasificacion: clasif.motivo,
-            esDGR: clasif.esDGR,
-            sucursal: cab.sucursal,
-            pedidoId: cab.pedidoId,
-            modeloChangan: cab.modeloChangan,
-            cliente: cab.cliente,
-            vin: cab.vin,
-            numeroOR: cab.numeroOR,
-            tipoSolicitud: cab.tipoPedido,
-            quincena: quincenaSeleccionada,
-            fechaCreacion: cab.fechaCreacion.split(' ')[0]
-          });
-          importados++;
+        if (yaExiste) {
+          duplicadosOmitidos++;
+          return;
         }
+
+        const desc = lin.descripcionOficial || lin.codigoActualizado || lin.codigoRepuesto;
+        const clasif = clasificarRepuesto(lin.codigoRepuesto, desc);
+        nuevosItems.push({
+          id: `REP-${cab.pedidoId}-${lin.codigoRepuesto}-${Date.now().toString(36)}`,
+          partsCode: lin.codigoRepuesto,
+          orderingQuantity: lin.cantidadSolicitada || 1,
+          comment: desc.toUpperCase(),
+          categorizacion: clasif.categorizacion,
+          pesoUnitarioKg: clasif.pesoUnitarioKg,
+          largoCm: clasif.largoCm,
+          anchoCm: clasif.anchoCm,
+          altoCm: clasif.altoCm,
+          pesoVolumetricoKg: clasif.pesoVolumetricoKg,
+          categoriaEstructura: clasif.categoria,
+          motivoClasificacion: clasif.motivo,
+          esDGR: clasif.esDGR,
+          sucursal: cab.sucursal,
+          pedidoId: cab.pedidoId,
+          modeloChangan: cab.modeloChangan,
+          cliente: cab.cliente,
+          vin: cab.vin,
+          numeroOR: cab.numeroOR,
+          tipoSolicitud: cab.tipoPedido,
+          quincena: quincenaSeleccionada,
+          fechaCreacion: parseFechaISO(cab.fechaCreacion) || cab.fechaCreacion
+        });
+        importados++;
       });
     });
 
-    if (importados > 0) {
-      guardarItems(nuevosItems);
-      alert(`Se sincronizaron exitosamente ${importados} repuestos pendientes desde las solicitudes de sucursales.`);
-    } else {
-      alert('Todos los pedidos actuales ya se encuentran sincronizados en el Reporte Fábrica.');
-    }
+    guardarItems(nuevosItems);
+    setModalSincronizarAbierto(false);
   };
-
   // Restaurar plantilla canónica del ejemplo del usuario
   const handleRestaurarEjemplo = () => {
     if (window.confirm('¿Deseas restablecer el cuadro al ejemplo oficial exacto de fábrica (20 repuestos clasificados)?')) {
@@ -260,9 +372,11 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
   };
 
   // Copiar al portapapeles con formato tabular (listo para pegar en Excel)
+  // Copiar al portapapeles con formato tabular (listo para pegar en Excel)
   const handleCopiarPortapapeles = () => {
-    let texto = 'Parts code\tOrdering Quantity\tComment\tCategorizacion\n';
-    items.forEach((it) => {
+    let texto = "Parts code\tOrdering Quantity\tComment\tCategorizacion\n";
+    const itemsACopiar = modoVistaConsolidada ? itemsConsolidados : itemsEnRango;
+    itemsACopiar.forEach((it) => {
       texto += `${it.partsCode}\t${it.orderingQuantity}\t${it.comment}\t${it.categorizacion}\n`;
     });
 
@@ -272,12 +386,12 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
     });
   };
 
-  // Exportar archivo Excel .xlsx con las 5 pestañas
+  // Exportar archivo Excel .xlsx con las 5 pestañas respetando el rango seleccionado
   const handleDescargarExcel = () => {
-    const fechaLimpia = quincenaSeleccionada.replace(/\s+/g, '_');
-    exportarLibroExcelReporteFabrica(items, `Reporte_Fabrica_Changan_${fechaLimpia}.xlsx`);
+    const sufijo = `${fechaDesde || "inicio"}_al_${fechaHasta || "fin"}`.replace(/[^\w-]/g, "_");
+    const itemsAExportar = modoVistaConsolidada ? itemsConsolidados : itemsEnRango;
+    exportarLibroExcelReporteFabrica(itemsAExportar, `Reporte_Fabrica_Changan_${sufijo}.xlsx`);
   };
-
   // Abrir modal para nuevo repuesto
   const handleAbrirNuevo = () => {
     setItemEnEdicion(null);
@@ -444,26 +558,11 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
 
           {/* Acciones principales de exportación y sincronización */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 text-xs">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              <select
-                aria-label="Seleccionar periodo quincenal del reporte a fábrica"
-                value={quincenaSeleccionada}
-                onChange={(e) => setQuincenaSeleccionada(e.target.value)}
-                className="bg-transparent text-white font-medium focus:outline-none cursor-pointer"
-              >
-                <option value="1ra Quincena Septiembre 2026" className="bg-slate-900 text-white">1ra Quincena Septiembre 2026</option>
-                <option value="2da Quincena Septiembre 2026" className="bg-slate-900 text-white">2da Quincena Septiembre 2026</option>
-                <option value="1ra Quincena Agosto 2026" className="bg-slate-900 text-white">1ra Quincena Agosto 2026</option>
-                <option value="2da Quincena Agosto 2026" className="bg-slate-900 text-white">2da Quincena Agosto 2026</option>
-              </select>
-            </div>
-
             <button
               type="button"
               onClick={handleSincronizarPedidosCEDIS}
-              className="bg-blue-700 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow transition"
-              title="Cargar solicitudes de sucursales pendientes a fábrica"
+              className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-blue-950 transition cursor-pointer"
+              title="Sincronizar pedidos de CEDIS filtrando por rango de fechas sin mezclas ni duplicados"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Sincronizar Pedidos CEDIS</span>
@@ -472,17 +571,17 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
             <button
               type="button"
               onClick={handleCopiarPortapapeles}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow transition"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow transition cursor-pointer"
               title="Copiar las 4 columnas oficiales al portapapeles para pegar en Excel"
             >
               {mensajeCopiado ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{mensajeCopiado ? '¡Copiado!' : 'Copiar Tabla'}</span>
+              <span>{mensajeCopiado ? "¡Copiado!" : "Copiar Tabla"}</span>
             </button>
 
             <button
               type="button"
               onClick={handleDescargarExcel}
-              className="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-950 transition"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-950 transition cursor-pointer"
               title="Descargar libro Excel .xlsx completo con las 5 pestañas exactas del ejemplo"
             >
               <Download className="w-3.5 h-3.5" />
@@ -492,12 +591,82 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
             <button
               type="button"
               onClick={handleAbrirNuevo}
-              className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow transition"
+              className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Nuevo Repuesto</span>
             </button>
           </div>
+        </div>
+
+        {/* BARRA AVANZADA DE RANGO DE FECHAS (CONTROL ANTI-MEZCLAS Y ANTI-DUPLICADOS) */}
+        <div className="mt-4 pt-3.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Selector de Quincenas y Periodos Predefinidos */}
+            <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+              <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="text-slate-400 font-medium">Período:</span>
+              <select
+                aria-label="Seleccionar periodo o quincena"
+                value={periodoPreset}
+                onChange={(e) => handleCambiarPresetPeriodo(e.target.value)}
+                className="bg-transparent text-white font-bold focus:outline-none cursor-pointer"
+              >
+                <option value="1Q_SEP_2026" className="bg-slate-900 text-white">1ra Quincena Septiembre 2026 (01/09 - 15/09)</option>
+                <option value="2Q_SEP_2026" className="bg-slate-900 text-white">2da Quincena Septiembre 2026 (16/09 - 30/09)</option>
+                <option value="MES_SEP_2026" className="bg-slate-900 text-white">Mes Completo Septiembre 2026 (01/09 - 30/09)</option>
+                <option value="1Q_AGO_2026" className="bg-slate-900 text-white">1ra Quincena Agosto 2026 (01/08 - 15/08)</option>
+                <option value="2Q_AGO_2026" className="bg-slate-900 text-white">2da Quincena Agosto 2026 (16/08 - 31/08)</option>
+                <option value="MES_AGO_2026" className="bg-slate-900 text-white">Mes Completo Agosto 2026 (01/08 - 31/08)</option>
+                <option value="CUSTOM" className="bg-slate-900 text-amber-300 font-bold">Personalizado (Rango Libre)</option>
+                <option value="ALL" className="bg-slate-900 text-slate-300">Todo el Historial</option>
+              </select>
+            </div>
+
+            {/* Inputs directos de Rango de Fecha */}
+            <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+              <span className="text-slate-400 font-medium">Desde:</span>
+              <input
+                type="date"
+                value={fechaDesde}
+                onChange={(e) => handleCambiarFechaManual(e.target.value, fechaHasta)}
+                className="bg-slate-900 text-white border border-slate-700 rounded px-2 py-0.5 text-xs font-mono focus:ring-1 focus:ring-sky-500 focus:outline-none"
+              />
+              <span className="text-slate-400 font-medium">Hasta:</span>
+              <input
+                type="date"
+                value={fechaHasta}
+                onChange={(e) => handleCambiarFechaManual(fechaDesde, e.target.value)}
+                className="bg-slate-900 text-white border border-slate-700 rounded px-2 py-0.5 text-xs font-mono focus:ring-1 focus:ring-sky-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Badge indicador de rango activo */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>
+                Rango Activo: {fechaDesde || "Inicio"} al {fechaHasta || "Fin"} &bull; {cabecerasEnRango.length} pedidos ({itemsEnRango.length} SKUs)
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Switch para Alternar Vista Detallada vs Consolidada a Fábrica */}
+            <button
+              type="button"
+              onClick={() => setModoVistaConsolidada(!modoVistaConsolidada)}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                modoVistaConsolidada
+                  ? "bg-sky-600 border-sky-400 text-white shadow-md shadow-sky-950"
+                  : "bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
+              }`}
+              title="Consolida repuestos idénticos sumando sus cantidades totales para la orden a fábrica"
+            >
+              <Boxes className="w-3.5 h-3.5" />
+              <span>{modoVistaConsolidada ? "Consolidado por SKU (Fábrica)" : "Vista Detallada por Pedido"}</span>
+            </button>
+          </div>
+
         </div>
 
         {/* Tarjetas métricas ejecutivas para el Gerente */}
@@ -1424,6 +1593,104 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* ========================================================= */}
+      {/* MODAL: SINCRONIZACIÓN INTELIGENTE POR RANGO DE FECHAS     */}
+      {/* ========================================================= */}
+      {modalSincronizarAbierto && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden text-white animate-in fade-in zoom-in-95">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/40 flex items-center justify-center font-bold">
+                  <RefreshCw className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Sincronizar Pedidos para Fábrica</h3>
+                  <p className="text-xs text-slate-400">Filtrado estricto por rango de fechas sin duplicados</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalSincronizarAbierto(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4 text-xs">
+              {/* Resumen del Rango */}
+              <div className="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-amber-400" />
+                    Rango seleccionado:
+                  </span>
+                  <span className="font-bold text-amber-300">
+                    {fechaDesde || "Inicio"} al {fechaHasta || "Fin"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-1.5 border-t border-slate-700">
+                  <span className="text-slate-400 font-medium">Solicitudes CEDIS en este rango:</span>
+                  <span className="font-bold text-emerald-400">{cabecerasEnRango.length} pedidos ({totalLineasDisponibles} líneas de repuesto)</span>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <p className="text-slate-300 font-medium">
+                  ¿Cómo deseas incorporar los pedidos al Cuadro de Fábrica?
+                </p>
+
+                {/* Opción 1: Generar orden limpia */}
+                <button
+                  type="button"
+                  onClick={() => ejecutarSincronizacion("reemplazar")}
+                  className="w-full text-left p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 hover:bg-emerald-900/40 transition group cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      <strong className="text-emerald-300 font-bold text-xs">Generar Orden Limpia de este Rango (Recomendado)</strong>
+                    </div>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold border border-emerald-500/30">Cero Mezclas</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1 pl-4">
+                    Reemplaza el cuadro actual únicamente con los pedidos de este período quincenal. Garantiza que no haya pedidos de otras fechas ni duplicados.
+                  </p>
+                </button>
+
+                {/* Opción 2: Anexar sin duplicar */}
+                <button
+                  type="button"
+                  onClick={() => ejecutarSincronizacion("anexar")}
+                  className="w-full text-left p-3.5 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-800 transition group cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-sky-400"></span>
+                      <strong className="text-white font-bold text-xs">Anexar Pedidos de este Rango</strong>
+                    </div>
+                    <span className="text-[10px] bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded font-bold border border-sky-500/30">Anti-Duplicidad</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1 pl-4">
+                    Agrega los pedidos de este rango manteniendo los ítems existentes, omitiendo automáticamente cualquier SKU repetido para el mismo pedido.
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-950/60 border-t border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setModalSincronizarAbierto(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}
