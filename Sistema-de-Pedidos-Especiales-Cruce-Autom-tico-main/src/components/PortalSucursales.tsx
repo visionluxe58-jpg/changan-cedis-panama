@@ -1,5 +1,5 @@
-import { SecurityUtils } from '../utils/security';
-import { appsScriptClient } from '../services/appsScriptClient';
+﻿import { SecurityUtils } from '../utils/security';
+import { appsScriptClient, USUARIOS_OFICIALES } from '../services/appsScriptClient';
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Building2, 
@@ -67,7 +67,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
   onCambiarTab
 }) => {
   const esAdmin = usuario.rol === 'ADMINISTRADOR_CEDIS';
-  // Estado de configuración de sucursal
+  // Estado de configuraciÃ³n de sucursal
   const [sucursalSeleccionada, setSucursalSeleccionada] = useState<boolean>(() => {
     const guardada = localStorage.getItem('changan_sucursal_configurada');
     return Boolean(guardada && usuario.sucursal && !usuario.sucursal.includes('Central'));
@@ -76,6 +76,9 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
   const [tabActiva, setTabActiva] = useState<'nueva' | 'historial'>('nueva');
   const [modalPdfAbierto, setModalPdfAbierto] = useState<boolean>(false);
   const [modalRastreadorAbierto, setModalRastreadorAbierto] = useState<boolean>(false);
+  const [modalPinAdminAbierto, setModalPinAdminAbierto] = useState<boolean>(false);
+  const [pinAdminPortal, setPinAdminPortal] = useState<string>('');
+  const [errorPinPortal, setErrorPinPortal] = useState<string>('');
   const [codigoInicialRastreo, setCodigoInicialRastreo] = useState<string>('');
   const [comprobantePdfData, setComprobantePdfData] = useState<ComprobantePedidoData | null>(null);
   const [modalEtiquetasData, setModalEtiquetasData] = useState<EtiquetaRepuestoData[] | null>(null);
@@ -102,6 +105,22 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
     setTimeout(() => setCopiadoEnlace(false), 2500);
   };
 
+
+  const handleValidarPinPortal = (e: React.FormEvent) => {
+    e.preventDefault();
+    const pinLimpio = pinAdminPortal.trim();
+    if (pinLimpio === '2026' || pinLimpio === 'admin' || pinLimpio === 'CEDIS' || pinLimpio === 'cedis2026') {
+      const admin = USUARIOS_OFICIALES.find(u => u.rol === 'ADMINISTRADOR_CEDIS') || USUARIOS_OFICIALES[0];
+      localStorage.removeItem('changan_sucursal_configurada');
+      onCambiarUsuario(admin);
+      setModalPinAdminAbierto(false);
+      setPinAdminPortal('');
+      setErrorPinPortal('');
+      window.location.href = window.location.pathname;
+    } else {
+      setErrorPinPortal('PIN incorrecto. Ingresa la clave autorizada.');
+    }
+  };
   const abrirRastreadorUniversal = (codigo = '') => {
     setCodigoInicialRastreo(codigo);
     setModalRastreadorAbierto(true);
@@ -206,22 +225,22 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
 
     const headers = [
       'ID Pedido',
-      'Fecha Creación',
+      'Fecha CreaciÃ³n',
       'Sucursal',
       'Asesor',
-      'Tipo de Requisición',
+      'Tipo de RequisiciÃ³n',
       'Cliente',
       'Placa',
       'Modelo Changan',
       'VIN / Chasis',
-      'Cotización / OR',
-      'Código Repuesto',
-      'Descripción Pieza',
+      'CotizaciÃ³n / OR',
+      'CÃ³digo Repuesto',
+      'DescripciÃ³n Pieza',
       'Cantidad Solicitada',
       'Cantidad Despachada',
       'Saldo Pendiente',
       'Estado Pago',
-      'Estatus Logístico'
+      'Estatus LogÃ­stico'
     ];
 
     const rows: string[][] = [];
@@ -385,7 +404,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
                   : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
               }`}
             >
-              + Nueva Requisición
+              + Nueva RequisiciÃ³n
             </button>
             <button
               type="button"
@@ -408,18 +427,33 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
             Rastrear
           </button>
 
-          {/* Solo visible para Administradores CEDIS */}
-          {esAdmin && (
-            <button
-              type="button"
-              onClick={copiarEnlacePortal}
-              className="px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-[#1e293b] hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors cursor-pointer flex items-center gap-1"
-              title="Copiar enlace para asesores"
-            >
-              <Share2 className="w-3.5 h-3.5 text-blue-400" />
-              <span className="hidden sm:inline">{copiadoEnlace ? 'Copiado' : 'Compartir'}</span>
-            </button>
-          )}
+          {/* BotÃ³n para regresar al panel general CEDIS */}
+          <button
+            type="button"
+            onClick={() => {
+              if (esAdmin) {
+                if (onAbrirMatrizCentral) onAbrirMatrizCentral();
+              } else {
+                setModalPinAdminAbierto(true);
+              }
+            }}
+            className="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 rounded-lg border border-emerald-500/40 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+            title="Regresar a Inicio / Panel Central CEDIS"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Panel CEDIS</span>
+          </button>
+
+          {/* Compartir enlace de asesores */}
+          <button
+            type="button"
+            onClick={copiarEnlacePortal}
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-[#1e293b] hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors cursor-pointer flex items-center gap-1"
+            title="Copiar enlace para asesores"
+          >
+            <Share2 className="w-3.5 h-3.5 text-blue-400" />
+            <span className="hidden sm:inline">{copiadoEnlace ? 'Copiado' : 'Compartir'}</span>
+          </button>
         </div>
 
       </header>
@@ -458,16 +492,16 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Consulta de trazabilidad, estatus logístico y descarga de comprobantes oficiales de despacho en formato PDF o Excel.
+                  Consulta de trazabilidad, estatus logÃ­stico y descarga de comprobantes oficiales de despacho en formato PDF o Excel.
                 </p>
               </div>
 
-              {/* Botones de acción y filtros */}
+              {/* Botones de acciÃ³n y filtros */}
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={async () => {
-                    alert('Iniciando sincronización completa con Google Sheets...');
+                    alert('Iniciando sincronizaciÃ³n completa con Google Sheets...');
                     const res = await appsScriptClient.sincronizarTodaLaGoogleSheet();
                     alert(res.mensaje);
                     window.location.reload();
@@ -493,7 +527,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
                     type="text"
                     value={busquedaPedidos}
                     onChange={(e) => setBusquedaPedidos(e.target.value)}
-                    placeholder="Buscar por Folio, Cliente, Placa o Cód. Parte..."
+                    placeholder="Buscar por Folio, Cliente, Placa o CÃ³d. Parte..."
                     className="pl-9 pr-3 py-1.5 rounded-lg bg-[#1e293b] border border-slate-700 text-xs text-white placeholder-slate-500 w-72 focus:border-blue-500 focus:outline-none font-mono"
                   />
                 </div>
@@ -505,10 +539,10 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-[#1e293b] border-b border-slate-700 text-[11px] font-mono text-slate-300 uppercase tracking-wider sticky top-0 z-10">
-                    <th className="py-3 px-4">FOLIO REQUISICIÓN</th>
+                    <th className="py-3 px-4">FOLIO REQUISICIÃ“N</th>
                     <th className="py-3 px-4">FECHA Y ASESOR</th>
-                    <th className="py-3 px-4">CLIENTE / VEHÍCULO</th>
-                    <th className="py-3 px-4">LÍNEAS SOLICITADAS</th>
+                    <th className="py-3 px-4">CLIENTE / VEHÃCULO</th>
+                    <th className="py-3 px-4">LÃNEAS SOLICITADAS</th>
                     <th className="py-3 px-4 text-center">TIPO / PRIORIDAD</th>
                     <th className="py-3 px-4 text-center">ESTADO CEDIS</th>
                     <th className="py-3 px-4 text-center">ACCIONES</th>
@@ -518,7 +552,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
                   {pedidosFiltrados.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-12 text-center text-slate-400">
-                        No se encontraron requisiciones registradas con el criterio de búsqueda.
+                        No se encontraron requisiciones registradas con el criterio de bÃºsqueda.
                       </td>
                     </tr>
                   ) : (
@@ -537,7 +571,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
                         <td className="py-3 px-4">
                           <div className="font-semibold text-white">{p.cabecera.cliente || 'Cliente General'}</div>
                           <div className="text-[11px] text-blue-400 font-mono">
-                            {p.cabecera.modeloChangan} • {p.cabecera.placa}
+                            {p.cabecera.modeloChangan} â€¢ {p.cabecera.placa}
                           </div>
                         </td>
                         <td className="py-3 px-4">
@@ -549,7 +583,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
                               </div>
                             ))}
                             {p.items.length > 2 && (
-                              <span className="text-[10px] text-blue-400">+{p.items.length - 2} partes más...</span>
+                              <span className="text-[10px] text-blue-400">+{p.items.length - 2} partes mÃ¡s...</span>
                             )}
                           </div>
                         </td>
@@ -623,6 +657,65 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
           }}
         />
       )}
+      {/* MODAL PIN ADMINISTRADOR CEDIS - Regreso al panel central */}
+      {modalPinAdminAbierto && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0f172a] border border-slate-700 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
+            <div className="p-4 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">Modo Administrador</h3>
+                  <p className="text-[11px] text-slate-400">Regresar al panel general CEDIS</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setModalPinAdminAbierto(false); setErrorPinPortal(''); setPinAdminPortal(''); }}
+                className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleValidarPinPortal} className="p-4 space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  PIN o Clave de Administrador
+                </label>
+                <input
+                  type="password"
+                  value={pinAdminPortal}
+                  onChange={(e) => { setPinAdminPortal(e.target.value); setErrorPinPortal(''); }}
+                  placeholder="Ingresa PIN (ej. 2026)"
+                  autoFocus
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
+                />
+                {errorPinPortal && (
+                  <p className="text-xs text-rose-400 mt-1.5 font-medium">{errorPinPortal}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setModalPinAdminAbierto(false); setErrorPinPortal(''); setPinAdminPortal(''); }}
+                  className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer shadow-lg shadow-emerald-600/20"
+                >
+                  Ingresar como Admin
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
 
       {/* MODAL RASTREADOR UNIVERSAL */}
       {modalRastreadorAbierto && (
@@ -639,3 +732,5 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
     </div>
   );
 };
+
+
