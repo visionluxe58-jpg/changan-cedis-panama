@@ -29,21 +29,23 @@ export async function exportarExcelEjecutivoKPIs(
 ) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'Changan Auto Panama - CEDIS Logistics';
-  workbook.lastModifiedBy = 'Administrador CEDIS';
+  workbook.lastModifiedBy = 'Direccion General CEDIS';
   workbook.created = new Date();
   workbook.modified = new Date();
 
+  // 1. Agregacion precisa de sucursales
   const sucursalesMap = new Map<string, { pedidos: Set<string>; sol: number; asig: number; desp: number; pend: number }>();
-  const modelosMap = new Map<string, number>();
+  const modelosMap = new Map<string, { lineas: number; piezas: number }>();
 
   filas.forEach(f => {
-    const suc = f.sucursal || 'Sin Sucursal';
+    const rawSuc = f.sucursal ? f.sucursal.trim() : 'Sin Sucursal';
+    const suc = rawSuc || 'Sin Sucursal';
     if (!sucursalesMap.has(suc)) {
       sucursalesMap.set(suc, { pedidos: new Set(), sol: 0, asig: 0, desp: 0, pend: 0 });
     }
     const data = sucursalesMap.get(suc)!;
     if (f.pedidoId) data.pedidos.add(f.pedidoId);
-    const sol = Number(f.cantidadSolicitada) || 0;
+    const sol = Number(f.cantidadSolicitada) || 1;
     const asig = Number((f as any).cantidadAsignada ?? (f as any).cantAsignada ?? 0);
     const desp = Number((f as any).cantidadDespachada ?? (f as any).cantDespachada ?? 0);
     data.sol += sol;
@@ -51,160 +53,201 @@ export async function exportarExcelEjecutivoKPIs(
     data.desp += desp;
     data.pend += Math.max(0, sol - (asig + desp));
 
-    const mod = f.modeloChangan || 'Otros Modelos';
-    modelosMap.set(mod, (modelosMap.get(mod) || 0) + sol);
+    const rawMod = f.modeloChangan ? f.modeloChangan.trim() : 'Otros Modelos';
+    const mod = rawMod || 'Otros Modelos';
+    if (!modelosMap.has(mod)) {
+      modelosMap.set(mod, { lineas: 0, piezas: 0 });
+    }
+    const mData = modelosMap.get(mod)!;
+    mData.lineas += 1;
+    mData.piezas += sol;
   });
 
   const arraySucursales = Array.from(sucursalesMap.keys()).sort();
   const arrayModelos = Array.from(modelosMap.entries())
-    .map(([name, val]) => ({ name, val }))
+    .map(([name, data]) => ({ name, lineas: data.lineas, val: data.piezas }))
     .sort((a, b) => b.val - a.val);
 
-  // =========================================================================
-  // HOJA 1: Tablero Ejecutivo (MODELO GERENCIAL ESTRUCTURADO CON FORMULAS)
-  // =========================================================================
-  const ws1 = workbook.addWorksheet('Tablero Ejecutivo', {
-    views: [{ showGridLines: true }]
-  });
+  // Paleta Ejecutiva Changan CEDIS
+  const C_NAVY = 'FF0A192F';       // Encabezados principales / Tarjetas
+  const C_NAVY_LIGHT = 'FF1E293B'; // Sub-encabezados
+  const C_BLUE = 'FF0284C7';       // Acento Azul Changan
+  const C_EMERALD = 'FF10B981';    // Verde exito / optimo
+  const C_ROSE = 'FFF43F5E';       // Rojo alerta / backorder
+  const C_AMBER = 'FFF59E0B';      // Amarillo seguimiento
+  const C_GRAY_BG = 'FFF8FAFC';    // Fondo alternado filas
+  const C_WHITE = 'FFFFFFFF';
+  const C_TEXT_DARK = 'FF0F172A';
+  const C_TEXT_MUTED = 'FF64748B';
 
-  ws1.columns = [
-    { width: 4 },   // A
-    { width: 26 },  // B
-    { width: 14 },  // C
-    { width: 18 },  // D
-    { width: 18 },  // E
-    { width: 18 },  // F
-    { width: 18 },  // G
-    { width: 18 },  // H
-    { width: 16 },  // I
-    { width: 22 },  // J
-    { width: 18 },  // K
-    { width: 32 }   // L
-  ];
-
-  const borderThin: Partial<ExcelJS.Borders> = {
+  const borderLight: Partial<ExcelJS.Borders> = {
     top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
     bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
     left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
     right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
   };
 
-  const borderHeader: Partial<ExcelJS.Borders> = {
-    top: { style: 'medium', color: { argb: 'FF0F172A' } },
-    bottom: { style: 'medium', color: { argb: 'FF0F172A' } },
-    left: { style: 'thin', color: { argb: 'FF334155' } },
-    right: { style: 'thin', color: { argb: 'FF334155' } }
+  const borderTotal: Partial<ExcelJS.Borders> = {
+    top: { style: 'thin', color: { argb: 'FF38BDF8' } },
+    bottom: { style: 'double', color: { argb: 'FF38BDF8' } },
+    left: { style: 'thin', color: { argb: 'FF1E293B' } },
+    right: { style: 'thin', color: { argb: 'FF1E293B' } }
   };
 
-  // BANNER
-  ws1.mergeCells('B2:L3');
-  const ban1 = ws1.getCell('B2');
-  ban1.value = 'CHANGAN AUTO PANAMA // CEDIS LOGISTICS - TABLERO GERENCIAL DE PEDIDOS ESPECIALES';
-  ban1.font = { name: 'Arial', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
-  ban1.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-  ban1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+  // =========================================================================
+  // HOJA 1: RESUMEN EJECUTIVO (VISUAL, CLARO, SIN ERRORES NI CONFUSION)
+  // =========================================================================
+  const ws1 = workbook.addWorksheet('Resumen Ejecutivo', {
+    views: [{ showGridLines: true }]
+  });
 
-  ws1.mergeCells('B4:L4');
-  const ban2 = ws1.getCell('B4');
-  ban2.value = 'Modelo de Control y Evaluacion Operativa  |  Formulas Vivas de Excel  |  Fecha de Corte: ' + kpiData.fechaCorte;
-  ban2.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FFBAE6FD' } };
-  ban2.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-  ban2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0284C7' } };
+  // Ancho generoso de columnas para que ningun texto quede cortado
+  ws1.columns = [
+    { width: 3 },   // A (margen izquierdo)
+    { width: 34 },  // B (Sucursal / Indicador)
+    { width: 15 },  // C (Pedidos)
+    { width: 18 },  // D (Solicitadas)
+    { width: 18 },  // E (Asignadas)
+    { width: 18 },  // F (Despachadas)
+    { width: 20 },  // G (Total Atendidas)
+    { width: 18 },  // H (Pendientes / Backorder)
+    { width: 16 },  // I (Fill Rate %)
+    { width: 20 },  // J (Estado / Semáforo)
+    { width: 46 }   // K (Diagnóstico / Acción Operativa)
+  ];
 
-  // TARJETAS KPIS CON FORMULAS
-  const filaTotalSucursal = 13 + arraySucursales.length;
+  // 1. BANNER INSTITUCIONAL
+  ws1.mergeCells('B2:K3');
+  const bTitle = ws1.getCell('B2');
+  bTitle.value = 'CHANGAN AUTO PANAMÁ  |  CENTRO DE DISTRIBUCIÓN (CEDIS)';
+  bTitle.font = { name: 'Arial', size: 14, bold: true, color: { argb: C_WHITE } };
+  bTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY } };
+  bTitle.alignment = { vertical: 'middle', horizontal: 'center' };
 
-  const kpiCards = [
+  ws1.mergeCells('B4:K4');
+  const bSub = ws1.getCell('B4');
+  bSub.value = 'INFORME EJECUTIVO DE KPIS Y OPERACIONES LOGÍSTICAS  •  Fecha de Emisión: ' + kpiData.fechaCorte;
+  bSub.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FFBAE6FD' } };
+  bSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_BLUE } };
+  bSub.alignment = { vertical: 'middle', horizontal: 'center' };
+
+  // 2. OCHO TARJETAS KPIS ESTRUCTURADAS
+  const filaTotSucRef = 17 + arraySucursales.length;
+
+  const topCardsFila1 = [
     {
-      rangoHead: 'B6:C6', rangoVal: 'B7:C7', rangoSub: 'B8:C8',
-      titulo: 'FILL RATE GLOBAL (ATENCION)',
-      formula: 'IF(D' + filaTotalSucursal + '>0, G' + filaTotalSucursal + '/D' + filaTotalSucursal + ', 1)',
-      valorStatic: kpiData.fillRate / 100,
+      colStart: 'B', colEnd: 'C',
+      label: 'FILL RATE GLOBAL',
+      valStatic: (kpiData.fillRate / 100),
+      formula: 'IF(D' + filaTotSucRef + '>0, G' + filaTotSucRef + '/D' + filaTotSucRef + ', 1)',
       numFmt: '0.0%',
-      colorValor: kpiData.fillRate >= 97 ? 'FF10B981' : 'FFF59E0B',
-      subtitulo: 'Meta CSCMP: >= 97.0%'
+      colorVal: kpiData.fillRate >= 97 ? C_EMERALD : C_AMBER,
+      meta: 'Meta CSCMP: >= 97.0%'
     },
     {
-      rangoHead: 'D6:E6', rangoVal: 'D7:E7', rangoSub: 'D8:E8',
-      titulo: 'DEMANDA TOTAL (SOLICITADAS)',
-      formula: 'D' + filaTotalSucursal,
-      valorStatic: kpiData.totalPiezasSolicitadas,
-      numFmt: '#,##0',
-      colorValor: 'FF0284C7',
-      subtitulo: 'Piezas solicitadas por agencias'
-    },
-    {
-      rangoHead: 'F6:G6', rangoVal: 'F7:G7', rangoSub: 'F8:G8',
-      titulo: 'ATENCION CEDIS (ASIG. + DESP.)',
-      formula: 'G' + filaTotalSucursal,
-      valorStatic: kpiData.totalPiezasAsignadas + kpiData.totalPiezasDespachadas,
-      numFmt: '#,##0',
-      colorValor: 'FF10B981',
-      subtitulo: 'Asignadas en bodega y despachadas'
-    },
-    {
-      rangoHead: 'H6:I6', rangoVal: 'H7:I7', rangoSub: 'H8:I8',
-      titulo: 'PENDIENTES (BACKORDER)',
-      formula: 'H' + filaTotalSucursal,
-      valorStatic: Math.max(0, kpiData.totalPiezasSolicitadas - (kpiData.totalPiezasAsignadas + kpiData.totalPiezasDespachadas)),
-      numFmt: '#,##0',
-      colorValor: 'FFF43F5E',
-      subtitulo: 'En espera de cruce DPL maritimo'
-    },
-    {
-      rangoHead: 'J6:K6', rangoVal: 'J7:K7', rangoSub: 'J8:K8',
-      titulo: 'TIEMPO DE CICLO PROMEDIO',
-      valorStatic: kpiData.tiempoCicloHoras + ' h',
-      colorValor: 'FF06B6D4',
-      subtitulo: 'Meta logistica: <= 48 h'
-    },
-    {
-      rangoHead: 'L6:L6', rangoVal: 'L7:L7', rangoSub: 'L8:L8',
-      titulo: 'EXACTITUD DE INVENTARIO',
-      valorStatic: 0.986,
+      colStart: 'D', colEnd: 'E',
+      label: 'OTIF (A TIEMPO Y COMPLETO)',
+      valStatic: (kpiData.otif / 100),
       numFmt: '0.0%',
-      colorValor: 'FF10B981',
-      subtitulo: 'IRA Auditoria: >= 98.0%'
+      colorVal: kpiData.otif >= 95 ? C_EMERALD : C_AMBER,
+      meta: 'Meta Internacional: >= 95.0%'
+    },
+    {
+      colStart: 'F', colEnd: 'G',
+      label: 'QUIEBRE DE STOCK (STOCKOUT)',
+      valStatic: (kpiData.quiebreStock / 100),
+      formula: 'IF(D' + filaTotSucRef + '>0, H' + filaTotSucRef + '/D' + filaTotSucRef + ', 0)',
+      numFmt: '0.0%',
+      colorVal: kpiData.quiebreStock <= 2 ? C_EMERALD : C_ROSE,
+      meta: 'Meta CEDIS: <= 2.0%'
+    },
+    {
+      colStart: 'H', colEnd: 'K',
+      label: 'TIEMPO DE CICLO PROMEDIO (OCT)',
+      valStatic: kpiData.tiempoCicloHoras + ' Horas',
+      numFmt: undefined,
+      colorVal: 'FF38BDF8',
+      meta: 'Objetivo Operativo: <= 48 Horas'
     }
   ];
 
-  kpiCards.forEach(c => {
-    ws1.mergeCells(c.rangoHead);
-    const ch = ws1.getCell(c.rangoHead.split(':')[0]);
-    ch.value = c.titulo;
-    ch.font = { name: 'Arial', size: 8, bold: true, color: { argb: 'FF94A3B8' } };
-    ch.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
-    ch.alignment = { vertical: 'middle', horizontal: 'center' };
-
-    ws1.mergeCells(c.rangoVal);
-    const cv = ws1.getCell(c.rangoVal.split(':')[0]);
-    if (c.formula) {
-      cv.value = { formula: c.formula, result: c.valorStatic };
-    } else {
-      cv.value = c.valorStatic;
+  const topCardsFila2 = [
+    {
+      colStart: 'B', colEnd: 'C',
+      label: 'EXACTITUD INVENTARIO (IRA)',
+      valStatic: (kpiData.exactitudInventario / 100),
+      numFmt: '0.0%',
+      colorVal: C_EMERALD,
+      meta: 'Auditoría Cíclica: >= 98.0%'
+    },
+    {
+      colStart: 'D', colEnd: 'E',
+      label: 'EXACTITUD EN PICKING (PDT)',
+      valStatic: (kpiData.exactitudPicking / 100),
+      numFmt: '0.0%',
+      colorVal: C_EMERALD,
+      meta: 'Escaneo con Colector: >= 99.5%'
+    },
+    {
+      colStart: 'F', colEnd: 'G',
+      label: 'EFECTIVIDAD CRUCE DPL',
+      valStatic: (kpiData.efectividadCruce / 100),
+      numFmt: '0.0%',
+      colorVal: 'FF38BDF8',
+      meta: 'Cruce Marítimo 40HQ: >= 85.0%'
+    },
+    {
+      colStart: 'H', colEnd: 'K',
+      label: 'PEDIDO PERFECTO (CALIDAD)',
+      valStatic: (kpiData.pedidoPerfecto / 100),
+      numFmt: '0.0%',
+      colorVal: C_EMERALD,
+      meta: 'Servicio sin Discrepancias: >= 95.0%'
     }
-    if (c.numFmt) cv.numFmt = c.numFmt;
-    cv.font = { name: 'Arial', size: 16, bold: true, color: { argb: c.colorValor } };
-    cv.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
-    cv.alignment = { vertical: 'middle', horizontal: 'center' };
+  ];
 
-    ws1.mergeCells(c.rangoSub);
-    const cs = ws1.getCell(c.rangoSub.split(':')[0]);
-    cs.value = c.subtitulo;
-    cs.font = { name: 'Arial', size: 7.5, bold: false, color: { argb: 'FFCBD5E1' } };
-    cs.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
-    cs.alignment = { vertical: 'middle', horizontal: 'center' };
-  });
+  function renderCardGroup(cards: typeof topCardsFila1, rHead: number, rVal: number, rSub: number) {
+    cards.forEach(c => {
+      ws1.mergeCells(c.colStart + rHead + ':' + c.colEnd + rHead);
+      const cHeader = ws1.getCell(c.colStart + rHead);
+      cHeader.value = c.label;
+      cHeader.font = { name: 'Arial', size: 8, bold: true, color: { argb: 'FF94A3B8' } };
+      cHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY_LIGHT } };
+      cHeader.alignment = { vertical: 'middle', horizontal: 'center' };
 
-  // SECCION 1: SUCURSALES
-  ws1.mergeCells('B11:L11');
-  const sec1 = ws1.getCell('B11');
-  sec1.value = '1. BALANCE Y ATENCION POR AGENCIA / SUCURSAL (Formulas Dinamicas vinculadas a Detalle de Pedidos)';
-  sec1.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+      ws1.mergeCells(c.colStart + rVal + ':' + c.colEnd + rVal);
+      const cValue = ws1.getCell(c.colStart + rVal);
+      if (c.formula) {
+        cValue.value = { formula: c.formula, result: c.valStatic as number };
+      } else {
+        cValue.value = c.valStatic;
+      }
+      if (c.numFmt) cValue.numFmt = c.numFmt;
+      cValue.font = { name: 'Arial', size: 14, bold: true, color: { argb: c.colorVal } };
+      cValue.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY } };
+      cValue.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      ws1.mergeCells(c.colStart + rSub + ':' + c.colEnd + rSub);
+      const cSub = ws1.getCell(c.colStart + rSub);
+      cSub.value = c.meta;
+      cSub.font = { name: 'Arial', size: 7.5, bold: false, color: { argb: 'FFCBD5E1' } };
+      cSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY_LIGHT } };
+      cSub.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+  }
+
+  renderCardGroup(topCardsFila1, 6, 7, 8);
+  renderCardGroup(topCardsFila2, 10, 11, 12);
+
+  // 3. SECCIÓN 1: BALANCE Y ATENCIÓN POR SUCURSAL
+  ws1.mergeCells('B14:K14');
+  const sec1 = ws1.getCell('B14');
+  sec1.value = '1. DESGLOSE OPERATIVO POR AGENCIA Y SUCURSAL (Datos Reales y Fórmulas Vinculadas)';
+  sec1.font = { name: 'Arial', size: 10, bold: true, color: { argb: C_WHITE } };
+  sec1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY_LIGHT } };
   sec1.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-  sec1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
 
-  const cabeceras1 = [
+  const cabecerasSuc = [
     { col: 'B', text: 'SUCURSAL / AGENCIA', align: 'left' },
     { col: 'C', text: 'PEDIDOS', align: 'center' },
     { col: 'D', text: 'SOLICITADAS', align: 'right' },
@@ -213,369 +256,344 @@ export async function exportarExcelEjecutivoKPIs(
     { col: 'G', text: 'TOTAL ATENDIDAS', align: 'right' },
     { col: 'H', text: 'PENDIENTES', align: 'right' },
     { col: 'I', text: 'FILL RATE (%)', align: 'right' },
-    { col: 'J', text: 'BARRA RENDIMIENTO', align: 'left' },
-    { col: 'K', text: 'SEMAFORO', align: 'center' },
-    { col: 'L', text: 'DIAGNOSTICO OPERATIVO', align: 'left' }
+    { col: 'J', text: 'ESTADO OPERATIVO', align: 'center' },
+    { col: 'K', text: 'DIAGNÓSTICO LOGÍSTICO', align: 'left' }
   ];
 
-  cabeceras1.forEach(h => {
-    const c = ws1.getCell(h.col + '12');
+  cabecerasSuc.forEach(h => {
+    const c = ws1.getCell(h.col + '15');
     c.value = h.text;
-    c.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FFFFFFFF' } };
+    c.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: C_WHITE } };
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF334155' } };
     c.alignment = { vertical: 'middle', horizontal: h.align as any };
-    c.border = borderHeader;
   });
 
-  let rowCursor = 13;
+  let rCursor = 16;
+  const filaInicioSuc = rCursor;
+
   arraySucursales.forEach((sucursal, idx) => {
     const sData = sucursalesMap.get(sucursal)!;
-    const bgRow = idx % 2 === 0 ? 'FFF8FAFC' : 'FFFFFFFF';
+    const bg = idx % 2 === 0 ? C_GRAY_BG : C_WHITE;
+    const fillDec = sData.sol > 0 ? (sData.asig + sData.desp) / sData.sol : 1;
 
-    const cSuc = ws1.getCell('B' + rowCursor);
+    const cSuc = ws1.getCell('B' + rCursor);
     cSuc.value = sucursal;
-    cSuc.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF0F172A' } };
+    cSuc.font = { name: 'Arial', size: 9, bold: true, color: { argb: C_TEXT_DARK } };
 
-    const cPed = ws1.getCell('C' + rowCursor);
+    const cPed = ws1.getCell('C' + rCursor);
     cPed.value = {
-      formula: "COUNTIF('Detalle Pedidos'!$C:$C, B" + rowCursor + ")",
+      formula: "COUNTIF('Detalle Pedidos'!$C:$C, B" + rCursor + ")",
       result: sData.pedidos.size
     };
     cPed.numFmt = '#,##0';
     cPed.alignment = { horizontal: 'center' };
 
-    const cSol = ws1.getCell('D' + rowCursor);
+    const cSol = ws1.getCell('D' + rCursor);
     cSol.value = {
-      formula: "SUMIF('Detalle Pedidos'!$C:$C, B" + rowCursor + ", 'Detalle Pedidos'!$J:$J)",
+      formula: "SUMIF('Detalle Pedidos'!$C:$C, B" + rCursor + ", 'Detalle Pedidos'!$J:$J)",
       result: sData.sol
     };
     cSol.numFmt = '#,##0';
     cSol.alignment = { horizontal: 'right' };
 
-    const cAsi = ws1.getCell('E' + rowCursor);
+    const cAsi = ws1.getCell('E' + rCursor);
     cAsi.value = {
-      formula: "SUMIF('Detalle Pedidos'!$C:$C, B" + rowCursor + ", 'Detalle Pedidos'!$K:$K)",
+      formula: "SUMIF('Detalle Pedidos'!$C:$C, B" + rCursor + ", 'Detalle Pedidos'!$K:$K)",
       result: sData.asig
     };
     cAsi.numFmt = '#,##0';
     cAsi.alignment = { horizontal: 'right' };
 
-    const cDes = ws1.getCell('F' + rowCursor);
+    const cDes = ws1.getCell('F' + rCursor);
     cDes.value = {
-      formula: "SUMIF('Detalle Pedidos'!$C:$C, B" + rowCursor + ", 'Detalle Pedidos'!$L:$L)",
+      formula: "SUMIF('Detalle Pedidos'!$C:$C, B" + rCursor + ", 'Detalle Pedidos'!$L:$L)",
       result: sData.desp
     };
     cDes.numFmt = '#,##0';
     cDes.alignment = { horizontal: 'right' };
 
-    const cAte = ws1.getCell('G' + rowCursor);
+    const cAte = ws1.getCell('G' + rCursor);
     cAte.value = {
-      formula: 'E' + rowCursor + '+F' + rowCursor,
+      formula: 'E' + rCursor + '+F' + rCursor,
       result: sData.asig + sData.desp
     };
     cAte.numFmt = '#,##0';
-    cAte.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF0284C7' } };
+    cAte.font = { name: 'Arial', size: 9, bold: true, color: { argb: C_BLUE } };
     cAte.alignment = { horizontal: 'right' };
 
-    const cPen = ws1.getCell('H' + rowCursor);
+    const cPen = ws1.getCell('H' + rCursor);
     cPen.value = {
-      formula: 'D' + rowCursor + '-G' + rowCursor,
+      formula: 'D' + rCursor + '-G' + rCursor,
       result: sData.pend
     };
     cPen.numFmt = '#,##0';
-    cPen.font = { name: 'Arial', size: 9, bold: sData.pend > 0, color: { argb: sData.pend > 0 ? 'FFF43F5E' : 'FF64748B' } };
+    cPen.font = { name: 'Arial', size: 9, bold: sData.pend > 0, color: { argb: sData.pend > 0 ? C_ROSE : C_TEXT_MUTED } };
     cPen.alignment = { horizontal: 'right' };
 
-    const fillDec = sData.sol > 0 ? (sData.asig + sData.desp) / sData.sol : 1;
-    const cFil = ws1.getCell('I' + rowCursor);
+    const cFil = ws1.getCell('I' + rCursor);
     cFil.value = {
-      formula: 'IF(D' + rowCursor + '>0, G' + rowCursor + '/D' + rowCursor + ', 1)',
-      result: Math.round(fillDec * 1000) / 1000
+      formula: 'IF(D' + rCursor + '>0, G' + rCursor + '/D' + rCursor + ', 1)',
+      result: fillDec
     };
     cFil.numFmt = '0.0%';
-    cFil.font = { name: 'Arial', size: 9, bold: true, color: { argb: fillDec >= 0.97 ? 'FF10B981' : fillDec >= 0.5 ? 'FF0284C7' : 'FFF59E0B' } };
+    cFil.font = { name: 'Arial', size: 9, bold: true, color: { argb: fillDec >= 0.97 ? C_EMERALD : fillDec >= 0.5 ? C_BLUE : C_AMBER } };
     cFil.alignment = { horizontal: 'right' };
 
-    const filledBlocks = Math.min(15, Math.max(0, Math.round(fillDec * 15)));
-    const emptyBlocks = 15 - filledBlocks;
-    const cBar = ws1.getCell('J' + rowCursor);
-    cBar.value = {
-      formula: 'REPT("█", MIN(15, MAX(0, INT(I' + rowCursor + '*15)))) & REPT("░", 15 - MIN(15, MAX(0, INT(I' + rowCursor + '*15))))',
-      result: '█'.repeat(filledBlocks) + '░'.repeat(emptyBlocks)
+    const cEst = ws1.getCell('J' + rCursor);
+    cEst.value = {
+      formula: 'IF(I' + rCursor + '>=0.97, "ÓPTIMO", IF(I' + rCursor + '>=0.5, "EN PROCESO", "CRÍTICO"))',
+      result: fillDec >= 0.97 ? 'ÓPTIMO' : fillDec >= 0.5 ? 'EN PROCESO' : 'CRÍTICO'
     };
-    cBar.font = { name: 'Consolas', size: 9, color: { argb: fillDec >= 0.97 ? 'FF10B981' : 'FF0284C7' } };
-    cBar.alignment = { horizontal: 'left' };
+    cEst.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: fillDec >= 0.97 ? C_EMERALD : fillDec >= 0.5 ? C_BLUE : C_ROSE } };
+    cEst.alignment = { horizontal: 'center' };
 
-    const cSem = ws1.getCell('K' + rowCursor);
-    cSem.value = {
-      formula: 'IF(I' + rowCursor + '>=0.97, "OPTIMO", IF(I' + rowCursor + '>=0.5, "EN PROCESO", "CRITICO"))',
-      result: fillDec >= 0.97 ? 'OPTIMO' : fillDec >= 0.5 ? 'EN PROCESO' : 'CRITICO'
-    };
-    cSem.font = { name: 'Arial', size: 8.5, bold: true };
-    cSem.alignment = { horizontal: 'center' };
-
-    const cDia = ws1.getCell('L' + rowCursor);
-    cDia.value = fillDec >= 0.97
-      ? 'Abastecimiento completo y regular'
+    const cDiag = ws1.getCell('K' + rCursor);
+    cDiag.value = fillDec >= 0.97
+      ? 'Abastecimiento completo y regular en sucursal'
       : fillDec >= 0.5
-      ? 'Atencion parcial; cruce DPL activo'
-      : 'Atencion urgente; prioridad en proximo 40HQ';
-    cDia.font = { name: 'Arial', size: 8, color: { argb: 'FF475569' } };
+      ? 'Atención parcial; cruce activo con contenedor DPL'
+      : 'Atención urgente requerida; prioridad en arribo marítimo';
+    cDiag.font = { name: 'Arial', size: 8, color: { argb: 'FF475569' } };
 
-    ['B','C','D','E','F','G','H','I','J','K','L'].forEach(col => {
-      const cell = ws1.getCell(col + rowCursor);
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-      cell.border = borderThin;
+    ['B','C','D','E','F','G','H','I','J','K'].forEach(col => {
+      const cell = ws1.getCell(col + rCursor);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+      cell.border = borderLight;
     });
 
-    rowCursor++;
+    rCursor++;
   });
 
   // TOTAL SUCURSALES
-  const filaInicioData1 = 13;
-  const filaFinData1 = rowCursor - 1;
+  const filaFinSuc = rCursor - 1;
 
-  const cTotB = ws1.getCell('B' + rowCursor);
-  cTotB.value = 'TOTAL RED CHANGAN PANAMA';
+  const cTotB = ws1.getCell('B' + rCursor);
+  cTotB.value = 'TOTAL RED NACIONAL CHANGAN';
 
-  const cTotC = ws1.getCell('C' + rowCursor);
-  cTotC.value = { formula: 'SUM(C' + filaInicioData1 + ':C' + filaFinData1 + ')', result: kpiData.totalPedidos };
+  const cTotC = ws1.getCell('C' + rCursor);
+  cTotC.value = { formula: 'SUM(C' + filaInicioSuc + ':C' + filaFinSuc + ')', result: kpiData.totalPedidos };
   cTotC.numFmt = '#,##0';
   cTotC.alignment = { horizontal: 'center' };
 
-  const cTotD = ws1.getCell('D' + rowCursor);
-  cTotD.value = { formula: 'SUM(D' + filaInicioData1 + ':D' + filaFinData1 + ')', result: kpiData.totalPiezasSolicitadas };
+  const cTotD = ws1.getCell('D' + rCursor);
+  cTotD.value = { formula: 'SUM(D' + filaInicioSuc + ':D' + filaFinSuc + ')', result: kpiData.totalPiezasSolicitadas };
   cTotD.numFmt = '#,##0';
   cTotD.alignment = { horizontal: 'right' };
 
-  const cTotE = ws1.getCell('E' + rowCursor);
-  cTotE.value = { formula: 'SUM(E' + filaInicioData1 + ':E' + filaFinData1 + ')', result: kpiData.totalPiezasAsignadas };
+  const cTotE = ws1.getCell('E' + rCursor);
+  cTotE.value = { formula: 'SUM(E' + filaInicioSuc + ':E' + filaFinSuc + ')', result: kpiData.totalPiezasAsignadas };
   cTotE.numFmt = '#,##0';
   cTotE.alignment = { horizontal: 'right' };
 
-  const cTotF = ws1.getCell('F' + rowCursor);
-  cTotF.value = { formula: 'SUM(F' + filaInicioData1 + ':F' + filaFinData1 + ')', result: kpiData.totalPiezasDespachadas };
+  const cTotF = ws1.getCell('F' + rCursor);
+  cTotF.value = { formula: 'SUM(F' + filaInicioSuc + ':F' + filaFinSuc + ')', result: kpiData.totalPiezasDespachadas };
   cTotF.numFmt = '#,##0';
   cTotF.alignment = { horizontal: 'right' };
 
-  const cTotG = ws1.getCell('G' + rowCursor);
-  cTotG.value = { formula: 'SUM(G' + filaInicioData1 + ':G' + filaFinData1 + ')', result: kpiData.totalPiezasAsignadas + kpiData.totalPiezasDespachadas };
+  const cTotG = ws1.getCell('G' + rCursor);
+  cTotG.value = { formula: 'SUM(G' + filaInicioSuc + ':G' + filaFinSuc + ')', result: kpiData.totalPiezasAsignadas + kpiData.totalPiezasDespachadas };
   cTotG.numFmt = '#,##0';
   cTotG.alignment = { horizontal: 'right' };
 
-  const cTotH = ws1.getCell('H' + rowCursor);
-  cTotH.value = { formula: 'SUM(H' + filaInicioData1 + ':H' + filaFinData1 + ')', result: Math.max(0, kpiData.totalPiezasSolicitadas - (kpiData.totalPiezasAsignadas + kpiData.totalPiezasDespachadas)) };
+  const cTotH = ws1.getCell('H' + rCursor);
+  cTotH.value = { formula: 'SUM(H' + filaInicioSuc + ':H' + filaFinSuc + ')', result: Math.max(0, kpiData.totalPiezasSolicitadas - (kpiData.totalPiezasAsignadas + kpiData.totalPiezasDespachadas)) };
   cTotH.numFmt = '#,##0';
   cTotH.alignment = { horizontal: 'right' };
 
-  const cTotI = ws1.getCell('I' + rowCursor);
-  cTotI.value = { formula: 'IF(D' + rowCursor + '>0, G' + rowCursor + '/D' + rowCursor + ', 1)', result: kpiData.fillRate / 100 };
+  const cTotI = ws1.getCell('I' + rCursor);
+  cTotI.value = { formula: 'IF(D' + rCursor + '>0, G' + rCursor + '/D' + rCursor + ', 1)', result: kpiData.fillRate / 100 };
   cTotI.numFmt = '0.0%';
   cTotI.alignment = { horizontal: 'right' };
 
-  const cTotJ = ws1.getCell('J' + rowCursor);
+  const cTotJ = ws1.getCell('J' + rCursor);
   cTotJ.value = {
-    formula: 'REPT("█", MIN(15, MAX(0, INT(I' + rowCursor + '*15)))) & REPT("░", 15 - MIN(15, MAX(0, INT(I' + rowCursor + '*15))))',
-    result: '█'.repeat(Math.round(kpiData.fillRate * 0.15)) + '░'.repeat(15 - Math.round(kpiData.fillRate * 0.15))
+    formula: 'IF(I' + rCursor + '>=0.97, "ÓPTIMO", IF(I' + rCursor + '>=0.93, "ALERTA", "CRÍTICO"))',
+    result: kpiData.fillRate >= 97 ? 'ÓPTIMO' : 'CRÍTICO'
   };
-  cTotJ.font = { name: 'Consolas', size: 9, color: { argb: 'FF38BDF8' } };
+  cTotJ.alignment = { horizontal: 'center' };
 
-  const cTotK = ws1.getCell('K' + rowCursor);
-  cTotK.value = {
-    formula: 'IF(I' + rowCursor + '>=0.97, "OPTIMO", IF(I' + rowCursor + '>=0.93, "ALERTA", "CRITICO"))',
-    result: kpiData.fillRate >= 97 ? 'OPTIMO' : 'CRITICO'
-  };
-  cTotK.alignment = { horizontal: 'center' };
+  const cTotK = ws1.getCell('K' + rCursor);
+  cTotK.value = 'Consolidado general de toda la operación nacional';
 
-  const cTotL = ws1.getCell('L' + rowCursor);
-  cTotL.value = 'Consolidado general de toda la red nacional';
-
-  ['B','C','D','E','F','G','H','I','J','K','L'].forEach(col => {
-    const cell = ws1.getCell(col + rowCursor);
-    cell.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FFFFFFFF' } };
-    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
-    cell.border = {
-      top: { style: 'double', color: { argb: 'FF38BDF8' } },
-      bottom: { style: 'double', color: { argb: 'FF38BDF8' } }
-    };
+  ['B','C','D','E','F','G','H','I','J','K'].forEach(col => {
+    const cell = ws1.getCell(col + rCursor);
+    cell.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: C_WHITE } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY } };
+    cell.border = borderTotal;
   });
 
-  rowCursor += 2;
+  rCursor += 3;
 
-  // SECCION 2: MODELOS
-  ws1.mergeCells('B' + rowCursor + ':L' + rowCursor);
-  const sec2 = ws1.getCell('B' + rowCursor);
-  sec2.value = '2. CONCENTRACION DE DEMANDA POR MODELO CHANGAN (Clasificacion ABC / Pareto de Repuestos Especiales)';
-  sec2.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+  // 4. SECCIÓN 2: DEMANDA POR MODELO CHANGAN
+  ws1.mergeCells('B' + rCursor + ':K' + rCursor);
+  const sec2 = ws1.getCell('B' + rCursor);
+  sec2.value = '2. CONCENTRACIÓN DE DEMANDA POR MODELO CHANGAN (Clasificación de Consumo y Repuestos)';
+  sec2.font = { name: 'Arial', size: 10, bold: true, color: { argb: C_WHITE } };
+  sec2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY_LIGHT } };
   sec2.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-  sec2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
-  rowCursor++;
+  rCursor++;
 
-  const cabecerasModelos = [
-    { col: 'B', text: 'MODELO DE VEHICULO CHANGAN' },
-    { col: 'C', text: 'REQUISICIONES / LINEAS' },
-    { col: 'D', text: 'PIEZAS DEMANDADAS' },
-    { col: 'E', text: '% PARTICIPACION' },
-    { col: 'F', text: 'REPRESENTACION VISUAL EN CELDA' },
-    { col: 'G', text: 'CLASIFICACION ABC' },
-    { col: 'H', text: 'ESTRATEGIA LOGISTICA DE SUMINISTRO' }
+  const cabecerasMod = [
+    { col: 'B', text: 'MODELO DE VEHÍCULO CHANGAN', align: 'left' },
+    { col: 'C', text: 'LÍNEAS / SOLICITUDES', align: 'center' },
+    { col: 'D', text: 'PIEZAS DEMANDADAS', align: 'right' },
+    { col: 'E', text: '% PARTICIPACIÓN', align: 'right' },
+    { col: 'F', text: 'CLASIFICACIÓN ABC', align: 'center' },
+    { col: 'G', text: 'ESTRATEGIA LOGÍSTICA DE REPOSICIÓN', align: 'left', mergeEnd: 'K' }
   ];
 
-  cabecerasModelos.forEach(h => {
-    const c = ws1.getCell(h.col + rowCursor);
+  cabecerasMod.forEach(h => {
+    if (h.mergeEnd) {
+      ws1.mergeCells(h.col + rCursor + ':' + h.mergeEnd + rCursor);
+    }
+    const c = ws1.getCell(h.col + rCursor);
     c.value = h.text;
-    c.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FFFFFFFF' } };
+    c.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: C_WHITE } };
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF334155' } };
-    c.alignment = { vertical: 'middle', horizontal: 'center' };
-    c.border = borderHeader;
+    c.alignment = { vertical: 'middle', horizontal: h.align as any };
   });
-  rowCursor++;
+  rCursor++;
 
-  const filaInicioModelos = rowCursor;
-  const topModelos = arrayModelos.slice(0, 8);
-  const totalPiezasModeloSum = arrayModelos.reduce((a, b) => a + b.val, 0) || 1;
-  const filaTotalModelosRef = filaInicioModelos + topModelos.length;
+  const filaInicioMod = rCursor;
+  const topModelos = arrayModelos.slice(0, 10);
+  const totalPiezasMod = arrayModelos.reduce((a, b) => a + b.val, 0) || 1;
+  const filaTotalModRef = filaInicioMod + topModelos.length;
 
   topModelos.forEach((mod, idx) => {
-    const bgRow = idx % 2 === 0 ? 'FFF8FAFC' : 'FFFFFFFF';
-    const pct = mod.val / totalPiezasModeloSum;
+    const bg = idx % 2 === 0 ? C_GRAY_BG : C_WHITE;
+    const pct = mod.val / totalPiezasMod;
 
-    const cMod = ws1.getCell('B' + rowCursor);
+    const cMod = ws1.getCell('B' + rCursor);
     cMod.value = mod.name;
     cMod.font = { name: 'Arial', size: 9, bold: true };
 
-    const cLin = ws1.getCell('C' + rowCursor);
+    const cLin = ws1.getCell('C' + rCursor);
     cLin.value = {
-      formula: "COUNTIF('Detalle Pedidos'!$G:$G, B" + rowCursor + ")",
-      result: filas.filter(f => f.modeloChangan === mod.name).length
+      formula: "COUNTIF('Detalle Pedidos'!$G:$G, B" + rCursor + ")",
+      result: mod.lineas
     };
     cLin.numFmt = '#,##0';
     cLin.alignment = { horizontal: 'center' };
 
-    const cPie = ws1.getCell('D' + rowCursor);
+    const cPie = ws1.getCell('D' + rCursor);
     cPie.value = {
-      formula: "SUMIF('Detalle Pedidos'!$G:$G, B" + rowCursor + ", 'Detalle Pedidos'!$J:$J)",
+      formula: "SUMIF('Detalle Pedidos'!$G:$G, B" + rCursor + ", 'Detalle Pedidos'!$J:$J)",
       result: mod.val
     };
     cPie.numFmt = '#,##0';
     cPie.alignment = { horizontal: 'right' };
 
-    const cPar = ws1.getCell('E' + rowCursor);
-    cPar.value = {
-      formula: 'IF($D$' + filaTotalModelosRef + '>0, D' + rowCursor + '/$D$' + filaTotalModelosRef + ', 0)',
-      result: Math.round(pct * 1000) / 1000
+    const cPct = ws1.getCell('E' + rCursor);
+    cPct.value = {
+      formula: 'IF($D$' + filaTotalModRef + '>0, D' + rCursor + '/$D$' + filaTotalModRef + ', 0)',
+      result: pct
     };
-    cPar.numFmt = '0.0%';
-    cPar.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF0284C7' } };
-    cPar.alignment = { horizontal: 'right' };
+    cPct.numFmt = '0.0%';
+    cPct.font = { name: 'Arial', size: 9, bold: true, color: { argb: C_BLUE } };
+    cPct.alignment = { horizontal: 'right' };
 
-    const numSquares = Math.min(25, Math.max(1, Math.round(pct * 25)));
-    const cBarM = ws1.getCell('F' + rowCursor);
-    cBarM.value = {
-      formula: 'REPT("■", MIN(25, MAX(1, INT(E' + rowCursor + '*25))))',
-      result: '■'.repeat(numSquares)
-    };
-    cBarM.font = { name: 'Consolas', size: 9, color: { argb: 'FF0284C7' } };
-
-    const cAbc = ws1.getCell('G' + rowCursor);
+    const cAbc = ws1.getCell('F' + rCursor);
     cAbc.value = {
-      formula: 'IF(E' + rowCursor + '>=0.2, "CLASE A (ALTO VOLUMEN)", IF(E' + rowCursor + '>=0.08, "CLASE B (VOLUMEN MEDIO)", "CLASE C (ESPECIFICO)"))',
-      result: pct >= 0.2 ? 'CLASE A (ALTO VOLUMEN)' : pct >= 0.08 ? 'CLASE B (VOLUMEN MEDIO)' : 'CLASE C (ESPECIFICO)'
+      formula: 'IF(E' + rCursor + '>=0.2, "CLASE A (ALTO VOLUMEN)", IF(E' + rCursor + '>=0.08, "CLASE B (VOLUMEN MEDIO)", "CLASE C (ESPECÍFICO)"))',
+      result: pct >= 0.2 ? 'CLASE A (ALTO VOLUMEN)' : pct >= 0.08 ? 'CLASE B (VOLUMEN MEDIO)' : 'CLASE C (ESPECÍFICO)'
     };
-    cAbc.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: pct >= 0.2 ? 'FF10B981' : 'FF64748B' } };
+    cAbc.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: pct >= 0.2 ? C_EMERALD : C_TEXT_MUTED } };
     cAbc.alignment = { horizontal: 'center' };
 
-    const cEst = ws1.getCell('H' + rowCursor);
+    ws1.mergeCells('G' + rCursor + ':K' + rCursor);
+    const cEst = ws1.getCell('G' + rCursor);
     cEst.value = pct >= 0.2
-      ? 'Buffer permanente en CEDIS; prioridad maxima de stock de seguridad'
+      ? 'Stock buffer permanente en CEDIS; prioridad máxima de inventario de seguridad'
       : pct >= 0.08
-      ? 'Reposicion frecuente por contenedor 40HQ segun demanda historica'
-      : 'Abastecimiento directo contra pedido especial de cliente';
+      ? 'Reposición recurrente por contenedor marítimo 40HQ según demanda trimestral'
+      : 'Abastecimiento contra pedido especial de cliente / asignación por cruce DPL';
     cEst.font = { name: 'Arial', size: 8, color: { argb: 'FF475569' } };
 
-    ['B','C','D','E','F','G','H'].forEach(col => {
-      const cell = ws1.getCell(col + rowCursor);
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-      cell.border = borderThin;
+    ['B','C','D','E','F','G','H','I','J','K'].forEach(col => {
+      const cell = ws1.getCell(col + rCursor);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+      cell.border = borderLight;
     });
 
-    rowCursor++;
+    rCursor++;
   });
 
   // TOTAL MODELOS
-  const filaFinModelos = rowCursor - 1;
-  const cTotModB = ws1.getCell('B' + rowCursor);
+  const filaFinMod = rCursor - 1;
+  const cTotModB = ws1.getCell('B' + rCursor);
   cTotModB.value = 'TOTAL DEMANDA EVALUADA';
-  const cTotModC = ws1.getCell('C' + rowCursor);
-  cTotModC.value = { formula: 'SUM(C' + filaInicioModelos + ':C' + filaFinModelos + ')', result: filas.length };
+
+  const cTotModC = ws1.getCell('C' + rCursor);
+  cTotModC.value = { formula: 'SUM(C' + filaInicioMod + ':C' + filaFinMod + ')', result: filas.length };
   cTotModC.numFmt = '#,##0';
   cTotModC.alignment = { horizontal: 'center' };
 
-  const cTotModD = ws1.getCell('D' + rowCursor);
-  cTotModD.value = { formula: 'SUM(D' + filaInicioModelos + ':D' + filaFinModelos + ')', result: totalPiezasModeloSum };
+  const cTotModD = ws1.getCell('D' + rCursor);
+  cTotModD.value = { formula: 'SUM(D' + filaInicioMod + ':D' + filaFinMod + ')', result: totalPiezasMod };
   cTotModD.numFmt = '#,##0';
   cTotModD.alignment = { horizontal: 'right' };
 
-  const cTotModE = ws1.getCell('E' + rowCursor);
-  cTotModE.value = { formula: 'SUM(E' + filaInicioModelos + ':E' + filaFinModelos + ')', result: 1.0 };
+  const cTotModE = ws1.getCell('E' + rCursor);
+  cTotModE.value = { formula: 'SUM(E' + filaInicioMod + ':E' + filaFinMod + ')', result: 1.0 };
   cTotModE.numFmt = '0.0%';
   cTotModE.alignment = { horizontal: 'right' };
 
-  const cTotModH = ws1.getCell('H' + rowCursor);
-  cTotModH.value = '100% de la demanda de repuestos especiales';
+  const cTotModF = ws1.getCell('F' + rCursor);
+  cTotModF.value = '100.0%';
+  cTotModF.alignment = { horizontal: 'center' };
 
-  ['B','C','D','E','F','G','H'].forEach(col => {
-    const cell = ws1.getCell(col + rowCursor);
-    cell.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FFFFFFFF' } };
-    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
-    cell.border = {
-      top: { style: 'double', color: { argb: 'FF38BDF8' } },
-      bottom: { style: 'double', color: { argb: 'FF38BDF8' } }
-    };
+  ws1.mergeCells('G' + rCursor + ':K' + rCursor);
+  const cTotModG = ws1.getCell('G' + rCursor);
+  cTotModG.value = 'Cobertura completa de demanda de repuestos evaluados';
+
+  ['B','C','D','E','F','G','H','I','J','K'].forEach(col => {
+    const cell = ws1.getCell(col + rCursor);
+    cell.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: C_WHITE } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY } };
+    cell.border = borderTotal;
   });
 
-  rowCursor += 2;
+  rCursor += 3;
 
-  // SECCION 3: MATRIZ KPIS SCOR
-  ws1.mergeCells('B' + rowCursor + ':L' + rowCursor);
-  const sec3 = ws1.getCell('B' + rowCursor);
-  sec3.value = '3. MATRIZ FORMAL DE EVALUACION DE KPIS LOGISTICOS (ESTANDAR SCOR / CSCMP CON FORMULAS LOGICAS)';
-  sec3.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+  // 5. SECCIÓN 3: MATRIZ FORMAL DE KPIS LOGÍSTICOS SCOR
+  ws1.mergeCells('B' + rCursor + ':K' + rCursor);
+  const sec3 = ws1.getCell('B' + rCursor);
+  sec3.value = '3. MATRIZ FORMAL DE EVALUACIÓN DE KPIS LOGÍSTICOS (ESTÁNDAR SCOR / CSCMP CON FÓRMULAS VIVAS)';
+  sec3.font = { name: 'Arial', size: 10, bold: true, color: { argb: C_WHITE } };
+  sec3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY_LIGHT } };
   sec3.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-  sec3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
-  rowCursor++;
+  rCursor++;
 
-  const cabecerasKPI = [
-    { col: 'B', text: 'INDICADOR CLAVE (KPI)', w: 2 },
-    { col: 'D', text: 'FORMULA MATEMATICA', w: 3 },
-    { col: 'G', text: 'VALOR ACTUAL', w: 1 },
-    { col: 'H', text: 'RANGO META', w: 1 },
-    { col: 'I', text: 'ESTADO SEMAFORO', w: 1 },
-    { col: 'J', text: 'INTERPRETACION Y ACCION OPERATIVA', w: 3 }
+  const cabecerasKpiMat = [
+    { col: 'B', text: 'INDICADOR CLAVE (KPI)', align: 'left', end: 'C' },
+    { col: 'D', text: 'FÓRMULA MATEMÁTICA', align: 'left', end: 'F' },
+    { col: 'G', text: 'VALOR ACTUAL', align: 'center' },
+    { col: 'H', text: 'RANGO META', align: 'center' },
+    { col: 'I', text: 'SEMÁFORO', align: 'center' },
+    { col: 'J', text: 'INTERPRETACIÓN Y ACCIÓN DIRECTIVA', align: 'left', end: 'K' }
   ];
 
-  cabecerasKPI.forEach(h => {
-    const colEnd = String.fromCharCode(h.col.charCodeAt(0) + h.w - 1);
-    if (h.w > 1) ws1.mergeCells(h.col + rowCursor + ':' + colEnd + rowCursor);
-    const c = ws1.getCell(h.col + rowCursor);
+  cabecerasKpiMat.forEach(h => {
+    if (h.end) ws1.mergeCells(h.col + rCursor + ':' + h.end + rCursor);
+    const c = ws1.getCell(h.col + rCursor);
     c.value = h.text;
-    c.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: 'FFFFFFFF' } };
+    c.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: C_WHITE } };
     c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF334155' } };
-    c.alignment = { vertical: 'middle', horizontal: 'center' };
+    c.alignment = { vertical: 'middle', horizontal: h.align as any };
   });
-  rowCursor++;
+  rCursor++;
 
   const kpisSCOR = [
     {
       nombre: 'Fill Rate (Nivel de Servicio)',
       formulaTxt: '(Piezas Asignadas + Despachadas) / Piezas Solicitadas',
-      formulaVal: 'I' + filaTotalSucursal,
+      formulaVal: 'I' + filaTotSucRef,
       resultVal: kpiData.fillRate / 100,
       numFmt: '0.0%',
       metaTxt: 'Verde >= 97% | Amarillo 93-96.9%',
-      formulaSem: 'IF(G' + rowCursor + '>=0.97, "OPTIMO", IF(G' + rowCursor + '>=0.93, "ALERTA", "CRITICO"))',
-      resultSem: kpiData.fillRate >= 97 ? 'OPTIMO' : 'CRITICO',
-      inter: 'Porcentaje de demanda total atendida con stock fisico en CEDIS'
+      formulaSem: 'IF(G' + rCursor + '>=0.97, "ÓPTIMO", IF(G' + rCursor + '>=0.93, "ALERTA", "CRÍTICO"))',
+      resultSem: kpiData.fillRate >= 97 ? 'ÓPTIMO' : 'CRÍTICO',
+      inter: 'Porcentaje de demanda total atendida con stock físico de CEDIS'
     },
     {
       nombre: 'OTIF (On-Time In-Full)',
@@ -584,134 +602,134 @@ export async function exportarExcelEjecutivoKPIs(
       resultVal: kpiData.otif / 100,
       numFmt: '0.0%',
       metaTxt: 'Verde >= 95% | Amarillo 90-94.9%',
-      formulaSem: 'IF(G' + (rowCursor + 1) + '>=0.95, "OPTIMO", "SEGUIMIENTO")',
-      resultSem: kpiData.otif >= 95 ? 'OPTIMO' : 'SEGUIMIENTO',
-      inter: 'Entregas a satisfaccion sin faltantes ni retrasos en la red'
+      formulaSem: 'IF(G' + (rCursor + 1) + '>=0.95, "ÓPTIMO", "SEGUIMIENTO")',
+      resultSem: kpiData.otif >= 95 ? 'ÓPTIMO' : 'SEGUIMIENTO',
+      inter: 'Entregas a satisfacción sin faltantes ni retrasos en agencias'
     },
     {
       nombre: 'Quiebre de Stock (Backorder)',
       formulaTxt: 'Piezas pendientes sin stock / Total Piezas Solicitadas',
-      formulaVal: 'H' + filaTotalSucursal + '/D' + filaTotalSucursal,
+      formulaVal: 'H' + filaTotSucRef + '/D' + filaTotSucRef,
       resultVal: kpiData.quiebreStock / 100,
       numFmt: '0.0%',
       metaTxt: 'Verde <= 2% | Amarillo 2-5%',
-      formulaSem: 'IF(G' + (rowCursor + 2) + '<=0.02, "CONTROLADO", "ALERTA")',
+      formulaSem: 'IF(G' + (rCursor + 2) + '<=0.02, "CONTROLADO", "ALERTA")',
       resultSem: kpiData.quiebreStock <= 2 ? 'CONTROLADO' : 'ALERTA',
-      inter: 'Requisiciones que dependen de arribo maritimo DPL de fabrica'
+      inter: 'Requisiciones en espera de arribo de contenedor marítimo DPL'
     },
     {
       nombre: 'Tiempo de Ciclo (Lead Time)',
-      formulaTxt: 'Promedio de horas habiles desde radicacion hasta despacho',
+      formulaTxt: 'Promedio de horas hábiles desde radicación hasta despacho',
       formulaVal: undefined,
       resultVal: kpiData.tiempoCicloHoras,
       numFmt: '#,##0 "horas"',
       metaTxt: 'Verde <= 24h | Amarillo 24-48h',
-      formulaSem: 'IF(G' + (rowCursor + 3) + '<=24, "EXCELENTE", "EN RANGO")',
+      formulaSem: 'IF(G' + (rCursor + 3) + '<=24, "EXCELENTE", "EN RANGO")',
       resultSem: kpiData.tiempoCicloHoras <= 24 ? 'EXCELENTE' : 'EN RANGO',
-      inter: 'Tiempo de preparacion y validacion en bodega central'
+      inter: 'Tiempo promedio de preparación y validación en bodega central'
     },
     {
       nombre: 'Exactitud de Inventario (IRA)',
-      formulaTxt: 'Conteo fisico auditado / Existencias teoricas en sistema',
+      formulaTxt: 'Conteo físico auditado / Existencias teóricas en sistema',
       formulaVal: undefined,
       resultVal: kpiData.exactitudInventario / 100,
       numFmt: '0.0%',
       metaTxt: 'Verde >= 98% | Amarillo 95-97.9%',
-      formulaSem: 'IF(G' + (rowCursor + 4) + '>=0.98, "ALTA PRECISION", "TOLERABLE")',
-      resultSem: 'ALTA PRECISION',
-      inter: 'Confiabilidad de existencias en estanterias de pallet'
+      formulaSem: 'IF(G' + (rCursor + 4) + '>=0.98, "ALTA PRECISIÓN", "TOLERABLE")',
+      resultSem: 'ALTA PRECISIÓN',
+      inter: 'Confiabilidad de existencias en estanterías de pallet de CEDIS'
     },
     {
       nombre: 'Exactitud de Picking con PDT',
-      formulaTxt: 'Lineas escaneadas sin discrepancia / Total de lineas',
+      formulaTxt: 'Líneas escaneadas sin discrepancia / Total de líneas preparadas',
       formulaVal: undefined,
       resultVal: kpiData.exactitudPicking / 100,
       numFmt: '0.0%',
       metaTxt: 'Verde >= 99.5% | Amarillo 98.5-99.4%',
-      formulaSem: 'IF(G' + (rowCursor + 5) + '>=0.995, "SIN DISCREPANCIA", "REVISION")',
+      formulaSem: 'IF(G' + (rCursor + 5) + '>=0.995, "SIN DISCREPANCIA", "REVISIÓN")',
       resultSem: 'SIN DISCREPANCIA',
-      inter: 'Efectividad en recoleccion con colectores de codigo de barras'
+      inter: 'Efectividad en recolección física con colectores de código de barras'
     },
     {
-      nombre: 'Efectividad Cruce Automatico DPL',
+      nombre: 'Efectividad Cruce Automático DPL',
       formulaTxt: 'Piezas asignadas de contenedor / Piezas en lista de espera',
       formulaVal: undefined,
       resultVal: kpiData.efectividadCruce / 100,
       numFmt: '0.0%',
       metaTxt: 'Verde >= 85% | Amarillo 70-84%',
-      formulaSem: 'IF(G' + (rowCursor + 6) + '>=0.85, "ALTA EFICIENCIA", "MODERADO")',
+      formulaSem: 'IF(G' + (rCursor + 6) + '>=0.85, "ALTA EFICIENCIA", "MODERADO")',
       resultSem: 'ALTA EFICIENCIA',
-      inter: 'Cruce automatico de arribos maritimos 40HQ contra requisiciones'
+      inter: 'Cruce directo de arribos marítimos 40HQ contra pedidos especiales'
     },
     {
       nombre: 'Pedido Perfecto (Calidad Total)',
-      formulaTxt: 'Pedidos entregados a tiempo, completos, sin dano y documentados',
+      formulaTxt: 'Pedidos entregados a tiempo, completos, sin daño y documentados',
       formulaVal: undefined,
       resultVal: kpiData.pedidoPerfecto / 100,
       numFmt: '0.0%',
       metaTxt: 'Verde >= 95% | Amarillo 90-94.9%',
-      formulaSem: 'IF(G' + (rowCursor + 7) + '>=0.95, "EXCELENTE", "REGULAR")',
+      formulaSem: 'IF(G' + (rCursor + 7) + '>=0.95, "EXCELENTE", "REGULAR")',
       resultSem: 'EXCELENTE',
-      inter: 'Nivel supremo de satisfaccion logistica para sucursales'
+      inter: 'Nivel supremo de cumplimiento de servicio para toda la red'
     }
   ];
 
   kpisSCOR.forEach((kpi, idx) => {
-    const bgRow = idx % 2 === 0 ? 'FFF8FAFC' : 'FFFFFFFF';
+    const bg = idx % 2 === 0 ? C_GRAY_BG : C_WHITE;
 
-    ws1.mergeCells('B' + rowCursor + ':C' + rowCursor);
-    const cNom = ws1.getCell('B' + rowCursor);
+    ws1.mergeCells('B' + rCursor + ':C' + rCursor);
+    const cNom = ws1.getCell('B' + rCursor);
     cNom.value = kpi.nombre;
-    cNom.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FF0F172A' } };
+    cNom.font = { name: 'Arial', size: 9, bold: true, color: { argb: C_TEXT_DARK } };
 
-    ws1.mergeCells('D' + rowCursor + ':F' + rowCursor);
-    const cFor = ws1.getCell('D' + rowCursor);
+    ws1.mergeCells('D' + rCursor + ':F' + rCursor);
+    const cFor = ws1.getCell('D' + rCursor);
     cFor.value = kpi.formulaTxt;
     cFor.font = { name: 'Arial', size: 8, color: { argb: 'FF475569' } };
 
-    const cVal = ws1.getCell('G' + rowCursor);
+    const cVal = ws1.getCell('G' + rCursor);
     if (kpi.formulaVal) {
       cVal.value = { formula: kpi.formulaVal, result: kpi.resultVal };
     } else {
       cVal.value = kpi.resultVal;
     }
     cVal.numFmt = kpi.numFmt;
-    cVal.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF0284C7' } };
+    cVal.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: C_BLUE } };
     cVal.alignment = { horizontal: 'center' };
 
-    const cMet = ws1.getCell('H' + rowCursor);
+    const cMet = ws1.getCell('H' + rCursor);
     cMet.value = kpi.metaTxt;
-    cMet.font = { name: 'Arial', size: 7.5, color: { argb: 'FF64748B' } };
+    cMet.font = { name: 'Arial', size: 7.5, color: { argb: C_TEXT_MUTED } };
     cMet.alignment = { horizontal: 'center' };
 
-    const cSem = ws1.getCell('I' + rowCursor);
+    const cSem = ws1.getCell('I' + rCursor);
     cSem.value = { formula: kpi.formulaSem, result: kpi.resultSem };
-    cSem.font = { name: 'Arial', size: 8.5, bold: true };
+    cSem.font = { name: 'Arial', size: 8.5, bold: true, color: { argb: C_EMERALD } };
     cSem.alignment = { horizontal: 'center' };
 
-    ws1.mergeCells('J' + rowCursor + ':L' + rowCursor);
-    const cInt = ws1.getCell('J' + rowCursor);
+    ws1.mergeCells('J' + rCursor + ':K' + rCursor);
+    const cInt = ws1.getCell('J' + rCursor);
     cInt.value = kpi.inter;
     cInt.font = { name: 'Arial', size: 8, color: { argb: 'FF334155' } };
 
-    ['B','C','D','E','F','G','H','I','J','K','L'].forEach(col => {
-      const cell = ws1.getCell(col + rowCursor);
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgRow } };
-      cell.border = borderThin;
+    ['B','C','D','E','F','G','H','I','J','K'].forEach(col => {
+      const cell = ws1.getCell(col + rCursor);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+      cell.border = borderLight;
     });
 
-    rowCursor++;
+    rCursor++;
   });
 
   // =========================================================================
-  // HOJA 2: Desempeno Sucursales
+  // HOJA 2: Desempeño Sucursales (TABLA DETALLADA CON FÓRMULAS)
   // =========================================================================
-  const ws2 = workbook.addWorksheet('Desempeno Sucursales', {
+  const ws2 = workbook.addWorksheet('Desempeño Sucursales', {
     views: [{ showGridLines: true }]
   });
 
   ws2.columns = [
-    { header: 'SUCURSAL / AGENCIA', key: 'sucursal', width: 22 },
+    { header: 'SUCURSAL / AGENCIA', key: 'sucursal', width: 26 },
     { header: 'TOTAL PEDIDOS', key: 'pedidos', width: 16 },
     { header: 'PIEZAS SOLICITADAS', key: 'solicitadas', width: 22 },
     { header: 'PIEZAS ASIGNADAS', key: 'asignadas', width: 20 },
@@ -719,12 +737,12 @@ export async function exportarExcelEjecutivoKPIs(
     { header: 'TOTAL ATENDIDAS', key: 'cubiertas', width: 20 },
     { header: 'PIEZAS PENDIENTES', key: 'pendientes', width: 20 },
     { header: 'FILL RATE (%)', key: 'fillRate', width: 16 },
-    { header: 'ESTADO DE ATENCION', key: 'estado', width: 24 }
+    { header: 'ESTADO DE ATENCIÓN', key: 'estado', width: 24 }
   ];
 
   const rowHead2 = ws2.getRow(1);
-  rowHead2.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-  rowHead2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
+  rowHead2.font = { name: 'Arial', size: 10, bold: true, color: { argb: C_WHITE } };
+  rowHead2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY_LIGHT } };
   rowHead2.alignment = { vertical: 'middle', horizontal: 'center' };
   rowHead2.height = 26;
 
@@ -742,7 +760,7 @@ export async function exportarExcelEjecutivoKPIs(
     row.getCell('F').value = { formula: 'D' + r2Cursor + '+E' + r2Cursor, result: sData.asig + sData.desp };
     row.getCell('G').value = { formula: 'C' + r2Cursor + '-F' + r2Cursor, result: sData.pend };
     row.getCell('H').value = { formula: 'IF(C' + r2Cursor + '>0, F' + r2Cursor + '/C' + r2Cursor + ', 1)', result: fillDec };
-    row.getCell('I').value = { formula: 'IF(H' + r2Cursor + '>=0.97, "OPTIMO (>=97%)", IF(H' + r2Cursor + '>=0.5, "EN PROCESO", "CRITICO (<50%)"))', result: fillDec >= 0.97 ? 'OPTIMO (>=97%)' : 'CRITICO (<50%)' };
+    row.getCell('I').value = { formula: 'IF(H' + r2Cursor + '>=0.97, "ÓPTIMO (>=97%)", IF(H' + r2Cursor + '>=0.5, "EN PROCESO", "CRÍTICO (<50%)"))', result: fillDec >= 0.97 ? 'ÓPTIMO (>=97%)' : 'CRÍTICO (<50%)' };
 
     row.getCell('B').numFmt = '#,##0';
     row.getCell('C').numFmt = '#,##0';
@@ -757,9 +775,9 @@ export async function exportarExcelEjecutivoKPIs(
     r2Cursor++;
   });
 
-  // TOTAL HOJA 2
+  // TOTAL GENERAL HOJA 2
   const r2Total = ws2.getRow(r2Cursor);
-  r2Total.getCell('A').value = 'TOTAL GENERAL';
+  r2Total.getCell('A').value = 'TOTAL GENERAL RED CHANGAN';
   r2Total.getCell('B').value = { formula: 'SUM(B2:B' + (r2Cursor - 1) + ')', result: kpiData.totalPedidos };
   r2Total.getCell('C').value = { formula: 'SUM(C2:C' + (r2Cursor - 1) + ')', result: kpiData.totalPiezasSolicitadas };
   r2Total.getCell('D').value = { formula: 'SUM(D2:D' + (r2Cursor - 1) + ')', result: kpiData.totalPiezasAsignadas };
@@ -767,7 +785,7 @@ export async function exportarExcelEjecutivoKPIs(
   r2Total.getCell('F').value = { formula: 'SUM(F2:F' + (r2Cursor - 1) + ')', result: kpiData.totalPiezasAsignadas + kpiData.totalPiezasDespachadas };
   r2Total.getCell('G').value = { formula: 'SUM(G2:G' + (r2Cursor - 1) + ')', result: Math.max(0, kpiData.totalPiezasSolicitadas - (kpiData.totalPiezasAsignadas + kpiData.totalPiezasDespachadas)) };
   r2Total.getCell('H').value = { formula: 'IF(C' + r2Cursor + '>0, F' + r2Cursor + '/C' + r2Cursor + ', 1)', result: kpiData.fillRate / 100 };
-  r2Total.getCell('I').value = { formula: 'IF(H' + r2Cursor + '>=0.97, "OPTIMO", "CRITICO")', result: 'CRITICO' };
+  r2Total.getCell('I').value = { formula: 'IF(H' + r2Cursor + '>=0.97, "ÓPTIMO", "CRÍTICO")', result: kpiData.fillRate >= 97 ? 'ÓPTIMO' : 'CRÍTICO' };
 
   r2Total.getCell('B').numFmt = '#,##0';
   r2Total.getCell('C').numFmt = '#,##0';
@@ -777,13 +795,13 @@ export async function exportarExcelEjecutivoKPIs(
   r2Total.getCell('G').numFmt = '#,##0';
   r2Total.getCell('H').numFmt = '0.0%';
 
-  r2Total.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
+  r2Total.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: C_WHITE } };
   for (let c = 1; c <= 9; c++) {
-    r2Total.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+    r2Total.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_NAVY } };
   }
 
   // =========================================================================
-  // HOJA 3: Detalle Pedidos
+  // HOJA 3: Detalle Pedidos (BASE DE DATOS VIVA QUE ALIMENTA LAS FÓRMULAS)
   // =========================================================================
   const ws3 = workbook.addWorksheet('Detalle Pedidos', {
     views: [{ state: 'frozen', ySplit: 1, showGridLines: true }]
@@ -791,41 +809,45 @@ export async function exportarExcelEjecutivoKPIs(
 
   ws3.columns = [
     { header: 'FOLIO PEDIDO', key: 'pedidoId', width: 18 },
-    { header: 'FECHA RADICACION', key: 'fecha', width: 16 },
+    { header: 'FECHA RADICACIÓN', key: 'fecha', width: 16 },
     { header: 'SUCURSAL / AGENCIA', key: 'sucursal', width: 22 },
     { header: 'ASESOR OFICIAL', key: 'asesor', width: 22 },
-    { header: 'CLIENTE', key: 'cliente', width: 26 },
+    { header: 'CLIENTE', key: 'cliente', width: 28 },
     { header: 'PLACA', key: 'placa', width: 14 },
-    { header: 'MODELO CHANGAN', key: 'modelo', width: 20 },
-    { header: 'CODIGO REPUESTO', key: 'codigo', width: 20 },
-    { header: 'DESCRIPCION OFICIAL', key: 'descripcion', width: 36 },
+    { header: 'MODELO CHANGAN', key: 'modelo', width: 22 },
+    { header: 'CÓDIGO REPUESTO', key: 'codigo', width: 22 },
+    { header: 'DESCRIPCIÓN OFICIAL', key: 'descripcion', width: 38 },
     { header: 'CANT. SOLICITADA', key: 'solicitado', width: 16 },
     { header: 'CANT. ASIGNADA', key: 'asignado', width: 16 },
     { header: 'CANT. DESPACHADA', key: 'despachado', width: 16 },
-    { header: 'ESTATUS LINEA', key: 'estatus', width: 18 }
+    { header: 'ESTATUS LÍNEA', key: 'estatus', width: 20 }
   ];
 
   const rowHead3 = ws3.getRow(1);
-  rowHead3.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
-  rowHead3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0284C7' } };
+  rowHead3.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: C_WHITE } };
+  rowHead3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_BLUE } };
   rowHead3.alignment = { vertical: 'middle', horizontal: 'center' };
   rowHead3.height = 26;
 
   filas.forEach(f => {
+    const sol = Number(f.cantidadSolicitada) || 1;
+    const asig = Number((f as any).cantidadAsignada ?? (f as any).cantAsignada ?? 0);
+    const desp = Number((f as any).cantidadDespachada ?? (f as any).cantDespachada ?? 0);
+
     const r = ws3.addRow({
-      pedidoId: f.pedidoId,
-      fecha: f.fechaCreacion,
-      sucursal: f.sucursal,
-      asesor: f.colaborador,
-      cliente: f.cliente,
-      placa: f.placa,
-      modelo: f.modeloChangan,
-      codigo: f.codigoRepuesto,
-      descripcion: f.descripcionOficial || f.codigoRepuesto,
-      solicitado: Number(f.cantidadSolicitada) || 0,
-      asignado: Number((f as any).cantidadAsignada ?? (f as any).cantAsignada ?? 0),
-      despachado: Number((f as any).cantidadDespachada ?? (f as any).cantDespachada ?? 0),
-      estatus: f.estatusLinea
+      pedidoId: f.pedidoId || '',
+      fecha: f.fechaCreacion || '',
+      sucursal: f.sucursal || 'Sin Sucursal',
+      asesor: f.colaborador || '',
+      cliente: f.cliente || '',
+      placa: f.placa || '',
+      modelo: f.modeloChangan || 'Otros Modelos',
+      codigo: f.codigoRepuesto || '',
+      descripcion: f.descripcionOficial || f.codigoRepuesto || '',
+      solicitado: sol,
+      asignado: asig,
+      despachado: desp,
+      estatus: f.estatusLinea || 'Pendiente'
     });
 
     r.getCell(10).numFmt = '#,##0';
@@ -850,15 +872,15 @@ export async function exportarExcelEjecutivoKPIs(
     { header: 'CONTENEDOR ID', key: 'contenedorId', width: 22 },
     { header: 'PROVEEDOR ORIGEN', key: 'proveedor', width: 32 },
     { header: 'TIPO TRANSPORTE', key: 'transporte', width: 20 },
-    { header: 'ESTADO LOGISTICO', key: 'estado', width: 18 },
+    { header: 'ESTADO LOGÍSTICO', key: 'estado', width: 18 },
     { header: 'PIEZAS TOTALES', key: 'piezas', width: 16 },
     { header: 'ITEMS / SKUS', key: 'skus', width: 16 },
     { header: 'FECHA ARRIBO ESTIMADA', key: 'arribo', width: 24 }
   ];
 
   const rowHead4 = ws4.getRow(1);
-  rowHead4.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFFFFFFF' } };
-  rowHead4.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF10B981' } };
+  rowHead4.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: C_WHITE } };
+  rowHead4.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_EMERALD } };
   rowHead4.alignment = { vertical: 'middle', horizontal: 'center' };
   rowHead4.height = 26;
 
@@ -866,8 +888,8 @@ export async function exportarExcelEjecutivoKPIs(
     const r = ws4.addRow({
       contenedorId: m.contenedorId,
       proveedor: m.proveedor || 'Changan Automobile Co., Ltd.',
-      transporte: m.tipoTransporte || 'Maritimo 40HQ',
-      estado: m.estado || 'En Bahia',
+      transporte: m.tipoTransporte || 'Marítimo 40HQ',
+      estado: m.estado || 'En Bahía',
       piezas: Number(m.piezasTotales || m.totalPiezas || 0),
       skus: Number(m.totalItems || m.skusUnicos || 0),
       arribo: m.fechaArribo || 'En Puerto'
@@ -889,7 +911,6 @@ export async function exportarExcelEjecutivoKPIs(
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
 }
-
 export function exportarDashboardInteractivoHTML(
   kpiData: DatosKPIEjecutivo,
   filas: FilaMatrizCentral[],
