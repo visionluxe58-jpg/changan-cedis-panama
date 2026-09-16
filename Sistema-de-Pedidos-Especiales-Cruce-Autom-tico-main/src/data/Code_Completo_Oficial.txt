@@ -2165,7 +2165,7 @@ function onOpen() {
     .addSeparator()
     .addItem('⚡ Ejecutar Cruce Automático FIFO', 'sincronizarStockConMatriz')
     .addItem('📋 Generar Reporte de Asignaciones (Bodega)', 'sincronizarHojaAsignaciones')
-    .addItem('📦 Poblar Pestaña Despachos desde Observaciones / Matriz', 'migrarDespachosHistoricosDesdeObservaciones')
+    .addItem('🚚 Poblar Pestaña Despachos desde Estatus Cruce', 'migrarDespachosDesdeEstatusCruce')
     .addItem('🧹 Depurar Pedidos Duplicados', 'depurarDuplicadosMatriz')
     .addToUi();
 }
@@ -2604,7 +2604,7 @@ function construirPestanaDespachosEnSheet() {
  * pestaña 'Despachos' estructurada con todos sus metadatos.
  * =========================================================================
  */
-function migrarDespachosHistoricosDesdeObservaciones() {
+function migrarDespachosDesdeEstatusCruce() {
   var ss = obtenerSpreadsheet();
   if (!ss) throw new Error('No se pudo abrir el Spreadsheet activo.');
 
@@ -2656,13 +2656,8 @@ function migrarDespachosHistoricosDesdeObservaciones() {
     var packageNo = String(fila[16] || '').trim();
     var observaciones = String(fila[17] || '').trim();
 
-    var obsUpper = observaciones.toUpperCase();
-    var esDespacho = estatusCruce.includes('DESPACH') || 
-                     obsUpper.includes('DESPACH') || 
-                     obsUpper.includes('GUÍA DE DESPACHO') || 
-                     obsUpper.includes('GUIA DE DESPACHO') || 
-                     obsUpper.includes('ENVIADO') ||
-                     obsUpper.includes('ENTREGADA A RUTA');
+    // Criterio Canónico: Basado directamente en Columna N (Estatus Cruce / Detallado)
+    var esDespacho = estatusCruce.includes('DESPACH');
 
     if (esDespacho && idPedido) {
       var key = idPedido + '__' + oem;
