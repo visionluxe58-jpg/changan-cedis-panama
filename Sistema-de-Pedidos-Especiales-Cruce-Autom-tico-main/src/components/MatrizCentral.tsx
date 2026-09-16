@@ -1445,6 +1445,11 @@ export const MatrizCentral: React.FC<MatrizCentralProps> = ({
                           >
                             {fila.pedidoId}
                           </button>
+                          {fila.fechaCreacion && (fila.fechaCreacion.includes(new Date().toISOString().substring(0, 10)) || fila.fechaCreacion.includes(new Date().toLocaleDateString('es-PA'))) && (
+                            <span className="inline-flex items-center px-1 py-0.2 rounded text-[9px] font-extrabold bg-amber-500/25 text-amber-300 border border-amber-500/50 shadow-sm animate-pulse ml-1">
+                              NUEVO
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className={`text-[10px] font-semibold ${

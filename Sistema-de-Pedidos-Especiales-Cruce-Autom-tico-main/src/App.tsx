@@ -30,7 +30,8 @@ import {
   SolicitudCabecera,
   DetalleRepuesto
 } from './types/cedis';
-import { CheckCircle2, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Bell, X, CheckCircle2, AlertCircle, ShieldAlert } from 'lucide-react';
+import { playOrderAlertSound } from './utils/apiSync';
 
 export default function App() {
   // Detección inmediata de Modo PDT Exclusivo (Kiosk para Bodegueros / Sucursales)
@@ -84,6 +85,15 @@ export default function App() {
   const [modalRastreadorAbierto, setModalRastreadorAbierto] = useState<boolean>(false);
   const [modalPDTAbierto, setModalPDTAbierto] = useState<boolean>(false);
   const [codigoRastreoDirecto, setCodigoRastreoDirecto] = useState<string>('');
+
+  // Alerta de Nuevo Pedido en Vivo para CEDIS Central y Sucursales
+  const [alertaNuevoPedido, setAlertaNuevoPedido] = useState<{
+    pedidoId: string;
+    sucursal: string;
+    cliente: string;
+    totalPiezas?: number;
+    fecha?: string;
+  } | null>(null);
 
   // Toast
   const [notificacion, setNotificacion] = useState<{
@@ -169,6 +179,63 @@ export default function App() {
     }
   }, [recargarDatos]);
 
+  // Escucha activa y sondeo continuo para alertar a CEDIS de nuevos pedidos
+  useEffect(() => {
+    if (esModoPDTExclusivo) return;
+
+    // Escuchar eventos en vivo (misma pestaña o entre pestañas del navegador)
+    const handleEventoNuevoPedido = (e: any) => {
+      let data = e.detail;
+      if (!data && e.key === 'changan_alerta_nuevo_pedido' && e.newValue) {
+        try {
+          data = JSON.parse(e.newValue);
+        } catch (err) {}
+      }
+      if (data && data.pedidoId) {
+        recargarDatos();
+        try {
+          playOrderAlertSound();
+        } catch (err) {}
+        setAlertaNuevoPedido(data);
+      }
+    };
+
+    window.addEventListener('changan_nuevo_pedido', handleEventoNuevoPedido);
+    window.addEventListener('storage', handleEventoNuevoPedido);
+
+    // Sondeo de sincronización en fondo cada 20 segundos
+    const pollInterval = setInterval(async () => {
+      try {
+        const idsPrevios = new Set(appsScriptClient.getCabeceras().map(c => c.pedidoId));
+        const res = await appsScriptClient.fetchInitialData(true);
+        if (res.success) {
+          const actuales = appsScriptClient.getCabeceras();
+          const nuevos = actuales.filter(p => !idsPrevios.has(p.pedidoId));
+          if (nuevos.length > 0) {
+            recargarDatos();
+            try {
+              playOrderAlertSound();
+            } catch (e) {}
+            const primerNuevo = nuevos[0];
+            setAlertaNuevoPedido({
+              pedidoId: primerNuevo.pedidoId,
+              sucursal: primerNuevo.sucursal,
+              cliente: primerNuevo.cliente,
+              fecha: new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' })
+            });
+            mostrarNotificacion('info', `🔔 ¡Nuevo Pedido Recibido en CEDIS! ${primerNuevo.pedidoId} (${primerNuevo.sucursal}).`);
+          }
+        }
+      } catch (e) {}
+    }, 20000);
+
+    return () => {
+      window.removeEventListener('changan_nuevo_pedido', handleEventoNuevoPedido);
+      window.removeEventListener('storage', handleEventoNuevoPedido);
+      clearInterval(pollInterval);
+    };
+  }, [recargarDatos, esModoPDTExclusivo]);
+
   // SEGURIDAD ESTRICTA POR ROLES (RBAC):
   // Si el usuario activo es un Asesor, SOLO puede estar en 'formulario' o 'historial'
   useEffect(() => {
@@ -193,7 +260,22 @@ export default function App() {
 
   const handlePedidoCreado = (pedidoId: string) => {
     recargarDatos();
-    mostrarNotificacion('exito', `Requisicion ${pedidoId} registrada y enviada a CEDIS.`);
+    const pedidoReciente = appsScriptClient.getCabeceras().find(c => c.pedidoId === pedidoId);
+    const cliente = pedidoReciente?.cliente || 'Cliente';
+    const sucursal = pedidoReciente?.sucursal || usuarioActivo.sucursal || 'Sucursal';
+
+    try {
+      playOrderAlertSound();
+    } catch (e) {}
+
+    setAlertaNuevoPedido({
+      pedidoId,
+      sucursal,
+      cliente,
+      fecha: new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' })
+    });
+
+    mostrarNotificacion('exito', `Requisicion ${pedidoId} registrada y enviada a CEDIS (${sucursal}).`);
     if (usuarioActivo.rol === 'SUCURSAL_ASESOR') {
       setModuloActivo('historial');
     } else {
@@ -275,6 +357,51 @@ export default function App() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#050914] text-slate-100 font-sans selection:bg-sky-500 selection:text-white">
       {/* Toast de Notificaciones Flotante */}
+            {/* ALERTA EN VIVO: NUEVO PEDIDO RECIBIDO (CON SONIDO Y BANNER FLOTANTE) */}
+      {alertaNuevoPedido && (
+        <div className="fixed top-4 right-6 z-[9999] max-w-md w-full animate-bounce-short shadow-2xl rounded-2xl border border-amber-500/60 bg-gradient-to-r from-[#0b1220] via-[#111c33] to-[#1a1708] p-4 text-white backdrop-blur-xl ring-2 ring-amber-400/40">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                </span>
+                <Bell className="w-5 h-5 animate-pulse text-amber-300" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400">¡Nuevo Pedido Recibido!</span>
+                  <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-500/40">CEDIS Central</span>
+                </div>
+                <h4 className="text-sm font-bold text-white mt-0.5">{alertaNuevoPedido.pedidoId} &bull; {alertaNuevoPedido.sucursal}</h4>
+                <p className="text-xs text-slate-300">Cliente: <span className="font-semibold text-white">{alertaNuevoPedido.cliente}</span></p>
+              </div>
+            </div>
+            <button
+              onClick={() => setAlertaNuevoPedido(null)}
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-700/60 flex items-center justify-between gap-2">
+            <span className="text-[11px] text-amber-200/80 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span> Transmitido a CEDIS
+            </span>
+            <button
+              onClick={() => {
+                setModuloActivo('matriz');
+                setAlertaNuevoPedido(null);
+              }}
+              className="px-3 py-1.5 text-xs font-bold rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md transition-all flex items-center gap-1 cursor-pointer"
+            >
+              Ver en Matriz Central &rarr;
+            </button>
+          </div>
+        </div>
+      )}
+
       {notificacion && (
         <div className="fixed top-20 right-6 z-50 animate-bounce">
           <div className={`px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-semibold border backdrop-blur-xl ${

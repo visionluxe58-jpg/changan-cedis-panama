@@ -1,6 +1,6 @@
-﻿import { CABECERAS_MATRIZ_SINCRONIZADA, DETALLES_MATRIZ_SINCRONIZADA } from '../data/matrizBaseSincronizada';
+import { CABECERAS_MATRIZ_SINCRONIZADA, DETALLES_MATRIZ_SINCRONIZADA } from '../data/matrizBaseSincronizada';
 import { InsforgeService } from './insforgeClient';
-ï»¿import { SecurityUtils } from '../utils/security';
+import { SecurityUtils } from '../utils/security';
 import { 
   SolicitudCabecera, 
   DetalleRepuesto, 
@@ -1665,7 +1665,7 @@ class AppsScriptClientService {
 
     // 3. Despachos leidos directamente de la pestaña "Despachos" de Google Sheets
     this.despachosDesdeSheetsTab.forEach(d => {
-      const key = ${d.pedidoId}__;
+      const key = d.pedidoId + '__' + (d.codigoRepuesto || '').trim().toUpperCase();
       if (!seenDespKeys.has(key)) {
         seenDespKeys.add(key);
         resultado.push(d);
@@ -1716,7 +1716,7 @@ class AppsScriptClientService {
         this.marcarLineaComoDespachada('', pedidoId, codigoRepuesto);
 
         nuevos.push({
-          lineaId: ${pedidoId}-L-DESP,
+          lineaId: pedidoId + '-L-DESP',
           pedidoId,
           fechaCreacion: cab?.fechaCreacion || '2026-09-01',
           sucursal: sucursal || (cab?.sucursal ?? 'Sucursal'),
@@ -1748,7 +1748,7 @@ class AppsScriptClientService {
       });
 
       this.despachosDesdeSheetsTab = nuevos;
-      console.log([DESPACHOS]  despachos cargados desde pestaña Sheets.);
+      console.log('[DESPACHOS] ' + nuevos.length + ' despachos cargados desde pestaña Sheets.');
     } catch (e) {
       console.warn('[DESPACHOS] Error leyendo pestaña Despachos de Sheets:', e);
     }
@@ -2293,7 +2293,28 @@ class AppsScriptClientService {
    * CreaciÃ³n CanÃ³nica de Pedidos Multi-LÃ­nea
    * Genera 1 fila en Solicitudes_Cabecera y N filas en Detalle_Repuestos
    */
-    public async crearPedido(
+    /**
+   * Emite evento de alerta de nuevo pedido recibido (cross-tab y local)
+   */
+  public emitirAlertaNuevoPedido(datos: {
+    pedidoId: string;
+    sucursal: string;
+    cliente: string;
+    totalPiezas?: number;
+    fecha?: string;
+  }): void {
+    try {
+      if (typeof window !== 'undefined') {
+        const payloadStr = JSON.stringify(datos);
+        localStorage.setItem('changan_alerta_nuevo_pedido', payloadStr);
+        window.dispatchEvent(new CustomEvent('changan_nuevo_pedido', { detail: datos }));
+      }
+    } catch (e) {
+      console.warn('No se pudo emitir alerta local de nuevo pedido:', e);
+    }
+  }
+
+  public async crearPedido(
     cabecera: Omit<SolicitudCabecera, 'version' | 'creadoPor' | 'creadoEn' | 'actualizadoPor' | 'actualizadoEn' | 'estatusGeneral'>,
     items: Array<{ codigoRepuesto: string; descripcionOficial: string; cantidadSolicitada: number }>
   ): Promise<{ success: boolean; pedidoId?: string; error?: string; nota?: string }> {
@@ -2369,26 +2390,41 @@ class AppsScriptClientService {
       this.persistirDatos();
     };
 
-    // 1. Si hay Web App URL configurada, invocar Apps Script con timeout seguro de 3.5s
+    // Formatear filas oficiales de Matriz_Central para persistencia garantizada en Google Sheets
+    const filasMatriz = items.map(it => [
+      idAsignado,
+      cabecera.tipoPedido || "Stock Regular",
+      ahora,
+      cabecera.sucursal,
+      cabecera.colaborador || this.usuarioActivo.nombre || "Asesor",
+      cabecera.cliente,
+      cabecera.modeloChangan || "",
+      cabecera.vin || "",
+      cabecera.numeroOR || cabecera.cotizacion || "",
+      it.codigoRepuesto,
+      it.descripcionOficial,
+      it.cantidadSolicitada,
+      0,
+      "Pendiente Fábrica • Sin arribo en CEDIS (0 stock)",
+      "", "", "",
+      cabecera.observaciones || ""
+    ]);
+
+    // 1. Si hay Web App URL configurada, invocar Apps Script vía bulkUploadMatriz garantizado
     if (this.config.webAppUrl && !this.config.modoOfflineSimulado) {
-      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 6000) : null;
 
       try {
         const resp = await fetch(this.config.webAppUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           signal: controller ? controller.signal : undefined,
           body: JSON.stringify({
-            action: 'createPedido',
-            // Usar correo del superadministrador registrado en Sheets para garantizar autorizacin remota
-            userEmail: 'visionluxe58@gmail.com',
+            action: "bulkUploadMatriz",
+            userEmail: "visionluxe58@gmail.com",
             operationId: operationId,
-            pedido: {
-              ...cabecera,
-              pedidoId: idAsignado,
-              items: items
-            }
+            rows: filasMatriz
           })
         });
 
@@ -2397,28 +2433,63 @@ class AppsScriptClientService {
         if (resp.ok) {
           const resJson = await resp.json();
           if (resJson && resJson.success) {
-            persistirLocal(`Requisicin registrada en Google Sheets y validada en CEDIS (${cabecera.sucursal})`);
-            return { success: true, pedidoId: resJson.pedidoId || idAsignado };
+            persistirLocal("Requisición registrada en Google Sheets y validada en CEDIS (" + cabecera.sucursal + ")");
+            this.emitirAlertaNuevoPedido({
+              pedidoId: idAsignado,
+              sucursal: cabecera.sucursal,
+              cliente: cabecera.cliente,
+              totalPiezas: items.length,
+              fecha: ahora
+            });
+            return { success: true, pedidoId: idAsignado };
           } else {
-            console.warn('Google Apps Script retorn respuesta controlada:', resJson?.error || 'Sin detalle');
-            persistirLocal(`Requisicin radicada cannicamente en CEDIS (Google Sheets encolado: ${resJson?.error || 'Pendiente'})`);
-            return { success: true, pedidoId: idAsignado, nota: 'Guardado en CEDIS (Sincronizacin encolada)' };
+            console.warn("Google Apps Script retornó respuesta controlada:", resJson?.error || "Sin detalle");
+            persistirLocal("Requisición radicada canónicamente en CEDIS (Google Sheets encolado: " + (resJson?.error || "Pendiente") + ")");
+            this.emitirAlertaNuevoPedido({
+              pedidoId: idAsignado,
+              sucursal: cabecera.sucursal,
+              cliente: cabecera.cliente,
+              totalPiezas: items.length,
+              fecha: ahora
+            });
+            return { success: true, pedidoId: idAsignado, nota: "Guardado en CEDIS (Sincronización encolada)" };
           }
         } else {
-          console.warn('HTTP status no 200 en Apps Script:', resp.status);
-          persistirLocal(`Requisicin radicada cannicamente en CEDIS (HTTP ${resp.status})`);
-          return { success: true, pedidoId: idAsignado, nota: 'Guardado localmente en CEDIS' };
+          console.warn("HTTP status no 200 en Apps Script:", resp.status);
+          persistirLocal("Requisición radicada canónicamente en CEDIS (HTTP " + resp.status + ")");
+          this.emitirAlertaNuevoPedido({
+            pedidoId: idAsignado,
+            sucursal: cabecera.sucursal,
+            cliente: cabecera.cliente,
+            totalPiezas: items.length,
+            fecha: ahora
+          });
+          return { success: true, pedidoId: idAsignado, nota: "Guardado localmente en CEDIS" };
         }
-      } catch (err: any) {
+      } catch (err) {
         if (timeoutId) clearTimeout(timeoutId);
-        console.warn('Apps Script remoto no respondi a tiempo en el host de prueba, aplicando salvaguarda local:', err?.message || err);
-        persistirLocal(`Requisicin radicada cannicamente en CEDIS tras corte de host`);
-        return { success: true, pedidoId: idAsignado, nota: 'Guardado localmente en CEDIS' };
+        console.warn("Apps Script remoto diferido a salvaguarda local:", err?.message || err);
+        persistirLocal("Requisición radicada canónicamente en CEDIS tras corte de host");
+        this.emitirAlertaNuevoPedido({
+          pedidoId: idAsignado,
+          sucursal: cabecera.sucursal,
+          cliente: cabecera.cliente,
+          totalPiezas: items.length,
+          fecha: ahora
+        });
+        return { success: true, pedidoId: idAsignado, nota: "Guardado localmente en CEDIS" };
       }
     }
 
-    // 2. Ejecucin local directa garantizada
-    persistirLocal(`Requisicin registrada cannicamente en modo local CEDIS`);
+    // 2. Ejecución local directa garantizada
+    persistirLocal("Requisición registrada canónicamente en modo local CEDIS");
+    this.emitirAlertaNuevoPedido({
+      pedidoId: idAsignado,
+      sucursal: cabecera.sucursal,
+      cliente: cabecera.cliente,
+      totalPiezas: items.length,
+      fecha: ahora
+    });
     return { success: true, pedidoId: idAsignado };
   }
 
@@ -4480,7 +4551,7 @@ class AppsScriptClientService {
       // Leer pestaña Despachos de Google Sheets
       await this.fetchDespachosDesdeSheetsTab();
 
-      const urlMatriz = 'https://docs.google.com/spreadsheets/d/1YcV3D-d9zk_oqmHrgG4blnC05ElejvYZ7RT47nrJqfM/gviz/tq?tqx=out:json';
+      const urlMatriz = 'https://docs.google.com/spreadsheets/d/1YcV3D-d9zk_oqmHrgG4blnC05ElejvYZ7RT47nrJqfM/gviz/tq?tqx=out:json&sheet=Matriz_Central';
       const resp = await fetch(urlMatriz);
       if (!resp.ok) {
         throw new Error(`HTTP ${resp.status} al consultar Google Sheets`);

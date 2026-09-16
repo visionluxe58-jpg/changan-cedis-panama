@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { UsuarioActivo, ModeloChangan } from '../types/cedis';
 import { appsScriptClient } from '../services/appsScriptClient';
+import { playOrderAlertSound } from '../utils/apiSync';
 import { ModalComprobantePDF, ComprobantePedidoData } from './ModalComprobantePDF';
 import { agenteCotizacionesService, ResultadoAnalisisCotizacion } from '../services/agenteCotizacionesService';
 import { SelectorModeloChangan } from './SelectorModeloChangan';
@@ -583,7 +584,9 @@ export const FormularioRequisicion: React.FC<FormularioRequisicionProps> = ({
         setDatosComprobante(datosDoc);
         setPedidoRadicadoExitosoId(idFinal);
         setModalComprobanteAbierto(true);
+        if (onPedidoCreado) onPedidoCreado(idFinal);
         if (onTransmisionCompleta) onTransmisionCompleta(datosDoc);
+        try { playOrderAlertSound(); } catch (e) {}
       } else {
         setMensajeAlerta({
           tipo: 'error',
@@ -621,7 +624,9 @@ export const FormularioRequisicion: React.FC<FormularioRequisicionProps> = ({
       setDatosComprobante(datosDoc);
       setPedidoRadicadoExitosoId(idFinal);
       setModalComprobanteAbierto(true);
+      if (onPedidoCreado) onPedidoCreado(idFinal);
       if (onTransmisionCompleta) onTransmisionCompleta(datosDoc);
+      try { playOrderAlertSound(); } catch (e) {}
     } finally {
       setEnviando(false);
     }
