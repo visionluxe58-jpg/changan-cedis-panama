@@ -305,6 +305,7 @@ export default function App() {
         onAbrirRastreador={() => setModalRastreadorAbierto(true)}
           onAbrirTerminalPDT={() => setModalPDTAbierto(true)}
         onAbrirPortalSucursales={() => setModuloActivo('portal')}
+        onCompartirPortal={() => { setTabCompartirInicial('portal'); setModalCompartirAbierto(true); }}
       />
 
       {/* 2. AREA DE TRABAJO PRINCIPAL (HEADER + CONTENIDO SCROLLABLE + FOOTER) */}

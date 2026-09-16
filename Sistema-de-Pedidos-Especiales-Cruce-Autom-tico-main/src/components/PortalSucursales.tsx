@@ -324,6 +324,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
       <PantallaBienvenidaSucursal
         onSeleccionarSucursal={handleSeleccionarSucursalDesdeBienvenida}
         sucursalActual={usuario.sucursal}
+        onAbrirModalCompartir={onAbrirModalCompartir || copiarEnlacePortal}
       />
     );
   }

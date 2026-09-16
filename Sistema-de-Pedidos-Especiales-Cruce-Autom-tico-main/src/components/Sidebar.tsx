@@ -45,6 +45,7 @@ interface SidebarProps {
   pedidosSucursal?: number;
   onAbrirRastreador?: () => void;
   onAbrirPortalSucursales?: () => void;
+  onCompartirPortal?: () => void;
 }
 
 interface ItemNavegacion {
@@ -72,7 +73,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   totalContenedores,
   pedidosSucursal = 0,
   onAbrirRastreador,
-  onAbrirPortalSucursales
+  onAbrirPortalSucursales,
+  onCompartirPortal
 }) => {
   const esAsesor = usuarioActivo.rol === 'SUCURSAL_ASESOR';
 
@@ -310,6 +312,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       >
                         {item.badge}
                       </span>
+                    )}
+
+                    {!colapsado && item.id === 'portal' && onCompartirPortal && (
+                      <button
+                        type="button"
+                        data-share-portal-btn="true"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCompartirPortal();
+                        }}
+                        className="p-1 rounded bg-sky-500/20 hover:bg-sky-500/40 text-sky-300 hover:text-white border border-sky-500/30 transition-all cursor-pointer ml-1"
+                        title="Compartir enlace con asesores"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                      </button>
                     )}
                   </button>
                 );
