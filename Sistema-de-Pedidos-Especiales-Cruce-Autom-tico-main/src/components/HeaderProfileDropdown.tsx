@@ -272,14 +272,18 @@ export const HeaderProfileDropdown: React.FC<HeaderProfileDropdownProps> = ({
                   </div>
                 </div>
 
-                {/* Acceso para Administrador CEDIS mediante PIN */}
+                {/* Cerrar Sesión / Salir al Login del Asesor */}
                 <button
                   type="button"
-                  onClick={() => setMostrarModalAdminPin(true)}
-                  className="w-full py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center gap-2 transition cursor-pointer"
+                  onClick={() => {
+                    localStorage.removeItem('changan_sucursal_configurada');
+                    setAbierto(false);
+                    window.location.href = window.location.pathname + '?portal=sucursales';
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-200 border border-rose-500/30 flex items-center justify-center gap-2 transition cursor-pointer"
                 >
-                  <KeyRound className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Acceso Administrador CEDIS (PIN)</span>
+                  <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Cerrar Sesión / Salir al Login</span>
                 </button>
               </div>
             )}
@@ -331,77 +335,7 @@ export const HeaderProfileDropdown: React.FC<HeaderProfileDropdownProps> = ({
         )}
       </div>
 
-      {/* Modal Autenticación Administrador CEDIS */}
-      {mostrarModalAdminPin && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-[#0f172a] border border-slate-700 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-150">
-            <div className="p-4 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-white">Modo Administrador</h3>
-                  <p className="text-[11px] text-slate-400">Regresar al panel general CEDIS</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setMostrarModalAdminPin(false);
-                  setErrorPin('');
-                  setPinIngresado('');
-                }}
-                className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleValidarPinAdmin} className="p-4 space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  PIN o Clave de Administrador
-                </label>
-                <input
-                  type="password"
-                  value={pinIngresado}
-                  onChange={(e) => {
-                    setPinIngresado(e.target.value);
-                    setErrorPin('');
-                  }}
-                  placeholder="Ingresa PIN (ej. 2026)"
-                  autoFocus
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
-                />
-                {errorPin && (
-                  <p className="text-xs text-rose-400 mt-1.5 font-medium">{errorPin}</p>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMostrarModalAdminPin(false);
-                    setErrorPin('');
-                    setPinIngresado('');
-                  }}
-                  className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer shadow-lg shadow-emerald-600/20"
-                >
-                  Ingresar como Admin
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      
     </>
   );
 };

@@ -67,19 +67,30 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
   onCambiarTab
 }) => {
   const esAdmin = usuario.rol === 'ADMINISTRADOR_CEDIS';
-  // Estado de configuraciÃ³n de sucursal
+  // Si el usuario es un asesor con sucursal configurada, entra directo a su área de trabajo
+  const esAsesorAutenticado = Boolean(
+    usuario.rol === 'SUCURSAL_ASESOR' &&
+    usuario.sucursal &&
+    !usuario.sucursal.includes('Central') &&
+    !usuario.sucursal.includes('Bodega')
+  );
+
   const [sucursalSeleccionada, setSucursalSeleccionada] = useState<boolean>(() => {
+    if (esAsesorAutenticado) return true;
     const guardada = localStorage.getItem('changan_sucursal_configurada');
     return Boolean(guardada && usuario.sucursal && !usuario.sucursal.includes('Central'));
   });
 
+  useEffect(() => {
+    if (esAsesorAutenticado) {
+      setSucursalSeleccionada(true);
+    }
+  }, [usuario.rol, usuario.sucursal, esAsesorAutenticado]);
+
   const [tabActiva, setTabActiva] = useState<'nueva' | 'historial'>('nueva');
   const [modalPdfAbierto, setModalPdfAbierto] = useState<boolean>(false);
   const [modalRastreadorAbierto, setModalRastreadorAbierto] = useState<boolean>(false);
-  const [modalPinAdminAbierto, setModalPinAdminAbierto] = useState<boolean>(false);
-  const [pinAdminPortal, setPinAdminPortal] = useState<string>('');
-  const [errorPinPortal, setErrorPinPortal] = useState<string>('');
-  const [codigoInicialRastreo, setCodigoInicialRastreo] = useState<string>('');
+        const [codigoInicialRastreo, setCodigoInicialRastreo] = useState<string>('');
   const [comprobantePdfData, setComprobantePdfData] = useState<ComprobantePedidoData | null>(null);
   const [modalEtiquetasData, setModalEtiquetasData] = useState<EtiquetaRepuestoData[] | null>(null);
   const [copiadoEnlace, setCopiadoEnlace] = useState<boolean>(false);
@@ -106,22 +117,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
   };
 
 
-  const handleValidarPinPortal = (e: React.FormEvent) => {
-    e.preventDefault();
-    const pinLimpio = pinAdminPortal.trim();
-    if (pinLimpio === '2026' || pinLimpio === 'admin' || pinLimpio === 'CEDIS' || pinLimpio === 'cedis2026') {
-      const admin = USUARIOS_OFICIALES.find(u => u.rol === 'ADMINISTRADOR_CEDIS') || USUARIOS_OFICIALES[0];
-      localStorage.removeItem('changan_sucursal_configurada');
-      onCambiarUsuario(admin);
-      setModalPinAdminAbierto(false);
-      setPinAdminPortal('');
-      setErrorPinPortal('');
-      window.location.href = window.location.pathname;
-    } else {
-      setErrorPinPortal('PIN incorrecto. Ingresa la clave autorizada.');
-    }
-  };
-  const abrirRastreadorUniversal = (codigo = '') => {
+    const abrirRastreadorUniversal = (codigo = '') => {
     setCodigoInicialRastreo(codigo);
     setModalRastreadorAbierto(true);
   };
@@ -427,22 +423,18 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
             Rastrear
           </button>
 
-          {/* BotÃ³n para regresar al panel general CEDIS */}
-          <button
-            type="button"
-            onClick={() => {
-              if (esAdmin) {
-                if (onAbrirMatrizCentral) onAbrirMatrizCentral();
-              } else {
-                setModalPinAdminAbierto(true);
-              }
-            }}
-            className="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 rounded-lg border border-emerald-500/40 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
-            title="Regresar a Inicio / Panel Central CEDIS"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Panel CEDIS</span>
-          </button>
+                    {/* Botón para regresar al panel general CEDIS (Solo Administrador) */}
+          {esAdmin && onAbrirMatrizCentral && (
+            <button
+              type="button"
+              onClick={onAbrirMatrizCentral}
+              className="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 rounded-lg border border-emerald-500/40 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+              title="Regresar al Panel Central CEDIS"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Panel CEDIS</span>
+            </button>
+          )}
 
           {/* Compartir enlace de asesores */}
           <button
@@ -657,64 +649,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
           }}
         />
       )}
-      {/* MODAL PIN ADMINISTRADOR CEDIS - Regreso al panel central */}
-      {modalPinAdminAbierto && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0f172a] border border-slate-700 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
-            <div className="p-4 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-white">Modo Administrador</h3>
-                  <p className="text-[11px] text-slate-400">Regresar al panel general CEDIS</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setModalPinAdminAbierto(false); setErrorPinPortal(''); setPinAdminPortal(''); }}
-                className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <form onSubmit={handleValidarPinPortal} className="p-4 space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  PIN o Clave de Administrador
-                </label>
-                <input
-                  type="password"
-                  value={pinAdminPortal}
-                  onChange={(e) => { setPinAdminPortal(e.target.value); setErrorPinPortal(''); }}
-                  placeholder="Ingresa PIN (ej. 2026)"
-                  autoFocus
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
-                />
-                {errorPinPortal && (
-                  <p className="text-xs text-rose-400 mt-1.5 font-medium">{errorPinPortal}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setModalPinAdminAbierto(false); setErrorPinPortal(''); setPinAdminPortal(''); }}
-                  className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition cursor-pointer shadow-lg shadow-emerald-600/20"
-                >
-                  Ingresar como Admin
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      
 
 
       {/* MODAL RASTREADOR UNIVERSAL */}

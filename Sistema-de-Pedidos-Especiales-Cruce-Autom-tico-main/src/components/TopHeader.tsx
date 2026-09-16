@@ -121,7 +121,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       {/* Lado Derecho: Utilidades, Acciones y Profile Dropdown */}
       <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
         {/* Boton Terminal Movil PDT + Compartir */}
-        {onAbrirTerminalPDT && (
+        {esAdmin && onAbrirTerminalPDT && (
           <div className="flex items-center">
             <button
               type="button"
