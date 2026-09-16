@@ -1,0 +1,7 @@
+{
+  "name": "Changan CEDIS Logistics & Parts Auto-Matching",
+  "description": "Sistema de gestión y cruce automático de pedidos especiales de repuestos para CEDIS Changan Auto Panamá y red de sucursales.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

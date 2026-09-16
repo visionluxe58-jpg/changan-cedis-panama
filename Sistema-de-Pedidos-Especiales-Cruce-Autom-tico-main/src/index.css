@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+
+:root {
+  --bg-obsidian: #060913;
+  --bg-surface: #0a1122;
+  --glass-surface: rgba(10, 17, 34, 0.82);
+  --glass-border: rgba(56, 189, 248, 0.18);
+  --secondary: #38bdf8;
+  --primary-container: #1e3a8a;
+  --text-primary: #f1f5f9;
+}
+
+body {
+  background-color: #060913;
+  color: #f1f5f9;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(6, 9, 19, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
+
+/* Dark Glass Well Input styling (Stitch Executive) */
+.dark-glass-well {
+  background-color: #060e20 !important;
+  border: 1px solid #243247 !important;
+  color: #f8fafc !important;
+  transition: all 0.2s ease;
+}
+.dark-glass-well:focus, .dark-glass-well:focus-within {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35) !important;
+  outline: none !important;
+}
+
+select.dark-glass-well option {
+  background-color: #0b1326;
+  color: #f8fafc;
+}
+
+/* High gloss overlay for primary buttons */
+.btn-glossy {
+  position: relative;
+  overflow: hidden;
+}
+.btn-glossy::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+}
+
+
+.bg-cyber-grid {
+  background-color: #03060c;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(255, 42, 85, 0.05) 0%, transparent 45%),
+    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+}
+
+.cyber-panel {
+  background: linear-gradient(135deg, rgba(14, 23, 40, 0.82) 0%, rgba(6, 11, 22, 0.92) 100%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cyber-panel-cyan-glow {
+  border-color: rgba(0, 229, 255, 0.45) !important;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.2), inset 0 0 15px rgba(0, 229, 255, 0.08) !important;
+}
+
+.cyber-glass-input {
+  background: rgba(3, 7, 15, 0.85) !important;
+  border: 1px solid rgba(0, 229, 255, 0.22) !important;
+  color: #e6edf8 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cyber-glass-input:focus {
+  outline: none !important;
+  border-color: #00e5ff !important;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35), inset 0 0 8px rgba(0, 229, 255, 0.15) !important;
+}
+
+@keyframes radarSweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-radar {
+  animation: radarSweep 6s linear infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.06); }
+}
+.animate-pulse-glow {
+  animation: pulseGlow 2.4s infinite ease-in-out;
+}
+
+.font-chakra {
+  font-family: 'Chakra Petch', sans-serif;
+}
+.font-space {
+  font-family: 'Space Grotesk', sans-serif;
+}

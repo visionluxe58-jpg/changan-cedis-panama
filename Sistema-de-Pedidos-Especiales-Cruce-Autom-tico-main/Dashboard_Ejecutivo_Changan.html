@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changan Auto Panamá | Dashboard Ejecutivo de Pedidos Especiales</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0284c7',
+              600: '#0369a1',
+              900: '#0c4a6e',
+              950: '#082f49'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS / XLSX CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 custom-scrollbar">
+
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- 1. HEADER GERENCIAL CON DROPZONE DE ARCHIVOS -->
+    <header class="glass-card rounded-2xl p-6 shadow-2xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 border-l-4 border-l-sky-500">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-black tracking-wider uppercase bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> CEDIS Logistics BI
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sistema Vivo
+          </span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+          Tablero Ejecutivo de Pedidos Especiales
+        </h1>
+        <p class="text-sm text-slate-400 mt-1">
+          Changan Auto Panamá &bull; Control integral de nivel de servicio, demanda por sucursal y cruce de stock.
+        </p>
+      </div>
+
+      <!-- Dropzone / Cargador de Archivos XLSX / CSV -->
+      <div class="w-full lg:w-auto">
+        <label for="fileUpload" class="group flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-700 hover:border-sky-500 rounded-xl bg-slate-900/60 hover:bg-slate-900 transition cursor-pointer text-center">
+          <div class="flex items-center gap-2.5 text-xs text-slate-300 font-semibold group-hover:text-sky-400">
+            <i data-lucide="upload-cloud" class="w-5 h-5 text-sky-400 group-hover:scale-110 transition-transform"></i>
+            <span>Cargar nuevo Excel (.xlsx / .csv)</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-0.5">
+            Arrastra aquí o haz clic para recargar sin recargar la página
+          </p>
+          <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv" class="hidden" />
+        </label>
+      </div>
+    </header>
+
+    <!-- 2. TARJETAS DE KPIS PRINCIPALES -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      
+      <!-- Fill Rate -->
+      <div class="glass-card rounded-2xl p-4 shadow-lg flex flex-col justify-between hover:border-sky-500/50 transition">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-bold">
+          <span>FILL RATE</span>
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div class="my-2">
+          <div class="text-2xl md:text-3xl font-black text-emerald-400" id="kpiFillRate">__FILL_RATE__%</div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2">
+            <div id="barFillRate" class="bg-emerald-500 h-1.5 rounded-full" style="width: __FILL_RATE__%"></div>
+          </div>
+        </div>
+        <div class="text-[10px] text-slate-400">Meta: &ge; 97.0%</div>
+      </div>
+
+      <!-- Total Solicitadas -->
+      <div class="glass-card rounded-2xl p-4 shadow-lg flex flex-col justify-between hover:border-sky-500/50 transition">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-bold">
+          <span>SOLICITADAS</span>
+          <i data-lucide="package" class="w-4 h-4 text-sky-400"></i>
+        </div>
+        <div class="my-2">
+          <div class="text-2xl md:text-3xl font-black text-sky-400" id="kpiSolicitadas">__SOLICITADAS__</div>
+          <span class="text-[10px] text-slate-400">Piezas totales</span>
+        </div>
+        <div class="text-[10px] text-slate-500" id="kpiTotalPedidos">__PEDIDOS__ requisiciones</div>
+      </div>
+
+      <!-- Total Atendidas -->
+      <div class="glass-card rounded-2xl p-4 shadow-lg flex flex-col justify-between hover:border-sky-500/50 transition">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-bold">
+          <span>ATENDIDAS</span>
+          <i data-lucide="truck" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div class="my-2">
+          <div class="text-2xl md:text-3xl font-black text-emerald-400" id="kpiAtendidas">__ATENDIDAS__</div>
+          <span class="text-[10px] text-emerald-500/80 font-medium">Asignadas + Despachadas</span>
+        </div>
+        <div class="text-[10px] text-slate-400">En ruta o bodega</div>
+      </div>
+
+      <!-- Pendientes (Backorder) -->
+      <div class="glass-card rounded-2xl p-4 shadow-lg flex flex-col justify-between hover:border-sky-500/50 transition">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-bold">
+          <span>BACKORDER</span>
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i>
+        </div>
+        <div class="my-2">
+          <div class="text-2xl md:text-3xl font-black text-rose-400" id="kpiPendientes">__PENDIENTES__</div>
+          <span class="text-[10px] text-rose-400/80 font-medium">En espera</span>
+        </div>
+        <div class="text-[10px] text-slate-400">Requiere DPL 40HQ</div>
+      </div>
+
+      <!-- Tiempo de Ciclo -->
+      <div class="glass-card rounded-2xl p-4 shadow-lg flex flex-col justify-between hover:border-sky-500/50 transition">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-bold">
+          <span>LEAD TIME</span>
+          <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+        </div>
+        <div class="my-2">
+          <div class="text-2xl md:text-3xl font-black text-cyan-400" id="kpiCiclo">__CICLO__ h</div>
+          <span class="text-[10px] text-cyan-400/80 font-medium">Tiempo promedio</span>
+        </div>
+        <div class="text-[10px] text-slate-400">Meta: &le; 48 horas</div>
+      </div>
+
+      <!-- IRA Inventario -->
+      <div class="glass-card rounded-2xl p-4 shadow-lg flex flex-col justify-between hover:border-sky-500/50 transition">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-bold">
+          <span>EXACTITUD (IRA)</span>
+          <i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i>
+        </div>
+        <div class="my-2">
+          <div class="text-2xl md:text-3xl font-black text-purple-400" id="kpiIRA">__IRA__%</div>
+          <span class="text-[10px] text-purple-400/80 font-medium">Auditoría física</span>
+        </div>
+        <div class="text-[10px] text-slate-400">Meta: &ge; 98.0%</div>
+      </div>
+
+    </div>
+
+    <!-- 3. BARRA DE FILTROS DINÁMICOS -->
+    <div class="glass-card rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+      <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <!-- Filtro Sucursal -->
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-bold text-slate-400 uppercase">Sucursal:</label>
+          <select id="filtroSucursal" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 focus:ring-sky-500 focus:border-sky-500 outline-none">
+            <option value="TODAS">Todas las Sucursales</option>
+          </select>
+        </div>
+
+        <!-- Filtro Modelo -->
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-bold text-slate-400 uppercase">Modelo:</label>
+          <select id="filtroModelo" class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 focus:ring-sky-500 focus:border-sky-500 outline-none">
+            <option value="TODOS">Todos los Modelos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Buscador en Vivo -->
+      <div class="relative w-full md:w-72">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+        <input type="text" id="busquedaInput" placeholder="Buscar código, descripción, cliente..." class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg pl-9 pr-3 py-2 focus:ring-sky-500 focus:border-sky-500 outline-none placeholder-slate-500">
+      </div>
+    </div>
+
+    <!-- 4. GRÁFICOS INTERACTIVOS CON CHART.JS -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Gráfico de Barras: Solicitadas vs Atendidas por Sucursal (2 Columnas) -->
+      <div class="lg:col-span-2 glass-card rounded-2xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-4 h-4 text-sky-400"></i>
+              Demanda y Atención por Agencia / Sucursal
+            </h2>
+            <p class="text-xs text-slate-400">Piezas solicitadas frente a piezas atendidas (asignadas + despachadas)</p>
+          </div>
+        </div>
+        <div class="h-80 w-full relative">
+          <canvas id="chartSucursales"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico Doughnut: Demanda por Modelo Changan (1 Columna) -->
+      <div class="glass-card rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2 mb-1">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-400"></i>
+            Demanda por Modelo Changan
+          </h2>
+          <p class="text-xs text-slate-400 mb-4">Concentración porcentual de repuestos especiales</p>
+        </div>
+        <div class="h-64 w-full relative flex items-center justify-center">
+          <canvas id="chartModelos"></canvas>
+        </div>
+        <div id="leyendaModelos" class="grid grid-cols-2 gap-2 mt-3 text-xs text-slate-300"></div>
+      </div>
+
+    </div>
+
+    <!-- 5. TABLA INTERACTIVA DE REQUISICIONES -->
+    <div class="glass-card rounded-2xl shadow-xl overflow-hidden">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="table" class="w-4 h-4 text-purple-400"></i>
+            Detalle Operativo de Pedidos Especiales
+          </h2>
+          <p class="text-xs text-slate-400">Registro auditable con estatus en tiempo real</p>
+        </div>
+        <span id="contadorLineas" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+          Mostrando 0 registros
+        </span>
+      </div>
+
+      <div class="overflow-x-auto max-h-96 custom-scrollbar">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-900/90 text-slate-400 font-bold sticky top-0 uppercase tracking-wider border-b border-slate-800">
+            <tr>
+              <th class="p-3">Folio</th>
+              <th class="p-3">Sucursal</th>
+              <th class="p-3">Cliente</th>
+              <th class="p-3">Modelo</th>
+              <th class="p-3">Código Repuesto</th>
+              <th class="p-3">Descripción</th>
+              <th class="p-3 text-right">Solicitado</th>
+              <th class="p-3 text-right">Atendido</th>
+              <th class="p-3 text-center">Estatus</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBody" class="divide-y divide-slate-800/60 font-medium text-slate-200">
+            <!-- Filas inyectadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-xs text-slate-500 py-4">
+      Changan Auto Panamá &bull; CEDIS Logistics Dashboard &bull; Exportable para Juntas y Presentaciones Ejecutivas
+    </footer>
+
+  </div>
+
+  <!-- SCRIPT DE LÓGICA INTERACTIVA -->
+  <script>
+    let rawData = __INITIAL_DATA__;
+    let chartSucursalesInstance = null;
+    let chartModelosInstance = null;
+
+    const PALETA = ['#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#3b82f6', '#14b8a6'];
+
+    function initDashboard() {
+      lucide.createIcons();
+      poblarFiltros();
+      renderizarTodo();
+      configurarEventos();
+    }
+
+    function poblarFiltros() {
+      const sucursales = new Set();
+      const modelos = new Set();
+
+      rawData.forEach(f => {
+        if (f.sucursal) sucursales.add(f.sucursal);
+        if (f.modelo) modelos.add(f.modelo);
+      });
+
+      const selSuc = document.getElementById('filtroSucursal');
+      selSuc.innerHTML = '<option value="TODAS">Todas las Sucursales</option>';
+      Array.from(sucursales).sort().forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        selSuc.appendChild(opt);
+      });
+
+      const selMod = document.getElementById('filtroModelo');
+      selMod.innerHTML = '<option value="TODOS">Todos los Modelos</option>';
+      Array.from(modelos).sort().forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        selMod.appendChild(opt);
+      });
+    }
+
+    function getFilasFiltradas() {
+      const suc = document.getElementById('filtroSucursal').value;
+      const mod = document.getElementById('filtroModelo').value;
+      const busq = document.getElementById('busquedaInput').value.toLowerCase().trim();
+
+      return rawData.filter(f => {
+        if (suc !== 'TODAS' && f.sucursal !== suc) return false;
+        if (mod !== 'TODOS' && f.modelo !== mod) return false;
+        if (busq) {
+          const match = (f.pedidoId || '').toLowerCase().includes(busq) ||
+                        (f.cliente || '').toLowerCase().includes(busq) ||
+                        (f.codigo || '').toLowerCase().includes(busq) ||
+                        (f.descripcion || '').toLowerCase().includes(busq) ||
+                        (f.sucursal || '').toLowerCase().includes(busq);
+          if (!match) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderizarTodo() {
+      const filtradas = getFilasFiltradas();
+
+      let sol = 0;
+      let asig = 0;
+      let desp = 0;
+      const pedidosSet = new Set();
+
+      filtradas.forEach(f => {
+        if (f.pedidoId) pedidosSet.add(f.pedidoId);
+        sol += Number(f.solicitado) || 0;
+        asig += Number(f.asignado) || 0;
+        desp += Number(f.despachado) || 0;
+      });
+
+      const atendidas = asig + desp;
+      const pendientes = Math.max(0, sol - atendidas);
+      const fillRate = sol > 0 ? Math.round((atendidas / sol) * 1000) / 10 : 100;
+
+      document.getElementById('kpiFillRate').innerText = fillRate + '%';
+      document.getElementById('barFillRate').style.width = Math.min(100, fillRate) + '%';
+      document.getElementById('kpiSolicitadas').innerText = sol.toLocaleString();
+      document.getElementById('kpiAtendidas').innerText = atendidas.toLocaleString();
+      document.getElementById('kpiPendientes').innerText = pendientes.toLocaleString();
+      document.getElementById('kpiTotalPedidos').innerText = pedidosSet.size + ' requisiciones';
+      document.getElementById('contadorLineas').innerText = 'Mostrando ' + filtradas.length + ' registros';
+
+      const sucMap = new Map();
+      filtradas.forEach(f => {
+        const s = f.sucursal || 'Sin Sucursal';
+        if (!sucMap.has(s)) sucMap.set(s, { sol: 0, ate: 0 });
+        const obj = sucMap.get(s);
+        obj.sol += Number(f.solicitado) || 0;
+        obj.ate += (Number(f.asignado) || 0) + (Number(f.despachado) || 0);
+      });
+
+      const labelsSuc = Array.from(sucMap.keys());
+      const dataSol = labelsSuc.map(s => sucMap.get(s).sol);
+      const dataAte = labelsSuc.map(s => sucMap.get(s).ate);
+
+      renderizarGraficoSucursales(labelsSuc, dataSol, dataAte);
+
+      const modMap = new Map();
+      filtradas.forEach(f => {
+        const m = f.modelo || 'Otros';
+        modMap.set(m, (modMap.get(m) || 0) + (Number(f.solicitado) || 0));
+      });
+
+      const sortedModelos = Array.from(modMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
+      const labelsMod = sortedModelos.map(m => m[0]);
+      const dataMod = sortedModelos.map(m => m[1]);
+
+      renderizarGraficoModelos(labelsMod, dataMod);
+      renderizarTabla(filtradas.slice(0, 100));
+      lucide.createIcons();
+    }
+
+    function renderizarGraficoSucursales(labels, dataSol, dataAte) {
+      const ctx = document.getElementById('chartSucursales').getContext('2d');
+      if (chartSucursalesInstance) chartSucursalesInstance.destroy();
+
+      chartSucursalesInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Solicitadas',
+              data: dataSol,
+              backgroundColor: '#0284c7',
+              borderRadius: 6
+            },
+            {
+              label: 'Atendidas (CEDIS)',
+              data: dataAte,
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 11 } }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#1e293b' },
+              ticks: { color: '#cbd5e1', font: { family: 'Plus Jakarta Sans', size: 10 } }
+            },
+            y: {
+              grid: { color: '#1e293b' },
+              ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderizarGraficoModelos(labels, data) {
+      const ctx = document.getElementById('chartModelos').getContext('2d');
+      if (chartModelosInstance) chartModelosInstance.destroy();
+
+      chartModelosInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: PALETA.slice(0, labels.length),
+            borderWidth: 2,
+            borderColor: '#0f172a'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          cutout: '65%'
+        }
+      });
+
+      const ley = document.getElementById('leyendaModelos');
+      ley.innerHTML = '';
+      labels.forEach((l, idx) => {
+        const val = data[idx];
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-1.5 truncate';
+        div.innerHTML = '<span class="w-2.5 h-2.5 rounded-full" style="background-color: ' + PALETA[idx] + '"></span><span class="truncate font-semibold">' + l + ':</span><span class="text-slate-400">' + val + '</span>';
+        ley.appendChild(div);
+      });
+    }
+
+    function renderizarTabla(filas) {
+      const tbody = document.getElementById('tablaBody');
+      tbody.innerHTML = '';
+
+      filas.forEach(f => {
+        const atendida = (Number(f.asignado) || 0) + (Number(f.despachado) || 0);
+        const solicitada = Number(f.solicitado) || 0;
+        const estatusBadge = atendida >= solicitada && solicitada > 0
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">COMPLETO</span>'
+          : atendida > 0
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30">PARCIAL</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">PENDIENTE</span>';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/60 transition';
+        tr.innerHTML = '<td class="p-3 font-mono font-bold text-sky-400">' + f.pedidoId + '</td>' +
+          '<td class="p-3">' + f.sucursal + '</td>' +
+          '<td class="p-3 font-semibold text-white truncate max-w-[150px]">' + f.cliente + '</td>' +
+          '<td class="p-3 text-slate-300">' + f.modelo + '</td>' +
+          '<td class="p-3 font-mono text-slate-300">' + f.codigo + '</td>' +
+          '<td class="p-3 text-slate-400 truncate max-w-[200px]">' + f.descripcion + '</td>' +
+          '<td class="p-3 text-right font-bold">' + solicitada.toLocaleString() + '</td>' +
+          '<td class="p-3 text-right font-bold text-emerald-400">' + atendida.toLocaleString() + '</td>' +
+          '<td class="p-3 text-center">' + estatusBadge + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function configurarEventos() {
+      document.getElementById('filtroSucursal').addEventListener('change', renderizarTodo);
+      document.getElementById('filtroModelo').addEventListener('change', renderizarTodo);
+      document.getElementById('busquedaInput').addEventListener('input', renderizarTodo);
+
+      document.getElementById('fileUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(firstSheet);
+
+          rawData = json.map(r => ({
+            pedidoId: r['FOLIO PEDIDO'] || r['Folio'] || r['Pedido'] || r['pedidoId'] || 'CARGADO',
+            fecha: r['FECHA'] || r['Fecha'] || '',
+            sucursal: r['SUCURSAL / AGENCIA'] || r['SUCURSAL'] || r['Sucursal'] || r['sucursal'] || 'Central',
+            asesor: r['ASESOR OFICIAL'] || r['Asesor'] || '',
+            cliente: r['CLIENTE'] || r['Cliente'] || 'Cliente',
+            placa: r['PLACA'] || r['Placa'] || '',
+            modelo: r['MODELO CHANGAN'] || r['MODELO'] || r['Modelo'] || 'Changan',
+            codigo: r['CÓDIGO REPUESTO'] || r['CODIGO'] || r['Codigo'] || '',
+            descripcion: r['DESCRIPCIÓN OFICIAL'] || r['DESCRIPCION'] || r['Descripcion'] || '',
+            solicitado: Number(r['CANT. SOLICITADA'] || r['SOLICITADO'] || r['Solicitado'] || r['Cantidad']) || 1,
+            asignado: Number(r['CANT. ASIGNADA'] || r['ASIGNADO'] || r['Asignado']) || 0,
+            despachado: Number(r['CANT. DESPACHADA'] || r['DESPACHADO'] || r['Despachado']) || 0,
+            estatus: r['ESTATUS LÍNEA'] || r['ESTATUS'] || 'ACTIVO'
+          }));
+
+          poblarFiltros();
+          renderizarTodo();
+          alert('¡Archivo ' + file.name + ' procesado con éxito! Se cargaron ' + rawData.length + ' filas.');
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>

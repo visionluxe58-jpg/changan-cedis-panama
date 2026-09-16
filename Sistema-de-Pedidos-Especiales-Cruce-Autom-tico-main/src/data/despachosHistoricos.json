@@ -1,0 +1,1452 @@
+{
+  "PED-VL-2239___S203F270801-1000": {
+    "orderNumber": "PED-VL-2239",
+    "code": "S203F270801-1000",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128191",
+    "packageNo": "C0005858226",
+    "dispatchedAt": "2026-09-09T00:40:11.003Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2238___S203F271303-0900": {
+    "orderNumber": "PED-VL-2238",
+    "code": "S203F271303-0900",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001127239",
+    "packageNo": "C0005855924",
+    "dispatchedAt": "2026-09-09T00:40:11.003Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2237___S203F270806-0301": {
+    "orderNumber": "PED-VL-2237",
+    "code": "S203F270806-0301",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09T00:40:11.003Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2236___S203F270501-0400": {
+    "orderNumber": "PED-VL-2236",
+    "code": "S203F270501-0400",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001133265",
+    "packageNo": "C0005871036",
+    "dispatchedAt": "2026-09-09T00:40:11.003Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2235___S203F270906-0100-AA": {
+    "orderNumber": "PED-VL-2235",
+    "code": "S203F270906-0100-AA",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001130043",
+    "packageNo": "C0005863103",
+    "dispatchedAt": "2026-09-09T00:40:11.003Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2234___S203F270806-0401": {
+    "orderNumber": "PED-VL-2234",
+    "code": "S203F270806-0401",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132249",
+    "packageNo": "C0005866984",
+    "dispatchedAt": "2026-09-09T00:40:11.003Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2240___B511F270102-0200-A": {
+    "orderNumber": "PED-CV-2240",
+    "code": "B511F270102-0200-A",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09T02:17:23.139Z",
+    "status": "Despachado"
+  },
+  "PED-CH-2242___PC201164-0801": {
+    "orderNumber": "PED-CH-2242",
+    "code": "PC201164-0801",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005866974",
+    "dispatchedAt": "2026-09-09T17:10:35.690Z",
+    "status": "Despachado"
+  },
+  "PED-CH-2242___PC201164-0701": {
+    "orderNumber": "PED-CH-2242",
+    "code": "PC201164-0701",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005866773",
+    "dispatchedAt": "2026-09-09T17:10:35.690Z",
+    "status": "Despachado"
+  },
+  "PED-CH-2215___PC201134-0101-A1": {
+    "orderNumber": "PED-CH-2215",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09T17:10:35.690Z",
+    "status": "Despachado"
+  },
+  "PED-CH-2201___PC201131-0201": {
+    "orderNumber": "PED-CH-2201",
+    "code": "PC201131-0201",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001130043",
+    "packageNo": "C0005863103",
+    "dispatchedAt": "2026-09-09T17:10:35.690Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2152___S203F270902-0600": {
+    "orderNumber": "PED-VL-2152",
+    "code": "S203F270902-0600",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-2233___PC201193-0301": {
+    "orderNumber": "PED-VL-2233",
+    "code": "PC201193-0301",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-2233___PC201193-0501": {
+    "orderNumber": "PED-VL-2233",
+    "code": "PC201193-0501",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-2233___P201F270502-1501": {
+    "orderNumber": "PED-VL-2233",
+    "code": "P201F270502-1501",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-2207___A301052-0310-AA": {
+    "orderNumber": "PED-CV-2207",
+    "code": "A301052-0310-AA",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-2204___A301107-2701": {
+    "orderNumber": "PED-CV-2204",
+    "code": "A301107-2701",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128191",
+    "packageNo": "C0005858226",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-2203___A301038-0200-AB": {
+    "orderNumber": "PED-CV-2203",
+    "code": "A301038-0200-AB",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-08T21:08:55.045Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2202___A301038-0100-AB": {
+    "orderNumber": "PED-CV-2202",
+    "code": "A301038-0100-AB",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-08T21:08:55.045Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2201___A301037-0212-AA": {
+    "orderNumber": "PED-CV-2201",
+    "code": "A301037-0212-AA",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001126241",
+    "packageNo": "C0005857688",
+    "dispatchedAt": "2026-09-08T21:08:04.266Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2200___A301037-0112-AA": {
+    "orderNumber": "PED-CV-2200",
+    "code": "A301037-0112-AA",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001126241",
+    "packageNo": "C0005857690",
+    "dispatchedAt": "2026-09-08T21:08:04.266Z",
+    "status": "Despachado"
+  },
+  "PED-CH-014___C212F271301-0500": {
+    "orderNumber": "PED-CH-014",
+    "code": "C212F271301-0500",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001173266",
+    "packageNo": "C0005982168",
+    "dispatchedAt": "2026-09-09T17:10:35.690Z",
+    "status": "Despachado"
+  },
+  "PED-CH-002___PK201189-0201": {
+    "orderNumber": "PED-CH-002",
+    "code": "PK201189-0201",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09T05:02:19.364Z",
+    "status": "Despachado"
+  },
+  "PED-VL-029___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-029",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-01T17:23:49.989Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2139___S111F271303-0202": {
+    "orderNumber": "PED-CV-2139",
+    "code": "S111F271303-0202",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001258989",
+    "packageNo": "C0006234449",
+    "dispatchedAt": "2026-09-08T21:27:00.881Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2139___S111F271303-0302": {
+    "orderNumber": "PED-CV-2139",
+    "code": "S111F271303-0302",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001119087",
+    "packageNo": "C0005845003",
+    "dispatchedAt": "2026-09-08T21:27:00.881Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2139___S111F271303-0604": {
+    "orderNumber": "PED-CV-2139",
+    "code": "S111F271303-0604",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001189804",
+    "packageNo": "C0006033696",
+    "dispatchedAt": "2026-09-08T21:27:00.881Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2139___S111F270204-0102": {
+    "orderNumber": "PED-CV-2139",
+    "code": "S111F270204-0102",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-08T21:27:00.881Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2139___S111F280503-0501": {
+    "orderNumber": "PED-CV-2139",
+    "code": "S111F280503-0501",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-08T21:27:00.881Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2139___S111F280503-0402-AA": {
+    "orderNumber": "PED-CV-2139",
+    "code": "S111F280503-0402-AA",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-08T21:27:00.881Z",
+    "status": "Despachado"
+  },
+  "PED-CV-2139___S111F280706-0202": {
+    "orderNumber": "PED-CV-2139",
+    "code": "S111F280706-0202",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-08T21:27:00.881Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2132___S202F271806-0100": {
+    "orderNumber": "PED-VL-2132",
+    "code": "S202F271806-0100",
+    "qtyDispatched": 2,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001258989",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-08T04:49:47.941Z",
+    "status": "Despachado"
+  },
+  "PED-C50-2102___S111F280201-0203-AA": {
+    "orderNumber": "PED-C50-2102",
+    "code": "S111F280201-0203-AA",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09T18:23:43.767Z",
+    "status": "Despachado"
+  },
+  "PED-C50-2102___S111F260403-0103": {
+    "orderNumber": "PED-C50-2102",
+    "code": "S111F260403-0103",
+    "qtyDispatched": 1,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09T18:23:43.767Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2123___S111F270108-0103": {
+    "orderNumber": "PED-VL-2123",
+    "code": "S111F270108-0103",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0005",
+    "pallet": "P0001175932",
+    "packageNo": "C0005991774",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-2122___S111F270108-0103": {
+    "orderNumber": "PED-VL-2122",
+    "code": "S111F270108-0103",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0005",
+    "pallet": "P0001175932",
+    "packageNo": "C0005991774",
+    "dispatchedAt": "2026-09-08T04:49:31.994Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2120___S111F270108-0103": {
+    "orderNumber": "PED-VL-2120",
+    "code": "S111F270108-0103",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001258497",
+    "packageNo": "C0006230897",
+    "dispatchedAt": "2026-09-08T04:49:31.994Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2085___S302F260502-0301": {
+    "orderNumber": "PED-VL-2085",
+    "code": "S302F260502-0301",
+    "qtyDispatched": 2,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-04T19:27:55.036Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2085___S202F271806-0100": {
+    "orderNumber": "PED-VL-2085",
+    "code": "S202F271806-0100",
+    "qtyDispatched": 8,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001258989",
+    "packageNo": "C0006235221",
+    "dispatchedAt": "2026-09-04T19:27:55.036Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2111___S111F270909-0301": {
+    "orderNumber": "PED-VL-2111",
+    "code": "S111F270909-0301",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0005",
+    "pallet": "P0001169960",
+    "packageNo": "C0005976711",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CH-2103___CD569F280104-0500-AB": {
+    "orderNumber": "PED-CH-2103",
+    "code": "CD569F280104-0500-AB",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001257463",
+    "packageNo": "C0006232367",
+    "dispatchedAt": "2026-09-03T15:25:49.618Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2085-2___S202F271806-0100": {
+    "orderNumber": "PED-VL-2085-2",
+    "code": "S202F271806-0100",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001258989",
+    "packageNo": "C0006235221",
+    "dispatchedAt": "2026-09-04T19:27:55.036Z",
+    "status": "Despachado"
+  },
+  "PED-VL-2084___S203F271301-1900": {
+    "orderNumber": "PED-VL-2084",
+    "code": "S203F271301-1900",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001258989",
+    "packageNo": "C0006237702",
+    "dispatchedAt": "2026-09-08T06:25:42.148Z",
+    "status": "Despachado"
+  },
+  "PED-C50-2074___EA012-1100": {
+    "orderNumber": "PED-C50-2074",
+    "code": "EA012-1100",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0005",
+    "pallet": "P0001157200",
+    "packageNo": "C0005933588",
+    "dispatchedAt": "2026-09-08T06:25:58.826Z",
+    "status": "Despachado"
+  },
+  "PED-VL-438___PK201189-0201": {
+    "orderNumber": "PED-VL-438",
+    "code": "PK201189-0201",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001113500",
+    "packageNo": "C0005835445",
+    "dispatchedAt": "2026-09-08T19:39:16.029Z",
+    "status": "Despachado"
+  },
+  "PED-VL-419___C857F271306-0400": {
+    "orderNumber": "PED-VL-419",
+    "code": "C857F271306-0400",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182720",
+    "packageNo": "C0006010956",
+    "dispatchedAt": "2026-09-08T06:27:24.754Z",
+    "status": "Despachado"
+  },
+  "PED-VL-413___S203F270501-0102": {
+    "orderNumber": "PED-VL-413",
+    "code": "S203F270501-0102",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128869",
+    "packageNo": "C0005860091",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-124-8___PC201134-0101": {
+    "orderNumber": "PED-VL-124-8",
+    "code": "PC201134-0101",
+    "qtyDispatched": 2,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-124-30___PC201134-0101": {
+    "orderNumber": "PED-VL-124-30",
+    "code": "PC201134-0101",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-124___PC201134-0101": {
+    "orderNumber": "PED-VL-124",
+    "code": "PC201134-0101",
+    "qtyDispatched": 18,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-117___PC201134-0101": {
+    "orderNumber": "PED-VL-117",
+    "code": "PC201134-0101",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-01T17:23:55.623Z",
+    "status": "Despachado"
+  },
+  "PED-VL-075-36___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075-36",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-075-17-2-2___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075-17-2-2",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-075-17-2___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075-17-2",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-075-17___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075-17",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-075-16-2-2-2___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075-16-2-2-2",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 2,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-075-16-2-2___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075-16-2-2",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 2,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-075-16-2___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075-16-2",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 2,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-075-16___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075-16",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 2,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-075___PC201134-0101-A1": {
+    "orderNumber": "PED-VL-075",
+    "code": "PC201134-0101-A1",
+    "qtyDispatched": 30,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001121617",
+    "packageNo": "C0005846037",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-VL-039___C212F271301-0500": {
+    "orderNumber": "PED-VL-039",
+    "code": "C212F271301-0500",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001173266",
+    "packageNo": "C0005982168",
+    "dispatchedAt": "2026-09-09T05:02:19.364Z",
+    "status": "Despachado"
+  },
+  "PED-VL-033___S203F270501-0102": {
+    "orderNumber": "PED-VL-033",
+    "code": "S203F270501-0102",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128869",
+    "packageNo": "C0005860091",
+    "dispatchedAt": "2026-09-08T06:01:03.563Z",
+    "status": "Despachado"
+  },
+  "PED-VL-032___S203F250101-0201": {
+    "orderNumber": "PED-VL-032",
+    "code": "S203F250101-0201",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005869526",
+    "dispatchedAt": "2026-09-08T06:00:24.165Z",
+    "status": "Despachado"
+  },
+  "PED-VL-030___PC201131-0501": {
+    "orderNumber": "PED-VL-030",
+    "code": "PC201131-0501",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128827",
+    "packageNo": "C0005863614",
+    "dispatchedAt": "2026-09-09T17:10:35.690Z",
+    "status": "Despachado"
+  },
+  "PED-CV-182-16-2-2___A301038-0100-AB": {
+    "orderNumber": "PED-CV-182-16-2-2",
+    "code": "A301038-0100-AB",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128827",
+    "packageNo": "C0005866047",
+    "dispatchedAt": "2026-09-08T13:41:16.215Z",
+    "status": "Despachado"
+  },
+  "PED-CV-182-15-2-2___A301038-0200-AB": {
+    "orderNumber": "PED-CV-182-15-2-2",
+    "code": "A301038-0200-AB",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005869180",
+    "dispatchedAt": "2026-09-08T13:41:16.215Z",
+    "status": "Despachado"
+  },
+  "PED-CV-182-11-2-2___A301107-2701": {
+    "orderNumber": "PED-CV-182-11-2-2",
+    "code": "A301107-2701",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128191",
+    "packageNo": "C0005858226",
+    "dispatchedAt": "2026-09-08T13:41:38.394Z",
+    "status": "Despachado"
+  },
+  "PED-CV-182___S301053-0502": {
+    "orderNumber": "PED-CV-182",
+    "code": "S301053-0502",
+    "qtyDispatched": 93,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132365",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-182___A301107-2701": {
+    "orderNumber": "PED-CV-182",
+    "code": "A301107-2701",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128191",
+    "packageNo": "C0005858226",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-182___A301052-0310-AA": {
+    "orderNumber": "PED-CV-182",
+    "code": "A301052-0310-AA",
+    "qtyDispatched": 71,
+    "container": "2604M00000SL0066",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-182___A301049-0900": {
+    "orderNumber": "PED-CV-182",
+    "code": "A301049-0900",
+    "qtyDispatched": 70,
+    "container": "2604M00000SL0066",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-182___A301049-0700": {
+    "orderNumber": "PED-CV-182",
+    "code": "A301049-0700",
+    "qtyDispatched": 70,
+    "container": "2604M00000SL0066",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-182___A301038-0200-AB": {
+    "orderNumber": "PED-CV-182",
+    "code": "A301038-0200-AB",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005869180",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-182___A301038-0100-AB": {
+    "orderNumber": "PED-CV-182",
+    "code": "A301038-0100-AB",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128827",
+    "packageNo": "C0005866047",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-182___A301037-0212-AA": {
+    "orderNumber": "PED-CV-182",
+    "code": "A301037-0212-AA",
+    "qtyDispatched": 61,
+    "container": "2604M00000SL0066",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-182___A301037-0112-AA": {
+    "orderNumber": "PED-CV-182",
+    "code": "A301037-0112-AA",
+    "qtyDispatched": 70,
+    "container": "2604M00000SL0066",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-158___S111F260204-1504": {
+    "orderNumber": "PED-CV-158",
+    "code": "S111F260204-1504",
+    "qtyDispatched": 2,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-08-31T16:53:09.929Z",
+    "status": "Despachado"
+  },
+  "PED-CV-143___PK201189-0201": {
+    "orderNumber": "PED-CV-143",
+    "code": "PK201189-0201",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001113500",
+    "packageNo": "C0005835445",
+    "dispatchedAt": "2026-09-09T18:32:10.843Z",
+    "status": "Despachado"
+  },
+  "PED-CV-142___PK201189-0201": {
+    "orderNumber": "PED-CV-142",
+    "code": "PK201189-0201",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001113500",
+    "packageNo": "C0005835445",
+    "dispatchedAt": "2026-09-09T18:32:10.843Z",
+    "status": "Despachado"
+  },
+  "PED-CV-141___PK201189-0201": {
+    "orderNumber": "PED-CV-141",
+    "code": "PK201189-0201",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001113500",
+    "packageNo": "C0005835445",
+    "dispatchedAt": "2026-09-09T18:32:10.843Z",
+    "status": "Despachado"
+  },
+  "PED-CV-140___PC201189-0202": {
+    "orderNumber": "PED-CV-140",
+    "code": "PC201189-0202",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005867975",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-139___PC201189-0202": {
+    "orderNumber": "PED-CV-139",
+    "code": "PC201189-0202",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005867975",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-138___PC201175-0801": {
+    "orderNumber": "PED-CV-138",
+    "code": "PC201175-0801",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005866974",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-137-2-2-2-2___PC201134-0101": {
+    "orderNumber": "PED-CV-137-2-2-2-2",
+    "code": "PC201134-0101",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-01T17:00:25.653Z",
+    "status": "Despachado"
+  },
+  "PED-CV-137-2-2-2___PC201080-0101": {
+    "orderNumber": "PED-CV-137-2-2-2",
+    "code": "PC201080-0101",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09T02:44:41.827Z",
+    "status": "Despachado"
+  },
+  "PED-CV-137-2-2-2___PC201134-0101": {
+    "orderNumber": "PED-CV-137-2-2-2",
+    "code": "PC201134-0101",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09T02:44:41.827Z",
+    "status": "Despachado"
+  },
+  "PED-CV-078___CD569F280104-0500-AB": {
+    "orderNumber": "PED-CV-078",
+    "code": "CD569F280104-0500-AB",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001257463",
+    "packageNo": "C0006232367",
+    "dispatchedAt": "2026-09-09T02:21:57.800Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057-4___S111F280503-0501": {
+    "orderNumber": "PED-CV-057-4",
+    "code": "S111F280503-0501",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001162143",
+    "packageNo": "C0005957616",
+    "dispatchedAt": "2026-09-09T16:51:41.918Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057-4___S111F270204-0102": {
+    "orderNumber": "PED-CV-057-4",
+    "code": "S111F270204-0102",
+    "qtyDispatched": 2,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09T16:51:41.918Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057-3___S111F280503-0402-A": {
+    "orderNumber": "PED-CV-057-3",
+    "code": "S111F280503-0402-A",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001162143",
+    "packageNo": "C0005957663",
+    "dispatchedAt": "2026-09-09T16:51:36.038Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057-3___S111F280503-0501": {
+    "orderNumber": "PED-CV-057-3",
+    "code": "S111F280503-0501",
+    "qtyDispatched": 2,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001162143",
+    "packageNo": "C0005957616",
+    "dispatchedAt": "2026-09-09T16:51:36.038Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057___S111F280706-0202": {
+    "orderNumber": "PED-CV-057",
+    "code": "S111F280706-0202",
+    "qtyDispatched": 2,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-07T15:20:28.585Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057___S111F280503-0402-A": {
+    "orderNumber": "PED-CV-057",
+    "code": "S111F280503-0402-A",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001162143",
+    "packageNo": "C0005957663",
+    "dispatchedAt": "2026-09-07T15:20:28.585Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057___S111F280503-0501": {
+    "orderNumber": "PED-CV-057",
+    "code": "S111F280503-0501",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001162143",
+    "packageNo": "C0005957616",
+    "dispatchedAt": "2026-09-07T15:20:28.585Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057___S111F270204-0102": {
+    "orderNumber": "PED-CV-057",
+    "code": "S111F270204-0102",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-07T15:20:28.585Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057___S111F271303-0604": {
+    "orderNumber": "PED-CV-057",
+    "code": "S111F271303-0604",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001189804",
+    "packageNo": "C0006033696",
+    "dispatchedAt": "2026-09-07T15:20:28.585Z",
+    "status": "Despachado"
+  },
+  "PED-CV-057___S111F271303-0302": {
+    "orderNumber": "PED-CV-057",
+    "code": "S111F271303-0302",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001119087",
+    "packageNo": "C0005845003",
+    "dispatchedAt": "2026-09-07T15:20:28.585Z",
+    "status": "Despachado"
+  },
+  "PED-CV-023-9-3___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-9-3",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-9-2-2___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-9-2-2",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-9-2___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-9-2",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-9___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-9",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-9___B511F270702-1203": {
+    "orderNumber": "PED-CV-023-9",
+    "code": "B511F270702-1203",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001257463",
+    "packageNo": "C0006228382",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-8___B511F270702-1000": {
+    "orderNumber": "PED-CV-023-8",
+    "code": "B511F270702-1000",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-8___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-8",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-17-2___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-17-2",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-17-2___B511F270702-1203": {
+    "orderNumber": "PED-CV-023-17-2",
+    "code": "B511F270702-1203",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001257463",
+    "packageNo": "C0006228382",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-17___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-17",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-17___B511F270702-1203": {
+    "orderNumber": "PED-CV-023-17",
+    "code": "B511F270702-1203",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001257463",
+    "packageNo": "C0006228382",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-16-2-2___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-16-2-2",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-16-2___B511F270702-1000": {
+    "orderNumber": "PED-CV-023-16-2",
+    "code": "B511F270702-1000",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-16-2___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-16-2",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-16___B511F270702-1000": {
+    "orderNumber": "PED-CV-023-16",
+    "code": "B511F270702-1000",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023-16___B511F271301-0200": {
+    "orderNumber": "PED-CV-023-16",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 3,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023___B511F270702-1203": {
+    "orderNumber": "PED-CV-023",
+    "code": "B511F270702-1203",
+    "qtyDispatched": 245,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001257463",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023___B511F270702-1401": {
+    "orderNumber": "PED-CV-023",
+    "code": "B511F270702-1401",
+    "qtyDispatched": 247,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023___B511F270702-1301": {
+    "orderNumber": "PED-CV-023",
+    "code": "B511F270702-1301",
+    "qtyDispatched": 200,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023___B511F270904-1300": {
+    "orderNumber": "PED-CV-023",
+    "code": "B511F270904-1300",
+    "qtyDispatched": 200,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128827",
+    "packageNo": "C0005858818",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023___B511F270102-0200": {
+    "orderNumber": "PED-CV-023",
+    "code": "B511F270102-0200",
+    "qtyDispatched": 247,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023___B511F270702-0600": {
+    "orderNumber": "PED-CV-023",
+    "code": "B511F270702-0600",
+    "qtyDispatched": 247,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023___B511F270702-1000": {
+    "orderNumber": "PED-CV-023",
+    "code": "B511F270702-1000",
+    "qtyDispatched": 240,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-023___B511F271301-0200": {
+    "orderNumber": "PED-CV-023",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 491,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-002___B511F270702-1000": {
+    "orderNumber": "PED-CV-002",
+    "code": "B511F270702-1000",
+    "qtyDispatched": 109,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-002___B511F270702-0600": {
+    "orderNumber": "PED-CV-002",
+    "code": "B511F270702-0600",
+    "qtyDispatched": 112,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-002___B511F270102-0200": {
+    "orderNumber": "PED-CV-002",
+    "code": "B511F270102-0200",
+    "qtyDispatched": 112,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128191",
+    "packageNo": "C0005858226",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-002___B511F270904-1300": {
+    "orderNumber": "PED-CV-002",
+    "code": "B511F270904-1300",
+    "qtyDispatched": 91,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128827",
+    "packageNo": "C0005858818",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-002___B511F270702-1301": {
+    "orderNumber": "PED-CV-002",
+    "code": "B511F270702-1301",
+    "qtyDispatched": 91,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-002___B511F270702-1401": {
+    "orderNumber": "PED-CV-002",
+    "code": "B511F270702-1401",
+    "qtyDispatched": 112,
+    "container": "",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-002___B511F270702-1203": {
+    "orderNumber": "PED-CV-002",
+    "code": "B511F270702-1203",
+    "qtyDispatched": 105,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001257463",
+    "packageNo": "C0006228382",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-002___B511F271301-0200": {
+    "orderNumber": "PED-CV-002",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 221,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-001___B511F271301-0200": {
+    "orderNumber": "PED-CV-001",
+    "code": "B511F271301-0200",
+    "qtyDispatched": 221,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001182528",
+    "packageNo": "C0006011446",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-001___B511F270702-0600": {
+    "orderNumber": "PED-CV-001",
+    "code": "B511F270702-0600",
+    "qtyDispatched": 112,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-001___B511F270102-0200": {
+    "orderNumber": "PED-CV-001",
+    "code": "B511F270102-0200",
+    "qtyDispatched": 112,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128191",
+    "packageNo": "C0005858226",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-001___B511F270904-1300": {
+    "orderNumber": "PED-CV-001",
+    "code": "B511F270904-1300",
+    "qtyDispatched": 91,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001128827",
+    "packageNo": "C0005858818",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-001___B511F270702-1301": {
+    "orderNumber": "PED-CV-001",
+    "code": "B511F270702-1301",
+    "qtyDispatched": 91,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-001___B511F270702-1401": {
+    "orderNumber": "PED-CV-001",
+    "code": "B511F270702-1401",
+    "qtyDispatched": 112,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-001___B511F270702-1203": {
+    "orderNumber": "PED-CV-001",
+    "code": "B511F270702-1203",
+    "qtyDispatched": 105,
+    "container": "2608M00000EA0115",
+    "pallet": "P0001257463",
+    "packageNo": "C0006228382",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-CV-001___B511F270702-1000": {
+    "orderNumber": "PED-CV-001",
+    "code": "B511F270702-1000",
+    "qtyDispatched": 109,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-C50-005___C318F270902-0400-AA": {
+    "orderNumber": "PED-C50-005",
+    "code": "C318F270902-0400-AA",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001180476",
+    "packageNo": "C0006004924",
+    "dispatchedAt": "2026-09-08T06:26:16.047Z",
+    "status": "Despachado"
+  },
+  "PED-C50-003___PC201189-0202": {
+    "orderNumber": "PED-C50-003",
+    "code": "PC201189-0202",
+    "qtyDispatched": 1,
+    "container": "2604M00000SL0066",
+    "pallet": "P0001132451",
+    "packageNo": "C0005867975",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-C50-002___S111F260204-1504": {
+    "orderNumber": "PED-C50-002",
+    "code": "S111F260204-1504",
+    "qtyDispatched": 2,
+    "container": "2606M00000SF0039",
+    "pallet": "P0001162143",
+    "packageNo": "C0005949082",
+    "dispatchedAt": "2026-08-31T16:53:09.929Z",
+    "status": "Despachado"
+  },
+  "PED-C50-001___NE15T003-2010-AA": {
+    "orderNumber": "PED-C50-001",
+    "code": "NE15T003-2010-AA",
+    "qtyDispatched": 1,
+    "container": "2606M00000SF0005",
+    "pallet": "P0001174384",
+    "packageNo": "C0005984153",
+    "dispatchedAt": "2026-09-08T06:26:31.251Z",
+    "status": "Despachado"
+  },
+  "ORD___C857F271306-0400": {
+    "orderNumber": "ORD",
+    "code": "C857F271306-0400",
+    "qtyDispatched": 6,
+    "container": "2606M00000SF0039",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-08T02:53:01.486Z",
+    "status": "Despachado"
+  },
+  "PED-2026-4404___S111F260204-1504": {
+    "orderNumber": "PED-2026-4404",
+    "code": "S111F260204-1504",
+    "qtyDispatched": 4,
+    "container": "2606M00000SF0005",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-2026-4404___B511F260302-1200": {
+    "orderNumber": "PED-2026-4404",
+    "code": "B511F260302-1200",
+    "qtyDispatched": 4,
+    "container": "2606M00000SF0005",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  },
+  "PED-2026-4405___EA15010-0702": {
+    "orderNumber": "PED-2026-4405",
+    "code": "EA15010-0702",
+    "qtyDispatched": 1,
+    "container": "2608M00000EA0115",
+    "pallet": "",
+    "packageNo": "",
+    "dispatchedAt": "2026-09-09",
+    "status": "Despachado"
+  }
+}

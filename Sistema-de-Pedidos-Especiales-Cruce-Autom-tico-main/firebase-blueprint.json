@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "Order": {
+      "title": "Order",
+      "description": "Special parts order placed by dealership branch or workshop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "orderNumber": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "branch": { "type": "string" },
+        "collaboratorName": { "type": "string" },
+        "channel": { "type": "string" },
+        "orderType": { "type": "string" },
+        "quotationNumber": { "type": "string" },
+        "clientName": { "type": "string" },
+        "clientPhone": { "type": "string" },
+        "clientEmail": { "type": "string" },
+        "plate": { "type": "string" },
+        "vin": { "type": "string" },
+        "changanModel": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "receiptOrInvoiceNumber": { "type": "string" },
+        "overallStatus": { "type": "string" },
+        "assignedContainerId": { "type": "string" },
+        "dispatchDate": { "type": "string" },
+        "branchReceivedDate": { "type": "string" },
+        "isBilled": { "type": "boolean" },
+        "billingInvoiceNumber": { "type": "string" },
+        "items": { "type": "array" },
+        "observations": { "type": "array" }
+      },
+      "required": ["id", "orderNumber", "branch", "clientName", "changanModel", "overallStatus", "items"]
+    },
+    "Container": {
+      "title": "Container",
+      "description": "Import shipping container (Maritime or Air Express)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "containerNumber": { "type": "string" },
+        "supplier": { "type": "string" },
+        "poNumber": { "type": "string" },
+        "importInvoice": { "type": "string" },
+        "type": { "type": "string" },
+        "arrivalStatus": { "type": "string" },
+        "estimatedArrivalDate": { "type": "string" },
+        "actualArrivalDate": { "type": "string" },
+        "totalUnits": { "type": "number" },
+        "totalSkus": { "type": "number" },
+        "processedForMatching": { "type": "boolean" },
+        "items": { "type": "array" }
+      },
+      "required": ["id", "containerNumber", "type", "arrivalStatus", "items"]
+    },
+    "CatalogPart": {
+      "title": "CatalogPart",
+      "description": "Master parts catalog item for Changan vehicles",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "applicableModels": { "type": "array" },
+        "unitPrice": { "type": "number" },
+        "stockCedis": { "type": "number" },
+        "leadTimeDays": { "type": "number" }
+      },
+      "required": ["id", "code", "description", "category"]
+    },
+    "VehicleModel": {
+      "title": "VehicleModel",
+      "description": "Official Changan vehicle model in Panama",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "category": { "type": "string" },
+        "yearRange": { "type": "string" },
+        "engine": { "type": "string" },
+        "fuelType": { "type": "string" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "name", "code"]
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of all special orders across all branches"
+    },
+    "/containers/{containerId}": {
+      "schema": "Container",
+      "description": "Collection of import containers and manifest items"
+    },
+    "/catalog/{partId}": {
+      "schema": "CatalogPart",
+      "description": "Master parts catalog items"
+    },
+    "/models/{modelId}": {
+      "schema": "VehicleModel",
+      "description": "Vehicle models library"
+    }
+  }
+}

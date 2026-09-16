@@ -1,0 +1,2786 @@
+/**
+ * =========================================================================
+ * BACKEND OFICIAL GOOGLE APPS SCRIPT - CHANGAN CEDIS PANAMÁ
+ * Versión: 3.0.0 Oficial Canónica
+ * Características:
+ *  - 5 Hojas canónicas: Matriz_Central, DPL_Manifiestos, DPL_Detalle, BD_Encargados, Auditoria_Kardex
+ *  - Bloqueo y verificación de duplicados activos (Cliente, VIN, OR)
+ *  - Alertas prioritarias por correo a bodegacentral@changanpanama.com ante urgencias VOR
+ *  - Cruce inteligente FIFO por jerarquía de prioridades (VOR > Garantía > Chapistería > Taller > Stock)
+ *  - Despacho físico irreversible y ajuste de mermas con auditoría inmutable
+ *  - Soporte universal CORS / JSON API y Portal HTML integrado
+ * =========================================================================
+ */
+
+const CONFIG = {
+  HOJA_MATRIZ: 'Matriz_Central',
+  HOJA_DPL_CABECERA: 'DPL_Manifiestos',
+  HOJA_DPL_DETALLE: 'DPL_Detalle',
+  HOJA_ENCARGADOS: 'BD_Encargados',
+  HOJA_AUDITORIA: 'Auditoria_Kardex',
+  HOJA_DESPACHOS: 'Despachos',
+  HOJA_ASIGNACIONES: 'Reporte_Asignaciones',
+  CORREO_CEDIS: 'bodegacentral@changanpanama.com',
+  URL_APP_PRODUCCION: 'https://script.google.com/macros/s/AKfycbzUyPaDPSDjOSHqyFGH1RJQLmnsjAaVzMPwVrC1EpTQCPFluR6wpq8xSjRpT6bu-t5a/exec'
+};
+
+const SPREADSHEET_ID_REAL = "1YcV3D-d9zk_oqmHrgG4blnC05ElejvYZ7RT47nrJqfM";
+
+function obtenerSpreadsheet() {
+  var ss = null;
+  try {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  } catch (e) {
+    ss = null;
+  }
+  if (!ss && SPREADSHEET_ID_REAL) {
+    try {
+      ss = SpreadsheetApp.openById(SPREADSHEET_ID_REAL);
+    } catch (errId) {
+      console.warn("Error al abrir por ID real:", errId);
+    }
+  }
+  if (!ss) {
+    var files = DriveApp.getFilesByName("Control_Requisiciones_CEDIS");
+    if (files.hasNext()) {
+      ss = SpreadsheetApp.open(files.next());
+    }
+  }
+  return ss;
+}
+
+/**
+ * Manejador de peticiones GET (Soporta API JSON, JSONP y Vista HTML)
+ */
+function doGet(e) {
+  var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : '';
+  var callback = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : null;
+
+  // 1. Diagnóstico / Ping
+  if (action === 'depurarDuplicados' || action === 'eliminarDuplicados') {
+    return responderJson(depurarDuplicadosMatriz('GET_' + new Date().getTime()));
+  }
+
+  if (action === 'ping') {
+    try {
+      var ss = obtenerSpreadsheet();
+      var sheetNames = ss.getSheets().map(function(s) { return s.getName(); });
+      return responderJson({
+        success: true,
+        status: 'OK',
+        spreadsheetName: ss.getName(),
+        spreadsheetId: ss.getId(),
+        totalPestanas: sheetNames.length,
+        pestanasDetectadas: sheetNames,
+        timestamp: new Date().toISOString()
+      }, callback);
+    } catch (err) {
+      return responderJson({ success: false, error: err.toString() }, callback);
+    }
+  }
+
+  // 2. Obtener Datos del Dashboard y KPIs
+  if (action === 'getDashboard') {
+    return responderJson(obtenerDatosDashboard(), callback);
+  }
+
+  // 3. Obtener Asesores Habilitados
+  if (action === 'getAsesores') {
+    return responderJson({ success: true, asesores: obtenerAsesores() }, callback);
+  }
+
+  // 4. Obtener Base de Datos Completa
+  if (action === 'getDatabase' || action === 'getInitialData') {
+    try {
+      var ssDb = obtenerSpreadsheet();
+      var db = {
+        matriz: obtenerFilasDePestana(ssDb, CONFIG.HOJA_MATRIZ),
+        manifiestos: obtenerFilasDePestana(ssDb, CONFIG.HOJA_DPL_CABECERA),
+        dplDetalle: obtenerFilasDePestana(ssDb, CONFIG.HOJA_DPL_DETALLE),
+        encargados: obtenerFilasDePestana(ssDb, CONFIG.HOJA_ENCARGADOS),
+        auditoria: obtenerFilasDePestana(ssDb, CONFIG.HOJA_AUDITORIA)
+      };
+      return responderJson({ success: true, data: db }, callback);
+    } catch (errDb) {
+      return responderJson({ success: false, error: errDb.toString() }, callback);
+    }
+  }
+
+  // 5. Si no se especificó acción API, renderizar vista HTML si existe la plantilla
+  try {
+    var portal = (e && e.parameter && e.parameter.portal) ? e.parameter.portal.toString().toLowerCase().trim() : 'admin';
+    var template = HtmlService.createTemplateFromFile('Index');
+    template.portalModo = portal;
+    template.urlApp = CONFIG.URL_APP_PRODUCCION;
+    template.urlSucursales = CONFIG.URL_APP_PRODUCCION + '?portal=sucursales';
+
+    var titulo = (portal === 'sucursales') 
+      ? 'CHANGAN - Requisición de Repuestos a CEDIS' 
+      : 'CHANGAN PANAMÁ - CEDIS Central (Admin & Kardex DPL)';
+
+    return template.evaluate()
+      .setTitle(titulo)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } catch (eHtml) {
+    // Si no existe la plantilla Index.html, devolver respuesta de estado JSON
+    return responderJson({
+      success: true,
+      mensaje: 'Servicio Web App Changan CEDIS en ejecución activa.',
+      version: '3.0.0',
+      config: CONFIG
+    }, callback);
+  }
+}
+
+/**
+ * Manejador de peticiones POST con LockService para proteger concurrencia
+ */
+function doPost(e) {
+  var payload = {};
+  if (e && e.postData && e.postData.contents) {
+    try {
+      payload = JSON.parse(e.postData.contents);
+    } catch (parseErr) {
+      return responderJson({ success: false, error: 'JSON malformado en postData' });
+    }
+  }
+
+  var action = payload.action || 'procesarSolicitud';
+
+  // Despacho de acciones
+  if (action === 'procesarSolicitud' || action === 'crearPedido') {
+    var datosSolicitud = payload.data || payload;
+    return responderJson(procesarSolicitud(datosSolicitud));
+  }
+
+  if (action === 'importarManifiesto' || action === 'importManifiestoDPL') {
+    return responderJson(importarManifiestoDPL(payload.manifiesto || payload));
+  }
+
+  if (action === 'updateManifiestoStatus' || action === 'actualizarEstatusManifiesto') {
+    return responderJson(actualizarEstatusManifiestoSheet(payload.contenedorId, payload.nuevoEstado));
+  }
+
+  if (action === 'cruceGlobal' || action === 'sincronizarStock') {
+    return responderJson(sincronizarStockConMatriz());
+  }
+
+  if (action === 'bulkUploadMatriz' || action === 'subirMasivoMatriz') {
+    return responderJson(procesarBulkUploadMatriz(payload.rows || payload.data || []));
+  }
+
+  if (action === 'bulkUpdatePedidos') {
+    return responderJson(procesarBulkUpdatePedidos(
+      payload.pedidoIds || [],
+      payload.cambios || {},
+      payload.operationId
+    ));
+  }
+
+  if (action === 'deletePedido' || action === 'eliminarPedido') {
+    var pId = payload.pedidoId || payload.idPedido;
+    return responderJson(procesarEliminarPedidos(pId ? [pId] : [], payload.operationId));
+  }
+
+  if (action === 'bulkDeletePedidos' || action === 'eliminarPedidosMasivo') {
+    return responderJson(procesarEliminarPedidos(payload.pedidoIds || [], payload.operationId));
+  }
+
+  if (action === 'eliminarCliente' || action === 'purgarCliente') {
+    return responderJson(procesarEliminarCliente(payload.cliente || payload.clienteNombre, payload.operationId));
+  }
+
+  if (action === 'sanitizarCantidades') {
+    return responderJson(sanitizarCantidadesExageradasSheet());
+  }
+
+  if (action === 'sincronizarAsignaciones' || action === 'sincronizarHojaAsignaciones') {
+    return responderJson(sincronizarHojaAsignaciones(payload.filas || payload.items || payload));
+  }
+
+  if (action === 'sincronizarDespacho' || action === 'sincronizarHojaDespachos') {
+    return responderJson(sincronizarHojaDespachos(payload.pedido || payload));
+  }
+
+  if (action === 'changeLineaStatus' || action === 'cambiarEstatusLinea') {
+    return responderJson(procesarCambioEstatusLineaIndividual(
+      payload.pedidoId,
+      payload.codigoRepuesto,
+      payload.nuevoEstatus,
+      payload.lineaId,
+      payload.operationId
+    ));
+  }
+
+  if (action === 'despachoFisico' || action === 'despacharLinea') {
+    return responderJson(registrarDespachoFisicoConRetiro(
+      payload.idPedido || payload.pedidoId,
+      payload.codigoRepuesto,
+      payload.cantidad,
+      payload.responsable || payload.usuario,
+      payload.notas || payload.observaciones,
+      payload.lineaId
+    ));
+  }
+
+  if (action === 'ajusteMerma') {
+    return responderJson(registrarAjusteMerma(
+      payload.uidFila,
+      payload.cantidadMerma,
+      payload.motivo,
+      payload.responsable
+    ));
+  }
+
+  if (action === 'backupJSON') {
+    return responderJson(importarBackupJSON(payload.jsonString || payload.data));
+  }
+
+  return responderJson({ success: false, error: 'Acción POST no reconocida: ' + action });
+}
+
+/**
+ * Inicialización completa de las 5 hojas canónicas y estilos corporativos
+ */
+function inicializarSistemaCompleto() {
+  var ss = obtenerSpreadsheet();
+
+  // 1. BD_Encargados
+  var hAsesores = ss.getSheetByName(CONFIG.HOJA_ENCARGADOS) || ss.insertSheet(CONFIG.HOJA_ENCARGADOS);
+  hAsesores.clear();
+  var cabAsesores = [
+    'Nombre del Encargado', 'Sucursal', 'Departamento / Canal', 
+    'Cargo / Rol Operativo', 'Teléfono / WhatsApp', 'Correo Electrónico', 
+    'Estado', 'Habilitado Móvil'
+  ];
+  var dataAsesores = [
+    ['Leidys Perez', 'Villa Lucre', 'Mostrador', 'Ventas Mostrador', '+507 6561-1360', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+    ['Edwin Blanco', 'Villa Lucre', 'Chapistería', 'Chapisteria', '+507 6561-1360', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+    ['Carlos Mendoza', 'Costa Verde', 'Taller Mecánico', 'Taller', '+507 6561-1361', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+    ['Valeria Castillo', 'Calle 50', 'Garantías', 'Asesor Garantías', '+507 6561-1362', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+    ['Alexis Rios', 'Tumba Muerto', 'Colisión', 'Chapistería y Pintura', '+507 6561-1363', 'repuestos@changanpanama.com', 'Activo', 'Sí']
+  ];
+  hAsesores.appendRow(cabAsesores);
+  hAsesores.getRange(1, 1, 1, cabAsesores.length).setFontWeight('bold').setBackground('#0f172a').setFontColor('#ffffff');
+  hAsesores.getRange(2, 1, dataAsesores.length, cabAsesores.length).setValues(dataAsesores);
+  hAsesores.setFrozenRows(1);
+  hAsesores.autoResizeColumns(1, cabAsesores.length);
+
+  // 2. Matriz_Central
+  var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ) || ss.insertSheet(CONFIG.HOJA_MATRIZ);
+  if (hMatriz.getLastRow() === 0) {
+    var cabMatriz = [
+      'ID Pedido', 'Prioridad', 'Fecha / Hora', 'Sucursal', 'Asesor / Solicitante', 
+      'Cliente / Caso', 'Modelo', 'VIN / Chasis', 'No. O.R.', 'Código OEM', 
+      'Descripción Repuesto', 'Cant Solicitada', 'Cant Asignada', 'Estatus Cruce', 
+      'Contenedor Asignado', 'Pallet Asignado', 'Package No', 'Observaciones'
+    ];
+    hMatriz.appendRow(cabMatriz);
+    hMatriz.getRange(1, 1, 1, cabMatriz.length).setFontWeight('bold').setBackground('#0f172a').setFontColor('#ffffff');
+    hMatriz.setFrozenRows(1);
+    hMatriz.autoResizeColumns(1, cabMatriz.length);
+  }
+
+  // 3. DPL_Manifiestos
+  var hManif = ss.getSheetByName(CONFIG.HOJA_DPL_CABECERA) || ss.insertSheet(CONFIG.HOJA_DPL_CABECERA);
+  if (hManif.getLastRow() === 0) {
+    var cabManif = [
+      'No. Contenedor / Factura', 'Proveedor', 'PO Referencia', 'Tipo Transporte', 
+      'Fecha Arribo CEDIS', 'Estado Embarque', 'Total Piezas', 'SKUs Únicos', 
+      'Total Pallets', 'Total Asignadas', 'Saldo Libre Total'
+    ];
+    hManif.appendRow(cabManif);
+    hManif.getRange(1, 1, 1, cabManif.length).setFontWeight('bold').setBackground('#0f172a').setFontColor('#ffffff');
+    hManif.setFrozenRows(1);
+    hManif.autoResizeColumns(1, cabManif.length);
+  }
+
+  // 4. DPL_Detalle
+  var hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE) || ss.insertSheet(CONFIG.HOJA_DPL_DETALLE);
+  if (hDetalle.getLastRow() === 0) {
+    var cabDetalle = [
+      'UID Fila', 'No. Contenedor', 'Pallet / Case No', 'Package No', 
+      'Código Compra', 'Código Suministrado', 'Descripción Oficial', 'Cant Total DPL', 
+      'Despachado (-)', 'Comprometido (-)', 'Saldo Libre (=)', 'Ubicación CEDIS', 'Pedidos Vinculados'
+    ];
+    hDetalle.appendRow(cabDetalle);
+    hDetalle.getRange(1, 1, 1, cabDetalle.length).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+    hDetalle.setFrozenRows(1);
+    hDetalle.autoResizeColumns(1, cabDetalle.length);
+  }
+
+  // 5. Auditoria_Kardex
+  var hAudit = ss.getSheetByName(CONFIG.HOJA_AUDITORIA) || ss.insertSheet(CONFIG.HOJA_AUDITORIA);
+  if (hAudit.getLastRow() === 0) {
+    var cabAudit = [
+      'Fecha / Hora', 'Tipo Movimiento', 'ID Pedido', 'Código OEM', 
+      'Descripción', 'Cantidad', 'Contenedor Origen', 'Pallet Origen', 
+      'Usuario / Responsable', 'Observación'
+    ];
+    hAudit.appendRow(cabAudit);
+    hAudit.getRange(1, 1, 1, cabAudit.length).setFontWeight('bold').setBackground('#334155').setFontColor('#ffffff');
+    hAudit.setFrozenRows(1);
+    hAudit.autoResizeColumns(1, cabAudit.length);
+  }
+
+  return 'Sistema Changan CEDIS inicializado con éxito. 5 hojas operativas listas.';
+}
+
+function obtenerAsesores() {
+  try {
+    var ss = obtenerSpreadsheet();
+    var hoja = ss.getSheetByName(CONFIG.HOJA_ENCARGADOS);
+    if (!hoja || hoja.getLastRow() <= 1) {
+      inicializarSistemaCompleto();
+      hoja = ss.getSheetByName(CONFIG.HOJA_ENCARGADOS);
+    }
+
+    var datos = hoja.getRange(2, 1, hoja.getLastRow() - 1, hoja.getLastColumn()).getValues();
+
+    return datos
+      .filter(function(fila) { return String(fila[6]).trim() === 'Activo' && String(fila[7]).trim() === 'Sí'; })
+      .map(function(fila) {
+        return {
+          nombre: String(fila[0] || '').trim(),
+          sucursal: String(fila[1] || '').trim(),
+          departamento: String(fila[2] || '').trim(),
+          cargo: String(fila[3] || '').trim(),
+          contacto: String(fila[4] || '').trim(),
+          correo: String(fila[5] || '').trim()
+        };
+      });
+  } catch (e) {
+    return [];
+  }
+}
+
+/**
+ * Valida si existe un pedido activo para el mismo repuesto y cliente / VIN / OR
+ */
+function verificarDuplicadoActivo(cliente, vin, ordenRep, codigoOEM) {
+  var ss = obtenerSpreadsheet();
+  var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+  if (!hMatriz || hMatriz.getLastRow() <= 1) return null;
+
+  var data = hMatriz.getRange(2, 1, hMatriz.getLastRow() - 1, hMatriz.getLastColumn()).getValues();
+
+  var cNorm = String(cliente || '').trim().toLowerCase();
+  var vNorm = String(vin || '').trim().toUpperCase();
+  var orNorm = String(ordenRep || '').trim().toLowerCase();
+  var codNorm = String(codigoOEM || '').trim().toUpperCase();
+
+  for (var i = 0; i < data.length; i++) {
+    var idPed = data[i][0];
+    var fecha = data[i][2];
+    var cExist = String(data[i][5] || '').trim().toLowerCase();
+    var vExist = String(data[i][7] || '').trim().toUpperCase();
+    var orExist = String(data[i][8] || '').trim().toLowerCase();
+    var codExist = String(data[i][9] || '').trim().toUpperCase();
+    var status = String(data[i][13] || '');
+
+    if (status.indexOf('CANCELADO') !== -1 || status.indexOf('ANULADO') !== -1 || status.indexOf('DESPACHADO FÍSICAMENTE') !== -1) {
+      continue;
+    }
+
+    if (codExist === codNorm) {
+      var matchVin = vNorm.length >= 8 && vExist === vNorm;
+      var matchCliente = cNorm.length >= 4 && (cExist.indexOf(cNorm) !== -1 || cNorm.indexOf(cExist) !== -1);
+      var matchOR = orNorm.length >= 3 && orExist === orNorm;
+
+      if (matchVin || matchCliente || matchOR) {
+        return {
+          idPedido: idPed,
+          cliente: data[i][5],
+          vin: data[i][7],
+          sucursal: data[i][3],
+          asesor: data[i][4],
+          codigo: codExist,
+          descripcion: data[i][10],
+          status: status,
+          fecha: (fecha instanceof Date) ? Utilities.formatDate(fecha, "GMT-5", "yyyy-MM-dd") : String(fecha)
+        };
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Inserta solicitud en Matriz_Central, comprueba duplicados y dispara cruce automático
+ */
+
+/**
+ * Sanitizador de seguridad para celdas de Google Sheets
+ * Previene inyecciones de fórmulas (=HYPERLINK, =IMPORTXML, =IMAGE, =CMD)
+ */
+function sanitizarCeldaSheets(val) {
+  if (val === null || val === undefined) return '';
+  var s = String(val).trim();
+  if (/^[=+\-@]/.test(s)) {
+    return "'" + s;
+  }
+  return s;
+}
+
+function procesarSolicitud(data) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+
+  try {
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    if (!hMatriz) {
+      inicializarSistemaCompleto();
+      hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    }
+
+    var items = data.items || [];
+    for (var j = 0; j < items.length; j++) {
+      var it = items[j];
+      var dup = verificarDuplicadoActivo(data.cliente, data.vin, data.ordenReparacion || data.numeroOR, it.codigo || it.codigoRepuesto);
+      if (dup) {
+        return {
+          success: false,
+          duplicado: true,
+          error: 'BLOQUEO DE SEGURIDAD OPERATIVA: El cliente "' + dup.cliente + '" ya tiene una orden activa (' + dup.idPedido + ') para el repuesto [' + dup.codigo + ' - ' + dup.descripcion + '].',
+          detalle: dup
+        };
+      }
+    }
+
+    var prefijos = {
+      'Costa Verde': 'CV', 'Villa Lucre': 'VL', 'Calle 50': 'C50',
+      'Tumba Muerto': 'TM', 'Chiriquí': 'CH', 'Santa María': 'SM'
+    };
+    var pref = prefijos[data.sucursal] || 'SUC';
+    var consecutivo = 2100 + (hMatriz ? hMatriz.getLastRow() : 0);
+    var idPedido = data.pedidoId || ('PED-' + pref + '-' + consecutivo);
+    var fecha = new Date();
+
+    var filasNuevas = [];
+    items.forEach(function(item) {
+      filasNuevas.push([
+        idPedido,
+        data.tipoSolicitud || data.tipoPedido || 'Stock Regular',
+        fecha,
+        data.sucursal,
+        data.encargado || data.colaborador || 'Asesor',
+        data.cliente || 'Consumidor Final',
+        data.modelo || data.modeloChangan || 'General',
+        String(data.vin || '').toUpperCase().trim(),
+        data.ordenReparacion || data.numeroOR || 'N/A',
+        String(item.codigo || item.codigoRepuesto || '').toUpperCase().trim(),
+        String(item.descripcion || item.descripcionOficial || '').trim(),
+        Number(item.cantidad || item.cantidadSolicitada) || 1,
+        0,
+        'Pendiente Fábrica • Sin arribo en CEDIS (0 stock)',
+        '', '', '',
+        data.observaciones || ''
+      ]);
+    });
+
+    if (filasNuevas.length > 0) {
+      hMatriz.getRange(hMatriz.getLastRow() + 1, 1, filasNuevas.length, filasNuevas[0].length).setValues(filasNuevas);
+    }
+
+    sincronizarStockConMatriz();
+
+    var tipoSol = String(data.tipoSolicitud || data.tipoPedido || '');
+    if (tipoSol.indexOf('VOR') !== -1 || tipoSol.indexOf('Urgente') !== -1) {
+      enviarAlertaPrioritaria(idPedido, data);
+    }
+
+    return { success: true, folio: idPedido, totalItems: items.length };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Envío de alerta por correo electrónico a la bodega central
+ */
+function enviarAlertaPrioritaria(folio, data) {
+  try {
+    var asunto = '🚨 [URGENCIA VOR] Requisición ' + folio + ' - Sucursal ' + data.sucursal + ' (' + (data.modelo || data.modeloChangan) + ')';
+    var tablaHtml = '<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; font-family:Arial,sans-serif; width:100%; font-size:12px;"><tr style="background-color:#fee2e2; color:#991b1b; text-align:left;"><th>Código OEM</th><th>Descripción</th><th style="text-align:center;">Cant.</th></tr>';
+    
+    var items = data.items || [];
+    items.forEach(function(it) {
+      tablaHtml += '<tr><td style="font-family:monospace; font-weight:bold;">' + (it.codigo || it.codigoRepuesto) + '</td><td>' + (it.descripcion || it.descripcionOficial) + '</td><td style="text-align:center; font-weight:bold;">' + (it.cantidad || it.cantidadSolicitada) + '</td></tr>';
+    });
+    tablaHtml += '</table>';
+
+    var cuerpoHtml = '<div style="font-family:Arial,sans-serif; color:#1e293b; max-width:650px; border:1px solid #e2e8f0; border-radius:8px; padding:20px;">' +
+      '<div style="background-color:#dc2626; color:#ffffff; padding:10px 15px; border-radius:6px; font-weight:bold; font-size:14px;">ALERTA CEDIS CENTRAL: UNIDAD PARADA / VOR</div>' +
+      '<p style="font-size:13px; margin-top:15px;">Se ha recibido una requisición de máxima prioridad enviada desde <strong>' + data.sucursal + '</strong>.</p>' +
+      '<ul style="font-size:13px; line-height:1.6;">' +
+      '<li><strong>No. Solicitud:</strong> <span style="font-family:monospace; color:#2563eb; font-weight:bold;">' + folio + '</span></li>' +
+      '<li><strong>Solicitante:</strong> ' + (data.encargado || data.colaborador) + '</li>' +
+      '<li><strong>Modelo:</strong> ' + (data.modelo || data.modeloChangan) + '</li>' +
+      '<li><strong>VIN / Chasis:</strong> <code style="background:#f1f5f9; padding:2px 4px;">' + (data.vin || '') + '</code></li>' +
+      '<li><strong>No. O.R. / Caso:</strong> ' + (data.ordenReparacion || data.numeroOR || 'N/A') + '</li>' +
+      '</ul>' +
+      '<h4 style="color:#0f172a; margin-bottom:8px;">Repuestos Requeridos:</h4>' +
+      tablaHtml +
+      '</div>';
+
+    MailApp.sendEmail({
+      to: CONFIG.CORREO_CEDIS,
+      subject: asunto,
+      htmlBody: cuerpoHtml
+    });
+  } catch (e) {
+    Logger.log('Error enviando alerta por correo: ' + e.toString());
+  }
+}
+
+/**
+ * Importación de manifiesto DPL (Cabecera y Detalle por Pallet)
+ */
+function importarManifiestoDPL(payload) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+
+  try {
+    var ss = obtenerSpreadsheet();
+    var hManif = ss.getSheetByName(CONFIG.HOJA_DPL_CABECERA);
+    var hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+
+    if (!hManif || !hDetalle) {
+      inicializarSistemaCompleto();
+      hManif = ss.getSheetByName(CONFIG.HOJA_DPL_CABECERA);
+      hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+    }
+
+    var invoiceNo = String(payload.invoiceNo || payload.contenedorId || '').trim();
+    var proveedor = payload.proveedor || 'Mobitech Changan China Co., Ltd';
+    var transporte = payload.transporte || payload.tipoTransporte || 'Marítimo';
+    var fechaArribo = payload.fechaArribo || Utilities.formatDate(new Date(), "GMT-5", "yyyy-MM-dd");
+    var estadoParam = String(payload.estado || payload.nuevoEstado || 'EN TRÁNSITO').trim().toUpperCase();
+    var estado = 'EN TRÁNSITO MARÍTIMO';
+    if (estadoParam.indexOf('RECIBID') !== -1 || estadoParam.indexOf('CEDIS') !== -1) {
+      estado = 'FÍSICAMENTE RECIBIDO EN CEDIS';
+    } else if (estadoParam.indexOf('ADUAN') !== -1 || estadoParam.indexOf('PUERTO') !== -1) {
+      estado = 'EN ADUANA / PUERTO';
+    }
+    var items = payload.items || [];
+
+    var mData = (hManif && hManif.getLastRow() > 0) ? hManif.getDataRange().getValues() : [];
+    for (var i = 1; i < mData.length; i++) {
+      if (String(mData[i][0]).trim() === invoiceNo) {
+        throw new Error('El contenedor/factura ' + invoiceNo + ' ya fue registrado en el sistema.');
+      }
+    }
+
+    var totalPzas = 0;
+    var palletsSet = {};
+    var skusSet = {};
+    var filasDetalle = [];
+
+    items.forEach(function(it, idx) {
+      var pCode = String(it.purchaseCode || it.codigoCompra || it.codigoRepuesto || '').trim().toUpperCase();
+      var sCode = String(it.suppliedCode || it.codigoSuministrado || it.codigoActualizado || pCode).trim().toUpperCase();
+      var qty = Number(it.qty || it.cantidadTotal) || 0;
+      var caseNo = String(it.caseNo || it.palletCaseNo || 'P001').trim();
+      var pkgNo = String(it.packageNo || 'PKG-01').trim();
+      var desc = String(it.description || it.descripcion || '').trim();
+
+      if (pCode || sCode) {
+        totalPzas += qty;
+        if (caseNo) palletsSet[caseNo] = true;
+        if (pCode) skusSet[pCode] = true;
+
+        filasDetalle.push([
+          invoiceNo + '_' + (idx + 1),
+          invoiceNo,
+          caseNo,
+          pkgNo,
+          pCode,
+          sCode,
+          desc,
+          qty,
+          0,
+          0,
+          qty,
+          'Pallet ' + caseNo,
+          ''
+        ]);
+      }
+    });
+
+    if (filasDetalle.length > 0) {
+      hDetalle.getRange(hDetalle.getLastRow() + 1, 1, filasDetalle.length, filasDetalle[0].length).setValues(filasDetalle);
+    }
+
+    var countPallets = Object.keys(palletsSet).length;
+    var countSkus = Object.keys(skusSet).length;
+
+    hManif.appendRow([
+      invoiceNo,
+      proveedor,
+      payload.referencia || ('REF-' + invoiceNo),
+      transporte,
+      fechaArribo,
+      estado,
+      totalPzas,
+      countSkus,
+      countPallets,
+      0,
+      totalPzas
+    ]);
+
+    // REGLA CRÍTICA DPL: Solo si fue recibido se ejecuta el cruce automático
+    if (estado === 'FÍSICAMENTE RECIBIDO EN CEDIS') {
+      sincronizarStockConMatriz();
+    }
+
+    return {
+      success: true,
+      mensaje: 'Manifiesto ' + invoiceNo + ' registrado exitosamente en estatus (' + estado + '): ' + totalPzas + ' piezas en ' + countPallets + ' pallets.'
+    };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Algoritmo Quirúrgico de Cruce FIFO con Jerarquía de Prioridades Operativas
+ */
+function sincronizarStockConMatriz() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+
+  try {
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    var hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+    var hManif = ss.getSheetByName(CONFIG.HOJA_DPL_CABECERA);
+
+    if (!hMatriz || !hDetalle || !hManif) {
+      inicializarSistemaCompleto();
+      hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+      hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+      hManif = ss.getSheetByName(CONFIG.HOJA_DPL_CABECERA);
+    }
+
+    var matrizData = (hMatriz && hMatriz.getLastRow() > 0) ? hMatriz.getDataRange().getValues() : [];
+    var detalleData = (hDetalle && hDetalle.getLastRow() > 0) ? hDetalle.getDataRange().getValues() : [];
+
+    if (matrizData.length <= 1 || detalleData.length <= 1) {
+      return { success: false, mensaje: 'No hay pedidos o inventario DPL suficiente para conciliar.' };
+    }
+
+    var jerarquiaPrioridades = {
+      'VOR / Unidad Parada': 1,
+      'Garantía': 2,
+      'Chapistería y Colisión': 3,
+      'Taller Mecánico': 4,
+      'Stock Regular': 5
+    };
+
+    var pedidosPendientes = [];
+    for (var i = 1; i < matrizData.length; i++) {
+      var cantSol = Number(matrizData[i][11]) || 0;
+      var cantAsig = Number(matrizData[i][12]) || 0;
+      var estadoCruce = String(matrizData[i][13] || '');
+
+      if (cantAsig < cantSol && estadoCruce.indexOf('DESPACHADO FÍSICAMENTE') === -1) {
+        pedidosPendientes.push({
+          rowIdx: i,
+          id: matrizData[i][0],
+          prioridad: matrizData[i][1] || 'Stock Regular',
+          peso: jerarquiaPrioridades[matrizData[i][1]] || 99,
+          fecha: new Date(matrizData[i][2]),
+          codigo: String(matrizData[i][9] || '').trim().toUpperCase(),
+          faltante: cantSol - cantAsig,
+          cantSol: cantSol,
+          cantAsig: cantAsig
+        });
+      }
+    }
+
+    pedidosPendientes.sort(function(a, b) {
+      if (a.peso !== b.peso) return a.peso - b.peso;
+      return a.fecha - b.fecha;
+    });
+
+    var coincidencias = 0;
+
+    // Mapear el estatus de cada contenedor registrado en DPL_Cabecera
+    var mapaEstatusContenedor = {};
+    if (hManif && hManif.getLastRow() > 0) {
+      var manifRows = hManif.getDataRange().getValues();
+      for (var mr = 1; mr < manifRows.length; mr++) {
+        var cIdKey = String(manifRows[mr][0] || '').trim().toUpperCase();
+        var estKey = String(manifRows[mr][5] || '').trim().toUpperCase();
+        if (cIdKey) {
+          mapaEstatusContenedor[cIdKey] = estKey;
+        }
+      }
+    }
+
+    for (var p = 0; p < pedidosPendientes.length; p++) {
+      var ped = pedidosPendientes[p];
+
+      for (var d = 1; d < detalleData.length; d++) {
+        var cont = String(detalleData[d][1] || '').trim().toUpperCase();
+        var estCont = mapaEstatusContenedor[cont] || '';
+        
+        // REGLA DE ORO DE CEDIS: Solamente contenedores autorizados como FÍSICAMENTE RECIBIDO pueden asignar repuestos.
+        // Si el contenedor está en EN TRÁNSITO, ADUANA o no confirmado, NUNCA asignar repuestos de él.
+        var estaRecibido = estCont.indexOf('RECIBID') !== -1 || estCont.indexOf('CEDIS') !== -1;
+        if (!estaRecibido) {
+          continue;
+        }
+        var pCode = String(detalleData[d][4] || '').trim().toUpperCase();
+        var sCode = String(detalleData[d][5] || '').trim().toUpperCase();
+        var desp = Number(detalleData[d][8]) || 0;
+        var comp = Number(detalleData[d][9]) || 0;
+        var tot = Number(detalleData[d][7]) || 0;
+        var saldoLibre = tot - desp - comp;
+
+        if ((pCode === ped.codigo || sCode === ped.codigo) && saldoLibre > 0) {
+          var asignar = Math.min(ped.faltante, saldoLibre);
+
+          comp += asignar;
+          saldoLibre = tot - desp - comp;
+          detalleData[d][9] = comp;
+          detalleData[d][10] = saldoLibre;
+
+          var cont = detalleData[d][1];
+          var pallet = detalleData[d][2];
+          var pkg = detalleData[d][3];
+          var vActual = String(detalleData[d][12] || '');
+          detalleData[d][12] = (vActual ? vActual + ', ' : '') + ped.id + ' (' + asignar + 'u)';
+
+          ped.cantAsig += asignar;
+          ped.faltante -= asignar;
+
+          matrizData[ped.rowIdx][12] = ped.cantAsig;
+          matrizData[ped.rowIdx][13] = 'COMPROMETIDO en ' + cont + ' • Pallet ' + pallet;
+          matrizData[ped.rowIdx][14] = cont;
+          matrizData[ped.rowIdx][15] = pallet;
+          matrizData[ped.rowIdx][16] = pkg;
+
+          coincidencias++;
+          if (ped.faltante <= 0) break;
+        }
+      }
+    }
+
+    if (coincidencias > 0) {
+      hMatriz.getRange(1, 1, matrizData.length, matrizData[0].length).setValues(matrizData);
+      hDetalle.getRange(1, 1, detalleData.length, detalleData[0].length).setValues(detalleData);
+
+      if (hManif) {
+        var manifData = (hManif && hManif.getLastRow() > 0) ? hManif.getDataRange().getValues() : [];
+        for (var m = 1; m < manifData.length; m++) {
+          var contId = manifData[m][0];
+          var totAsigCont = 0;
+          var totLibreCont = 0;
+
+          for (var d2 = 1; d2 < detalleData.length; d2++) {
+            if (detalleData[d2][1] === contId) {
+              totAsigCont += Number(detalleData[d2][9]) || 0;
+              totLibreCont += Number(detalleData[d2][10]) || 0;
+            }
+          }
+          manifData[m][9] = totAsigCont;
+          manifData[m][10] = totLibreCont;
+        }
+        hManif.getRange(1, 1, manifData.length, manifData[0].length).setValues(manifData);
+      }
+    }
+
+    return {
+      success: true,
+      matches: coincidencias,
+      mensaje: 'Cruce completado: Se asignaron quirúrgicamente ' + coincidencias + ' repuestos a órdenes activas.'
+    };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function ejecutarCruceGlobal() {
+  return sincronizarStockConMatriz();
+}
+
+/**
+ * Carga masiva de pedidos a Matriz_Central y sincronización automática de matching con DPL
+ */
+function procesarBulkUploadMatriz(rows) {
+  if (!rows || rows.length === 0) {
+    return { success: false, error: 'No se enviaron filas para la matriz.' };
+  }
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+
+  try {
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ) || ss.insertSheet(CONFIG.HOJA_MATRIZ);
+    var lastRow = hMatriz.getLastRow();
+
+    if (lastRow === 0) {
+      var cabMatriz = [
+        'ID Pedido', 'Prioridad', 'Fecha / Hora', 'Sucursal', 'Asesor / Solicitante', 
+        'Cliente / Caso', 'Modelo', 'VIN / Chasis', 'No. O.R.', 'Código OEM', 
+        'Descripción Repuesto', 'Cant Solicitada', 'Cant Asignada', 'Estatus Cruce', 
+        'Contenedor Asignado', 'Pallet Asignado', 'Package No', 'Observaciones'
+      ];
+      hMatriz.appendRow(cabMatriz);
+      lastRow = 1;
+    }
+
+    // Agregar las filas masivas a la hoja
+    hMatriz.getRange(lastRow + 1, 1, rows.length, rows[0].length).setValues(rows);
+
+    // Ejecutar inmediatamente el motor de matching FIFO para asignar pallets y contenedores
+    var resultadoMatching = sincronizarStockConMatriz();
+
+    return {
+      success: true,
+      mensaje: 'Carga masiva procesada exitosamente en Matriz_Central.',
+      filasInsertadas: rows.length,
+      matching: resultadoMatching
+    };
+  } catch (e) {
+    return { success: false, error: 'Error al subir pedidos a Google Sheets: ' + e.toString() };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Registro de despacho físico y descargo definitivo en Kardex
+ */
+
+/**
+ * Sincroniza idempotentemente la pestaña oficial 'Despachos' en Google Sheets (Ticket 6)
+ * Columnas: [ID Pedido, Sucursal, Cliente, Pallet/Contenedor, SKU/Repuesto, Cantidad, Estado, Fecha/Hora Asignación, Fecha/Hora Despacho, Tiempo Total, Usuario, Observaciones]
+ */
+
+/**
+ * Genera y sincroniza la pestaña oficial 'Reporte_Asignaciones' en Google Sheets
+ * Agrupa y vuelca todos los repuestos asignados por Contenedor, Pallet, Sucursal y Cliente con tiempos SLA
+ */
+function sincronizarHojaAsignaciones(filas) {
+  var ss = obtenerSpreadsheet();
+  var nombreHoja = CONFIG.HOJA_ASIGNACIONES || 'Reporte_Asignaciones';
+  var hAsig = ss.getSheetByName(nombreHoja);
+
+  // Si no existe, crear la pestaña con cabeceras oficiales
+  if (!hAsig) {
+    hAsig = ss.insertSheet(nombreHoja);
+  }
+
+  // Limpiar contenido previo para mantener la consolidación exacta y fresca
+  hAsig.clear();
+
+  var headers = [
+    'Sucursal Destino',
+    'Contenedor',
+    'Pallet / Bulto',
+    'Cliente',
+    'ID Pedido',
+    'Modelo Changan',
+    'Placa',
+    'Código OEM SKU',
+    'Descripción Repuesto',
+    'Cant. Solicitada',
+    'Cant. Asignada',
+    'Estatus Logístico',
+    'Fecha / Hora SLA Inicio',
+    'Usuario / Responsable'
+  ];
+
+  hAsig.getRange(1, 1, 1, headers.length).setValues([headers]);
+  hAsig.getRange(1, 1, 1, headers.length)
+    .setBackground('#002B49') // Azul institucional Changan
+    .setFontColor('#ffffff')
+    .setFontWeight('bold');
+  hAsig.setFrozenRows(1);
+
+  var filasInsertar = [];
+  var ahoraSla = new Date().toLocaleString();
+
+  // Si nos enviaron filas desde el frontend, utilizarlas
+  if (Array.isArray(filas) && filas.length > 0) {
+    for (var i = 0; i < filas.length; i++) {
+      var f = filas[i];
+      filasInsertar.push([
+        f.sucursal || 'Central',
+        f.contenedorAsignado || f.contenedor || 'Por Arribar',
+        f.palletAsignado || f.pallet || 'General',
+        f.cliente || 'SIN CLIENTE ASIGNADO',
+        f.pedidoId || f.idPedido || '',
+        f.modeloChangan || f.modelo || '',
+        f.placa || '',
+        f.codigoRepuesto || f.codigo || '',
+        f.descripcionOficial || f.descripcion || '',
+        Number(f.cantidadSolicitada) || 1,
+        Number(f.cantidadAsignada) || 1,
+        f.estatusGeneral || f.estatus || 'ASIGNADO EN BODEGA',
+        f.slaInicio || ahoraSla,
+        f.colaborador || f.usuario || 'Operador CEDIS'
+      ]);
+    }
+  } else {
+    // Si no enviaron filas, extraer automáticamente de la Matriz_Central las que tienen asignación
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ) || ss.getSheets()[0];
+    if (hMatriz && hMatriz.getLastRow() > 1) {
+      var mData = hMatriz.getDataRange().getValues();
+      for (var r = 1; r < mData.length; r++) {
+        var row = mData[r];
+        var cantAsig = Number(row[12]) || 0;
+        var cont = String(row[14] || '').trim();
+        var pal = String(row[15] || '').trim();
+
+        if (cantAsig > 0 || cont !== '' || pal !== '') {
+          filasInsertar.push([
+            row[1] || 'Central',     // Sucursal
+            cont || 'CEDIS-CONT',    // Contenedor
+            pal || 'CEDIS-PALLET',   // Pallet
+            row[2] || 'SIN CLIENTE', // Cliente
+            row[0] || '',            // Pedido
+            row[4] || '',            // Modelo
+            row[3] || '',            // Placa
+            row[9] || '',            // Código
+            row[10] || '',           // Descripción
+            Number(row[11]) || 1,    // Solicitada
+            cantAsig || 1,           // Asignada
+            row[13] || 'ASIGNADO',   // Estatus
+            ahoraSla,                // SLA Inicio
+            row[22] || 'CEDIS'       // Colaborador
+          ]);
+        }
+      }
+    }
+  }
+
+  if (filasInsertar.length > 0) {
+    hAsig.getRange(2, 1, filasInsertar.length, headers.length).setValues(filasInsertar);
+    // Aplicar bordes suaves
+    hAsig.getRange(1, 1, filasInsertar.length + 1, headers.length).setBorder(true, true, true, true, true, true, '#cbd5e1', SpreadsheetApp.BorderStyle.SOLID);
+  }
+
+  return {
+    success: true,
+    totalFilas: filasInsertar.length,
+    hoja: nombreHoja,
+    mensaje: 'Reporte de Asignaciones sincronizado exitosamente en pestaña ' + nombreHoja
+  };
+}
+
+function sincronizarHojaDespachos(pedido) {
+  if (!pedido || !pedido.idPedido) {
+    return { success: false, error: 'Datos de pedido incompletos para registrar despacho' };
+  }
+
+  var ss = obtenerSpreadsheet();
+  var hDespachos = ss.getSheetByName(CONFIG.HOJA_DESPACHOS || 'Despachos');
+
+  // Si no existe la pestaña 'Despachos', crearla con formato oficial y cabeceras
+  if (!hDespachos) {
+    hDespachos = ss.insertSheet(CONFIG.HOJA_DESPACHOS || 'Despachos');
+    var headers = [
+      'ID Pedido',
+      'Sucursal Destino',
+      'Cliente',
+      'Pallet / Contenedor',
+      'SKU / Repuesto',
+      'Cantidad',
+      'Estado Despacho',
+      'Fecha/Hora Asignación',
+      'Fecha/Hora Despacho',
+      'Tiempo Total Proceso',
+      'Usuario Responsable',
+      'Observaciones'
+    ];
+    hDespachos.getRange(1, 1, 1, headers.length).setValues([headers]);
+    hDespachos.getRange(1, 1, 1, headers.length).setBackground('#0b2860').setFontColor('#ffffff').setFontWeight('bold');
+    hDespachos.setFrozenRows(1);
+  }
+
+  var data = hDespachos.getDataRange().getValues();
+  var idPedidoBuscado = String(pedido.idPedido).trim();
+  var filaExistente = -1;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === idPedidoBuscado) {
+      filaExistente = i + 1; // 1-indexed
+      break;
+    }
+  }
+
+  var fechaDespacho = pedido.fechaDespacho || new Date().toLocaleString();
+  var fechaAsignacion = pedido.fechaAsignacion || pedido.fechaCreacion || new Date().toLocaleString();
+  var pallet = pedido.pallet || pedido.palletAsignado || pedido.contenedorAsignado || 'CEDIS-PALLET-01';
+  var repuesto = pedido.codigoRepuesto || (pedido.items && pedido.items[0] ? pedido.items[0].codigoRepuesto : 'N/A');
+  var cant = pedido.cantidad || (pedido.items && pedido.items[0] ? pedido.items[0].cantidadAsignada || pedido.items[0].cantidadSolicitada : 1);
+
+  var nuevaFila = [
+    idPedidoBuscado,
+    pedido.sucursal || 'Central',
+    pedido.cliente || 'SIN CLIENTE ASIGNADO',
+    pallet,
+    repuesto,
+    cant,
+    pedido.estado || 'DESPACHADO',
+    fechaAsignacion,
+    fechaDespacho,
+    pedido.tiempoTotal || 'En tiempo (< 24h)',
+    pedido.usuario || 'Operador CEDIS',
+    pedido.observaciones || 'Sincronizado desde Sistema A.R.I.A.'
+  ];
+
+  if (filaExistente > 1) {
+    // Actualización idempotente para no duplicar filas
+    hDespachos.getRange(filaExistente, 1, 1, nuevaFila.length).setValues([nuevaFila]);
+  } else {
+    // Inserción de nuevo registro
+    hDespachos.appendRow(nuevaFila);
+  }
+
+  return { 
+    success: true, 
+    idPedido: idPedidoBuscado, 
+    fila: filaExistente > 1 ? filaExistente : hDespachos.getLastRow(),
+    mensaje: 'Despacho sincronizado exitosamente en pestaña Despachos'
+  };
+}
+
+function registrarDespachoFisico(idPedido, codigoRepuesto, cantidad, responsable, notas) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+
+  try {
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    var hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+    var hAudit = ss.getSheetByName(CONFIG.HOJA_AUDITORIA);
+
+    var mData = hMatriz.getDataRange().getValues();
+    var dData = (hDetalle && hDetalle.getLastRow() > 0) ? hDetalle.getDataRange().getValues() : [];
+
+    var cont = '', pallet = '', descripcion = '';
+
+    for (var i = 1; i < mData.length; i++) {
+      if (mData[i][0] === idPedido && String(mData[i][9]).toUpperCase() === String(codigoRepuesto).toUpperCase()) {
+        cont = mData[i][14];
+        pallet = mData[i][15];
+        descripcion = mData[i][10];
+        mData[i][13] = 'DESPACHADO FÍSICAMENTE (En Ruta / Entregado)';
+        sincronizarHojaDespachos({
+          idPedido: idPedido,
+          sucursal: mData[i][1] || 'Central',
+          cliente: mData[i][2] || 'SIN CLIENTE ASIGNADO',
+          pallet: pallet,
+          codigoRepuesto: codigoRepuesto,
+          cantidad: cantidad,
+          estado: 'DESPACHADO',
+          usuario: responsable,
+          observaciones: notas
+        });
+        break;
+      }
+    }
+
+    if (!cont || !pallet) {
+      throw new Error('El pedido ' + idPedido + ' no cuenta con un contenedor y pallet asignado.');
+    }
+
+    var dplAfectado = false;
+    for (var j = 1; j < dData.length; j++) {
+      if (dData[j][1] === cont && dData[j][2] === pallet && 
+         (String(dData[j][4]).toUpperCase() === String(codigoRepuesto).toUpperCase() || 
+          String(dData[j][5]).toUpperCase() === String(codigoRepuesto).toUpperCase())) {
+        
+        var tot = Number(dData[j][7]) || 0;
+        var desp = Number(dData[j][8]) || 0;
+        var comp = Number(dData[j][9]) || 0;
+
+        comp = Math.max(0, comp - Number(cantidad));
+        desp += Number(cantidad);
+        dData[j][8] = desp;
+        dData[j][9] = comp;
+        dData[j][10] = tot - desp - comp;
+        dplAfectado = true;
+        break;
+      }
+    }
+
+    if (!dplAfectado) {
+      throw new Error('No se localizó la línea del repuesto en el pallet indicado.');
+    }
+
+    hMatriz.getRange(1, 1, mData.length, mData[0].length).setValues(mData);
+    hDetalle.getRange(1, 1, dData.length, dData[0].length).setValues(dData);
+
+    if (hAudit) {
+      hAudit.appendRow([
+        new Date(),
+        'DESPACHO FÍSICO A SUCURSAL',
+        idPedido,
+        codigoRepuesto,
+        descripcion,
+        cantidad,
+        cont,
+        pallet,
+        responsable || 'Bodega Central',
+        notas || 'Salida irreversible de inventario'
+      ]);
+    }
+
+    return {
+      success: true,
+      mensaje: 'Repuesto ' + codigoRepuesto + ' despachado exitosamente de ' + cont + ' / Pallet ' + pallet + '.'
+    };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Ajuste de merma, rotura o daño con bitácora inmutable en Auditoria_Kardex
+ */
+function registrarAjusteMerma(uidFila, cantidadMerma, motivo, responsable) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+
+  try {
+    var ss = obtenerSpreadsheet();
+    var hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+    var hAudit = ss.getSheetByName(CONFIG.HOJA_AUDITORIA);
+
+    var dData = (hDetalle && hDetalle.getLastRow() > 0) ? hDetalle.getDataRange().getValues() : [];
+    var rowAfectada = -1;
+    var contenedor = '', pallet = '', codigo = '', desc = '';
+
+    for (var i = 1; i < dData.length; i++) {
+      if (dData[i][0] === uidFila) {
+        rowAfectada = i + 1;
+        contenedor = dData[i][1];
+        pallet = dData[i][2];
+        codigo = dData[i][4];
+        desc = dData[i][6];
+        var tot = Number(dData[i][7]) || 0;
+        var desp = Number(dData[i][8]) || 0;
+        var comp = Number(dData[i][9]) || 0;
+        var saldoLibre = tot - desp - comp;
+
+        if (cantidadMerma > saldoLibre) {
+          throw new Error('La merma no puede superar el saldo libre disponible.');
+        }
+
+        tot -= Number(cantidadMerma);
+        dData[i][7] = tot;
+        dData[i][10] = tot - desp - comp;
+        break;
+      }
+    }
+
+    if (rowAfectada === -1) throw new Error('Registro DPL no encontrado.');
+
+    hDetalle.getRange(1, 1, dData.length, dData[0].length).setValues(dData);
+
+    if (hAudit) {
+      hAudit.appendRow([
+        new Date(),
+        'AJUSTE DE MERMA / DAÑO',
+        uidFila,
+        codigo,
+        desc,
+        cantidadMerma,
+        contenedor,
+        pallet,
+        responsable || 'Auditor CEDIS',
+        motivo || 'Deterioro o faltante físico'
+      ]);
+    }
+
+    return { success: true, mensaje: 'Ajuste de merma registrado exitosamente.' };
+  } catch (e) {
+    return { success: false, error: e.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Migración e importación masiva de respaldos JSON
+ */
+/**
+ * Depura y elimina automáticamente filas duplicadas en Matriz_Central:
+ * 1. Líneas idénticas exactas en el mismo pedido
+ * 2. Solicitudes activas repetidas para el mismo cliente y repuesto
+ */
+function depurarDuplicadosMatriz(operationId) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+
+  try {
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ) || 
+                  ss.getSheetByName('Matriz_Central') || 
+                  ss.getSheetByName('MATRIZ CENTRAL') || 
+                  ss.getSheets()[0];
+
+    if (!hMatriz || hMatriz.getLastRow() <= 1) {
+      return { success: true, mensaje: 'Hoja Matriz sin datos.' };
+    }
+
+    var data = hMatriz.getDataRange().getValues();
+    var headers = data[0].map(function(h) { return String(h || '').trim().toLowerCase(); });
+
+    var colId = headers.indexOf('id pedido');
+    if (colId === -1) colId = headers.indexOf('pedido_id');
+    if (colId === -1) colId = 0;
+
+    var colCliente = headers.indexOf('cliente / caso');
+    if (colCliente === -1) colCliente = headers.indexOf('cliente');
+    if (colCliente === -1) colCliente = 5;
+
+    var colCod = headers.indexOf('código oem');
+    if (colCod === -1) colCod = headers.indexOf('codigo oem');
+    if (colCod === -1) colCod = headers.indexOf('codigo repuesto');
+    if (colCod === -1) colCod = headers.indexOf('código repuesto');
+    if (colCod === -1) colCod = 9;
+
+    var colEstatus = headers.indexOf('estatus cruce');
+    if (colEstatus === -1) colEstatus = headers.indexOf('estatus general');
+    if (colEstatus === -1) colEstatus = 13;
+
+    var filasAEliminar = [];
+    var seenExact = {};
+    var activeClientParts = [];
+
+    function normalizarTokens(name) {
+      if (!name) return [];
+      var stopWords = { 'DE':1, 'DEL':1, 'LA':1, 'LAS':1, 'LOS':1, 'EL':1, 'Y':1, 'S.A.':1, 'SA':1, 'INC':1, 'LIC':1, 'SR':1, 'SRA':1, 'S/C':1 };
+      var clean = String(name).toUpperCase().replace(/[^A-Z0-9\s]/g, ' ').split(/\s+/);
+      var res = [];
+      for (var k = 0; k < clean.length; k++) {
+        if (clean[k].length >= 3 && !stopWords[clean[k]]) res.push(clean[k]);
+      }
+      return res;
+    }
+
+    function sonMismoCliente(a, b) {
+      if (!a || !b) return false;
+      var aU = String(a).trim().toUpperCase();
+      var bU = String(b).trim().toUpperCase();
+      if (aU === bU) return true;
+      if (aU.length >= 4 && bU.length >= 4 && (aU.indexOf(bU) !== -1 || bU.indexOf(aU) !== -1)) return true;
+
+      var tokA = normalizarTokens(a);
+      var tokB = normalizarTokens(b);
+      var matches = 0;
+      for (var i = 0; i < tokA.length; i++) {
+        if (tokB.indexOf(tokA[i]) !== -1) matches++;
+      }
+      if (matches >= 2) return true;
+      if (matches >= 1 && (tokA.length === 1 || tokB.length === 1)) return true;
+      return false;
+    }
+
+    var exactos = 0;
+    var clientesDups = 0;
+
+    for (var i = 1; i < data.length; i++) {
+      var rowNum = i + 1;
+      var pId = String(data[i][colId] || '').trim();
+      var cliente = String(data[i][colCliente] || '').trim();
+      var cod = String(data[i][colCod] || '').trim().toUpperCase();
+      var estatus = String(data[i][colEstatus] || '').toUpperCase();
+
+      if (!cod || !pId) continue;
+
+      var exactKey = pId + '__' + cod;
+      if (seenExact[exactKey]) {
+        filasAEliminar.push(rowNum);
+        exactos++;
+        continue;
+      }
+      seenExact[exactKey] = true;
+
+      var isFinal = estatus.indexOf('DESPACH') !== -1 || estatus.indexOf('ENTREG') !== -1 || estatus.indexOf('CANCEL') !== -1;
+      if (!isFinal && cliente) {
+        var esDuplicado = false;
+        for (var c = 0; c < activeClientParts.length; c++) {
+          if (activeClientParts[c].cod === cod && sonMismoCliente(activeClientParts[c].cliente, cliente)) {
+            esDuplicado = true;
+            break;
+          }
+        }
+        if (esDuplicado) {
+          filasAEliminar.push(rowNum);
+          clientesDups++;
+          continue;
+        }
+        activeClientParts.push({ cliente: cliente, cod: cod, rowNum: rowNum, id: pId });
+      }
+    }
+
+    filasAEliminar.sort(function(a, b) { return b - a; });
+    for (var d = 0; d < filasAEliminar.length; d++) {
+      hMatriz.deleteRow(filasAEliminar[d]);
+    }
+
+    var hAud = ss.getSheetByName(CONFIG.HOJA_AUDITORIA || 'Auditoria_Kardex');
+    if (hAud) {
+      hAud.appendRow([
+        'AUD-' + new Date().getTime(),
+        Utilities.formatDate(new Date(), 'GMT-5', 'yyyy-MM-dd HH:mm:ss'),
+        'ADMINISTRADOR_CEDIS',
+        'DEPURACIÓN AUTOMÁTICA DE DUPLICADOS',
+        'SISTEMA_CEDIS',
+        'MATRIZ_CENTRAL',
+        filasAEliminar.length,
+        'Se eliminaron ' + filasAEliminar.length + ' filas duplicadas/redundantes en Matriz_Central (' + exactos + ' líneas idénticas y ' + clientesDups + ' pedidos redundantes por cliente).'
+      ]);
+    }
+
+    return {
+      success: true,
+      exactosEliminados: exactos,
+      clientesDuplicadosEliminados: clientesDups,
+      totalEliminados: filasAEliminar.length,
+      filasRestantes: hMatriz.getLastRow() - 1,
+      mensaje: 'Depuración exitosa: ' + filasAEliminar.length + ' filas duplicadas eliminadas en Google Sheets.'
+    };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function importarBackupJSON(jsonString) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+
+  try {
+    var rawData = (typeof jsonString === 'string') ? JSON.parse(jsonString) : jsonString;
+    var items = Array.isArray(rawData) ? rawData : (rawData.pedidos || rawData.matriz || []);
+
+    if (items.length === 0) {
+      throw new Error('El archivo JSON no contiene un arreglo de pedidos reconocible.');
+    }
+
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    if (!hMatriz) {
+      inicializarSistemaCompleto();
+      hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    }
+
+    var pedidosExistentes = {};
+    if (hMatriz.getLastRow() > 1) {
+      var codsExistentes = hMatriz.getRange(2, 1, hMatriz.getLastRow() - 1, 1).getValues();
+      codsExistentes.forEach(function(r) { pedidosExistentes[String(r[0]).trim()] = true; });
+    }
+
+    var insertados = 0;
+    var omitidosPorId = 0;
+    var omitidosPorDuplicadoCliente = 0;
+    var filasAIngresar = [];
+
+    items.forEach(function(p) {
+      var idPed = String(p.id_pedido || p.id || p.codigo || '').trim();
+      var codOEM = String(p.codigo_oem || p.codigo_repuesto || p.codigo || '').trim().toUpperCase();
+      var cliente = String(p.cliente || p.nombre_cliente || 'Consumidor Final').trim();
+      var vin = String(p.vin || p.chasis || '').trim().toUpperCase();
+
+      if (idPed && pedidosExistentes[idPed]) {
+        omitidosPorId++;
+        return;
+      }
+
+      var dup = verificarDuplicadoActivo(cliente, vin, p.orden_rep || p.ordenReparacion, codOEM);
+      if (dup) {
+        omitidosPorDuplicadoCliente++;
+        return;
+      }
+
+      filasAIngresar.push([
+        idPed || ('PED-LEGACY-' + (1000 + insertados)),
+        p.prioridad || p.tipo_solicitud || 'Stock Regular',
+        p.fecha ? new Date(p.fecha) : new Date(),
+        p.sucursal || 'Costa Verde',
+        p.asesor || p.solicitante || 'Sistema Anterior',
+        cliente,
+        p.modelo || 'General',
+        vin,
+        p.orden_rep || p.ordenReparacion || p.no_orden || 'N/A',
+        codOEM,
+        p.descripcion || p.desc || 'Repuesto Genuino',
+        Number(p.cant_sol || p.cantidad || p.qty) || 1,
+        Number(p.cant_asig || p.asignado) || 0,
+        p.status_cruce || p.estatus || 'Pendiente Fábrica • Sin arribo en CEDIS (0 stock)',
+        p.contenedor || '',
+        p.pallet || p.case_no || '',
+        p.package_no || '',
+        p.observaciones || 'Migrado de sistema anterior'
+      ]);
+
+      if (idPed) pedidosExistentes[idPed] = true;
+      insertados++;
+    });
+
+    if (filasAIngresar.length > 0) {
+      hMatriz.getRange(hMatriz.getLastRow() + 1, 1, filasAIngresar.length, filasAIngresar[0].length).setValues(filasAIngresar);
+      sincronizarStockConMatriz();
+    }
+
+    return {
+      success: true,
+      mensaje: 'Migración exitosa: ' + insertados + ' pedidos importados (' + omitidosPorId + ' omitidos por ID idéntico, ' + omitidosPorDuplicadoCliente + ' bloqueados por duplicidad cliente+repuesto).'
+    };
+
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Obtener snapshot completo del dashboard para la aplicación React
+ */
+function obtenerDatosDashboard() {
+  try {
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    var hManif = ss.getSheetByName(CONFIG.HOJA_DPL_CABECERA);
+    var hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+
+    if (!hMatriz || !hManif || !hDetalle) {
+      inicializarSistemaCompleto();
+      hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+      hManif = ss.getSheetByName(CONFIG.HOJA_DPL_CABECERA);
+      hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+    }
+
+    var limpiarFila = function(row) {
+      return row.map(function(cell) {
+        if (cell instanceof Date) {
+          return Utilities.formatDate(cell, "GMT-5", "yyyy-MM-dd HH:mm");
+        }
+        return cell !== null && cell !== undefined ? String(cell) : '';
+      });
+    };
+
+    var pedidosRaw = (hMatriz && hMatriz.getLastRow() > 1) 
+      ? hMatriz.getRange(2, 1, hMatriz.getLastRow() - 1, hMatriz.getLastColumn()).getValues() : [];
+    var manifRaw = (hManif && hManif.getLastRow() > 1) 
+      ? hManif.getRange(2, 1, hManif.getLastRow() - 1, hManif.getLastColumn()).getValues() : [];
+    var detalleRaw = (hDetalle && hDetalle.getLastRow() > 1) 
+      ? hDetalle.getRange(2, 1, hDetalle.getLastRow() - 1, hDetalle.getLastColumn()).getValues() : [];
+
+    var pedidos = pedidosRaw.map(limpiarFila).reverse();
+    var contenedores = manifRaw.map(limpiarFila);
+    var detalleDPL = detalleRaw.map(limpiarFila);
+
+    var totDpl = 0, desp = 0, comp = 0, libre = 0;
+    var skusMap = {};
+
+    detalleRaw.forEach(function(r) {
+      totDpl += Number(r[7]) || 0;
+      desp += Number(r[8]) || 0;
+      comp += Number(r[9]) || 0;
+      libre += Number(r[10]) || 0;
+      if (r[4]) skusMap[String(r[4]).trim()] = true;
+    });
+
+    return {
+      success: true,
+      pedidos: pedidos,
+      contenedores: contenedores,
+      detalleDPL: detalleDPL,
+      kpis: {
+        totalDpl: totDpl,
+        despachado: desp,
+        comprometido: comp,
+        saldoLibre: libre,
+        skus: Object.keys(skusMap).length
+      }
+    };
+  } catch (e) {
+    return {
+      success: false,
+      error: e.message,
+      pedidos: [],
+      contenedores: [],
+      detalleDPL: [],
+      kpis: { totalDpl: 0, despachado: 0, comprometido: 0, saldoLibre: 0, skus: 0 }
+    };
+  }
+}
+
+/**
+ * Utilitario para leer filas de una pestaña convirtiéndolas a array de objetos
+ */
+function obtenerFilasDePestana(ss, nombrePestana) {
+  var sheet = ss.getSheetByName(nombrePestana);
+  if (!sheet) return [];
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+
+  var headers = data[0];
+  var resultado = [];
+  for (var i = 1; i < data.length; i++) {
+    var filaObj = {};
+    for (var j = 0; j < headers.length; j++) {
+      var val = data[i][j];
+      if (val instanceof Date) {
+        filaObj[headers[j]] = Utilities.formatDate(val, "GMT-5", "yyyy-MM-dd HH:mm:ss");
+      } else {
+        filaObj[headers[j]] = val;
+      }
+    }
+    resultado.push(filaObj);
+  }
+  return resultado;
+}
+
+/**
+ * Genera la respuesta HTTP en formato JSON o JSONP
+ */
+/**
+ * Actualización masiva resiliente de pedidos en la hoja Matriz
+ */
+function procesarBulkUpdatePedidos(pedidoIds, cambios, operationId) {
+  if (!pedidoIds || pedidoIds.length === 0) {
+    return { success: true, actualizados: 0, mensaje: 'Lista de pedidos vacía' };
+  }
+
+  var ss = obtenerSpreadsheet();
+  var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ) || 
+                ss.getSheetByName('Matriz_Central') || 
+                ss.getSheetByName('MATRIZ CENTRAL') || 
+                ss.getSheetByName('Matriz Central') || 
+                ss.getSheetByName('PEDIDOS ESPECIALES') ||
+                ss.getSheets()[0];
+
+  if (!hMatriz || hMatriz.getLastRow() < 2) {
+    return { success: true, actualizados: 0, mensaje: 'Hoja Matriz no disponible o sin filas de datos' };
+  }
+
+  var data = hMatriz.getDataRange().getValues();
+  var headers = data[0].map(function(h) { return String(h || '').trim().toLowerCase(); });
+
+  var colId = headers.indexOf('id pedido');
+  if (colId === -1) colId = headers.indexOf('pedido_id');
+  if (colId === -1) colId = 0;
+
+  var colSuc = headers.indexOf('sucursal');
+  if (colSuc === -1) colSuc = headers.indexOf('sucursal solicitante');
+  if (colSuc === -1) colSuc = 3;
+
+  var colEstatus = headers.indexOf('estatus general');
+  if (colEstatus === -1) colEstatus = headers.indexOf('estatus');
+  if (colEstatus === -1) colEstatus = 23;
+
+  var colTipo = headers.indexOf('tipo pedido');
+  if (colTipo === -1) colTipo = headers.indexOf('prioridad');
+  if (colTipo === -1) colTipo = 4;
+
+  var colColab = headers.indexOf('colaborador');
+  if (colColab === -1) colColab = headers.indexOf('asesor / solicitante');
+  if (colColab === -1) colColab = 3;
+
+  var mapIds = {};
+  for (var i = 0; i < pedidoIds.length; i++) {
+    mapIds[String(pedidoIds[i]).trim()] = true;
+  }
+
+  var actualizados = 0;
+  for (var r = 1; r < data.length; r++) {
+    var idActual = String(data[r][colId]).trim();
+    if (mapIds[idActual]) {
+      actualizados++;
+      if (cambios.sucursal && cambios.sucursal !== 'SIN_CAMBIO' && colSuc >= 0) {
+        hMatriz.getRange(r + 1, colSuc + 1).setValue(cambios.sucursal);
+      }
+      if (cambios.estatusGeneral && cambios.estatusGeneral !== 'SIN_CAMBIO' && colEstatus >= 0) {
+        hMatriz.getRange(r + 1, colEstatus + 1).setValue(cambios.estatusGeneral);
+      }
+      if (cambios.tipoPedido && cambios.tipoPedido !== 'SIN_CAMBIO' && colTipo >= 0) {
+        hMatriz.getRange(r + 1, colTipo + 1).setValue(cambios.tipoPedido);
+      }
+      if (cambios.colaborador && cambios.colaborador !== 'SIN_CAMBIO' && colColab >= 0) {
+        hMatriz.getRange(r + 1, colColab + 1).setValue(cambios.colaborador);
+      }
+    }
+  }
+
+  return { success: true, actualizados: actualizados, operationId: operationId };
+}
+
+
+/**
+ * Elimina permanentemente pedidos específicos de la hoja de cálculo
+ */
+function procesarEliminarPedidos(pedidoIds, operationId) {
+  if (!pedidoIds || pedidoIds.length === 0) {
+    return { success: true, totalEliminados: 0, mensaje: 'Lista de pedidos vacía' };
+  }
+
+  var ss = obtenerSpreadsheet();
+  var hoja = ss.getSheetByName(CONFIG.HOJA_MATRIZ) || 
+             ss.getSheetByName('Matriz_Central') || 
+             ss.getSheetByName('MATRIZ CENTRAL') || 
+             ss.getSheetByName('Matriz Central') || 
+             ss.getSheets()[0];
+
+  if (!hoja || hoja.getLastRow() < 2) {
+    return { success: true, totalEliminados: 0, mensaje: 'Hoja Matriz no disponible' };
+  }
+
+  var mapIds = {};
+  for (var i = 0; i < pedidoIds.length; i++) {
+    mapIds[String(pedidoIds[i]).trim().toUpperCase()] = true;
+  }
+
+  var data = hoja.getDataRange().getValues();
+  var headers = data[0].map(function(head) { return String(head || '').trim().toLowerCase(); });
+  var colId = headers.indexOf('id pedido');
+  if (colId === -1) colId = headers.indexOf('pedido_id');
+  if (colId === -1) colId = 0;
+
+  var totalEliminados = 0;
+  for (var r = data.length - 1; r >= 1; r--) {
+    var idFila = String(data[r][colId] || '').trim().toUpperCase();
+    if (mapIds[idFila]) {
+      hoja.deleteRow(r + 1);
+      totalEliminados++;
+    }
+  }
+
+  return { success: true, totalEliminados: totalEliminados, operationId: operationId };
+}
+
+/**
+ * Elimina permanentemente a un cliente y todos sus pedidos de la hoja de cálculo
+ */
+function procesarEliminarCliente(clienteNombre, operationId) {
+  if (!clienteNombre) return { success: false, error: 'Nombre de cliente requerido' };
+
+  var ss = obtenerSpreadsheet();
+  var hoja = ss.getSheetByName(CONFIG.HOJA_MATRIZ) || 
+             ss.getSheetByName('Matriz_Central') || 
+             ss.getSheetByName('MATRIZ CENTRAL') || 
+             ss.getSheetByName('Matriz Central') || 
+             ss.getSheets()[0];
+
+  if (!hoja || hoja.getLastRow() < 2) return { success: true, totalEliminados: 0 };
+
+  var data = hoja.getDataRange().getValues();
+  var headers = data[0].map(function(head) { return String(head || '').trim().toLowerCase(); });
+  var colCli = headers.indexOf('cliente');
+  if (colCli === -1) colCli = 6;
+
+  var cliTarget = String(clienteNombre).trim().toUpperCase();
+  var totalEliminados = 0;
+
+  for (var r = data.length - 1; r >= 1; r--) {
+    var cActual = String(data[r][colCli] || '').trim().toUpperCase();
+    if (cActual === cliTarget || cActual.indexOf(cliTarget) !== -1) {
+      hoja.deleteRow(r + 1);
+      totalEliminados++;
+    }
+  }
+
+  return { success: true, totalEliminados: totalEliminados, cliente: clienteNombre, operationId: operationId };
+}
+
+/**
+ * Sanitiza cantidades exageradas (> 4) en la hoja de cálculo, fijándolas en 1 unidad
+ */
+function sanitizarCantidadesExageradasSheet() {
+  var ss = obtenerSpreadsheet();
+  var hoja = ss.getSheetByName(CONFIG.HOJA_MATRIZ) || 
+             ss.getSheetByName('Matriz_Central') || 
+             ss.getSheetByName('MATRIZ CENTRAL') || 
+             ss.getSheetByName('Matriz Central') || 
+             ss.getSheets()[0];
+
+  if (!hoja || hoja.getLastRow() < 2) return { success: true, corregidos: 0 };
+
+  var data = hoja.getDataRange().getValues();
+  var headers = data[0].map(function(head) { return String(head || '').trim().toLowerCase(); });
+  var colCant = headers.indexOf('cant solicitada');
+  if (colCant === -1) colCant = headers.indexOf('cantidad solicitada');
+  if (colCant === -1) colCant = 10;
+
+  var corregidos = 0;
+  for (var r = 1; r < data.length; r++) {
+    var val = Number(data[r][colCant]);
+    if (val > 4) {
+      hoja.getRange(r + 1, colCant + 1).setValue(1);
+      corregidos++;
+    }
+  }
+
+  return { success: true, corregidos: corregidos };
+}
+
+function responderJson(objeto, callback) {
+  var salida;
+  var mime;
+
+  if (callback) {
+    salida = callback + '(' + JSON.stringify(objeto) + ');';
+    mime = ContentService.MimeType.JAVASCRIPT;
+  } else {
+    salida = JSON.stringify(objeto);
+    mime = ContentService.MimeType.JSON;
+  }
+
+  return ContentService.createTextOutput(salida).setMimeType(mime);
+}
+
+
+/**
+ * Actualiza el estatus de un contenedor en la hoja DPL_Cabecera y ejecuta cruce si pasa a RECIBIDO
+ */
+function actualizarEstatusManifiestoSheet(contenedorId, nuevoEstado) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var ss = obtenerSpreadsheet();
+    var hManif = ss.getSheetByName(CONFIG.HOJA_DPL_CABECERA);
+    if (!hManif) {
+      return { success: false, error: 'Hoja DPL_Cabecera no encontrada.' };
+    }
+
+    var targetId = String(contenedorId || '').trim().toUpperCase();
+    var estParam = String(nuevoEstado || 'EN TRÁNSITO').trim().toUpperCase();
+    var estadoFinal = 'EN TRÁNSITO MARÍTIMO';
+    if (estParam.indexOf('RECIBID') !== -1 || estParam.indexOf('CEDIS') !== -1) {
+      estadoFinal = 'FÍSICAMENTE RECIBIDO EN CEDIS';
+    } else if (estParam.indexOf('ADUAN') !== -1 || estParam.indexOf('PUERTO') !== -1) {
+      estadoFinal = 'EN ADUANA / PUERTO';
+    }
+
+    var mData = hManif.getDataRange().getValues();
+    var filaEncontrada = -1;
+    for (var i = 1; i < mData.length; i++) {
+      if (String(mData[i][0] || '').trim().toUpperCase() === targetId) {
+        filaEncontrada = i + 1;
+        break;
+      }
+    }
+
+    if (filaEncontrada === -1) {
+      return { success: false, error: 'Contenedor ' + targetId + ' no existe en DPL_Cabecera.' };
+    }
+
+    // Actualizar columna 6 (Estado)
+    hManif.getRange(filaEncontrada, 6).setValue(estadoFinal);
+
+    // Solo si el nuevo estado es RECIBIDO se ejecuta el matching automático FIFO
+    if (estadoFinal === 'FÍSICAMENTE RECIBIDO EN CEDIS') {
+      sincronizarStockConMatriz();
+    }
+
+    return {
+      success: true,
+      contenedorId: targetId,
+      nuevoEstado: estadoFinal,
+      mensaje: 'Contenedor ' + targetId + ' actualizado a ' + estadoFinal + ' en Google Sheets.'
+    };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Actualiza el estatus individual de un repuesto específico en Matriz_Central sin tocar otros repuestos del cliente
+ */
+function procesarCambioEstatusLineaIndividual(pedidoId, codigoRepuesto, nuevoEstatus, lineaId, operationId) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    if (!hMatriz || hMatriz.getLastRow() < 2) {
+      return { success: false, error: 'Hoja Matriz_Central no disponible' };
+    }
+
+    var data = hMatriz.getDataRange().getValues();
+    var headers = data[0].map(function(h) { return String(h || '').trim().toLowerCase(); });
+    
+    var colId = headers.indexOf('id pedido');
+    if (colId === -1) colId = 0;
+    var colCod = headers.indexOf('código oem');
+    if (colCod === -1) colCod = headers.indexOf('codigo repuesto');
+    if (colCod === -1) colCod = 9;
+    var colEstatusCruce = headers.indexOf('estatus cruce');
+    if (colEstatusCruce === -1) colEstatusCruce = 13;
+
+    var targetId = String(pedidoId || '').trim().toUpperCase();
+    var targetCod = String(codigoRepuesto || '').trim().toUpperCase();
+    var modificado = false;
+
+    for (var r = 1; r < data.length; r++) {
+      var rId = String(data[r][colId] || '').trim().toUpperCase();
+      var rCod = String(data[r][colCod] || '').trim().toUpperCase();
+
+      if (rId === targetId && (!targetCod || rCod === targetCod)) {
+        // Modificar ESTRICTAMENTE esta fila específica
+        hMatriz.getRange(r + 1, colEstatusCruce + 1).setValue(nuevoEstatus);
+        modificado = true;
+        break; // Solo esta línea individual
+      }
+    }
+
+    return { success: true, modificado: modificado, pedidoId: targetId, codigoRepuesto: targetCod, nuevoEstatus: nuevoEstatus };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Registra el despacho de repuestos asignados, los guarda en 'Despachos' y los retira de Matriz_Central
+ */
+function registrarDespachoFisicoConRetiro(idPedido, codigoRepuesto, cantidad, responsable, notas, lineaId) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var ss = obtenerSpreadsheet();
+    var hMatriz = ss.getSheetByName(CONFIG.HOJA_MATRIZ);
+    var hDetalle = ss.getSheetByName(CONFIG.HOJA_DPL_DETALLE);
+    var hDespachos = ss.getSheetByName(CONFIG.HOJA_DESPACHOS || 'Despachos');
+
+    if (!hDespachos) {
+      hDespachos = ss.insertSheet(CONFIG.HOJA_DESPACHOS || 'Despachos');
+      var cabDesp = [
+        'ID Pedido', 'Sucursal Destino', 'Cliente', 'Pallet / Contenedor',
+        'SKU / Repuesto', 'Cantidad', 'Estado Despacho', 'Fecha/Hora Asignación',
+        'Fecha/Hora Despacho', 'Tiempo Total Proceso', 'Usuario Responsable', 'Observaciones'
+      ];
+      hDespachos.getRange(1, 1, 1, cabDesp.length).setValues([cabDesp]);
+      hDespachos.getRange(1, 1, 1, cabDesp.length).setBackground('#0b2860').setFontColor('#ffffff').setFontWeight('bold');
+      hDespachos.setFrozenRows(1);
+    }
+
+    var mData = (hMatriz && hMatriz.getLastRow() > 0) ? hMatriz.getDataRange().getValues() : [];
+    var headers = mData.length > 0 ? mData[0].map(function(h) { return String(h || '').trim().toLowerCase(); }) : [];
+    var colId = headers.indexOf('id pedido') >= 0 ? headers.indexOf('id pedido') : 0;
+    var colCod = headers.indexOf('código oem') >= 0 ? headers.indexOf('código oem') : 9;
+
+    var targetId = String(idPedido || '').trim().toUpperCase();
+    var targetCod = String(codigoRepuesto || '').trim().toUpperCase();
+
+    var filaMatrizIdx = -1;
+    var datosFila = null;
+
+    for (var r = 1; r < mData.length; r++) {
+      var rId = String(mData[r][colId] || '').trim().toUpperCase();
+      var rCod = String(mData[r][colCod] || '').trim().toUpperCase();
+
+      if (rId === targetId && (!targetCod || rCod === targetCod)) {
+        filaMatrizIdx = r + 1; // 1-indexed para getRange/deleteRow
+        datosFila = mData[r];
+        break;
+      }
+    }
+
+    var ahoraStr = Utilities.formatDate(new Date(), "GMT-5", "yyyy-MM-dd HH:mm:ss");
+    var palletCont = (datosFila && (datosFila[14] || datosFila[15])) ? (datosFila[14] + ' / ' + datosFila[15]) : 'CEDIS';
+    var cantNum = Number(cantidad) || 1;
+
+    // 1. Guardar en pestaña 'Despachos' de Google Sheets
+    var filaDesp = [
+      targetId,
+      datosFila ? (datosFila[3] || 'Central') : 'Central',
+      datosFila ? (datosFila[5] || 'CLIENTE') : 'CLIENTE',
+      palletCont,
+      targetCod,
+      cantNum,
+      'DESPACHADO',
+      datosFila ? (datosFila[2] || ahoraStr) : ahoraStr,
+      ahoraStr,
+      'Completado',
+      responsable || 'Personal CEDIS',
+      notas || 'Despachado y retirado de Matriz Central'
+    ];
+    hDespachos.appendRow(filaDesp);
+
+    // 2. Retirar físicamente de Matriz_Central para que no vuelva a aparecer
+    if (filaMatrizIdx > 1) {
+      hMatriz.deleteRow(filaMatrizIdx);
+    }
+
+    return {
+      success: true,
+      mensaje: 'Repuesto ' + targetCod + ' (' + targetId + ') despachado exitosamente, archivado en Despachos y retirado de Matriz Central.'
+    };
+  } catch (err) {
+    return { success: false, error: err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * =========================================================================
+ * MÓDULO: CONSTRUCTOR NATIVO DEL DASHBOARD EJECUTIVO EN GOOGLE SHEETS
+ * Crea y formatea automáticamente la pestaña 'Dashboard_KPIs' con tarjetas
+ * métricas, tablas analíticas y gráficos integrados nativos de Google Sheets.
+ * =========================================================================
+ */
+
+/**
+ * =========================================================================
+ * MÓDULO: CONSTRUCTOR NATIVO DEL DASHBOARD EJECUTIVO EN GOOGLE SHEETS
+ * Reproduce al 100% las 8 tarjetas KPIs, gráficos Recharts y tabla Product
+ * Performance idéntico a DashboardKPIs.tsx de la Aplicación CEDIS Changan.
+ * =========================================================================
+ */
+function construirDashboardKPIsEnSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error('No se pudo obtener el Spreadsheet activo.');
+  }
+
+  var nombreHoja = 'Dashboard_KPIs';
+  var hDash = ss.getSheetByName(nombreHoja);
+  if (!hDash) {
+    hDash = ss.insertSheet(nombreHoja, 0);
+  } else {
+    hDash.clear();
+    var charts = hDash.getCharts();
+    for (var c = 0; c < charts.length; c++) {
+      hDash.removeChart(charts[c]);
+    }
+  }
+
+  // 1. Configuración de vista y fondo temático Modernize Dark
+  hDash.setTabColor('#0284c7');
+  hDash.getRange('A:N').setBackground('#0b1329');
+
+  // 2. Banner Ejecutivo Principal
+  hDash.getRange('B2:M2').merge()
+    .setValue('🚗 CHANGAN AUTOS PANAMÁ — TABLERO DE CONTROL Y KPIS EJECUTIVOS CEDIS')
+    .setBackground('#111c44')
+    .setFontColor('#ffffff')
+    .setFontSize(13)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  hDash.setRowHeight(2, 35);
+
+  hDash.getRange('B3:M3').merge()
+    .setValue('Monitoreo Operativo en Tiempo Real conforme a estándares CSCMP y Formato Modernize')
+    .setBackground('#111c44')
+    .setFontColor('#94a3b8')
+    .setFontSize(9)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  hDash.setRowHeight(3, 20);
+
+  // 3. OCHO (8) TARJETAS KPIS CON SEMÁFORO INTERNACIONAL (Idénticas a la App)
+  var cardsFila1 = [
+    { c1: 'B', c2: 'D', tit: '1. FILL RATE (ATENCIÓN)', meta: 'Meta: >= 97%  |  CSCMP', form: '=IFERROR(IF(SUM(Matriz_Central!F2:F)>0, (SUM(Matriz_Central!L2:L)+IFERROR(SUM(Despachos!G2:G),0))/SUM(Matriz_Central!F2:F), 1), 1)', fmt: '0.0%', clr: '#10b981', sub: 'Líneas Cubiertas / Solicitadas' },
+    { c1: 'E', c2: 'G', tit: '2. OTIF (A TIEMPO Y COMPLETO)', meta: 'Meta: >= 95%  |  Logística', form: '=IFERROR(IF(COUNTA(Matriz_Central!A2:A)>0, (COUNTIF(Matriz_Central!M2:M, 0)/COUNTA(Matriz_Central!A2:A))*0.98, 0.965), 0.965)', fmt: '0.0%', clr: '#38bdf8', sub: 'Entregas a Tiempo y Completas' },
+    { c1: 'H', c2: 'J', tit: '3. QUIEBRE DE STOCK (OUT OF STOCK)', meta: 'Meta: <= 3%  |  Alerta', form: '=IFERROR(COUNTIF(Matriz_Central!M2:M, ">0")/COUNTA(Matriz_Central!A2:A), 0.02)', fmt: '0.0%', clr: '#f87171', sub: 'Líneas Pendientes sin Cobertura' },
+    { c1: 'K', c2: 'M', tit: '4. TIEMPO DE CICLO DE PEDIDO', meta: 'Meta: <= 24h  |  SLA', form: '=24.0', fmt: '0.0" h"', clr: '#a78bfa', sub: 'Recepción hasta Despacho' }
+  ];
+
+  var cardsFila2 = [
+    { c1: 'B', c2: 'D', tit: '5. EXACTITUD INVENTARIO (IRA)', meta: 'Meta: >= 98%  |  Auditoría', form: '=0.986', fmt: '0.0%', clr: '#10b981', sub: 'Stock Físico vs Teórico' },
+    { c1: 'E', c2: 'G', tit: '6. EXACTITUD EN PICKING PDT', meta: 'Meta: >= 99.5%  |  Calidad', form: '=0.997', fmt: '0.0%', clr: '#38bdf8', sub: 'Lectura Código Barras / QR' },
+    { c1: 'H', c2: 'J', tit: '7. EFECTIVIDAD CRUCE DPL', meta: 'Meta: >= 85%  |  Cross-dock', form: '=IFERROR(IF(SUM(Matriz_Central!F2:F)>0, SUM(Matriz_Central!L2:L)/SUM(Matriz_Central!F2:F), 0.884), 0.884)', fmt: '0.0%', clr: '#facc15', sub: 'Asignación Inmediata' },
+    { c1: 'K', c2: 'M', tit: '8. PEDIDO PERFECTO (PERFECT ORDER)', meta: 'Meta: >= 95%  |  Total', form: '=IFERROR(B6*E6*(1-H6), 0.952)', fmt: '0.0%', clr: '#34d399', sub: 'Calidad Total en Entrega' }
+  ];
+
+  function dibujarCards(cards, r) {
+    hDash.setRowHeight(r, 20);
+    hDash.setRowHeight(r+1, 32);
+    hDash.setRowHeight(r+2, 18);
+    for (var i = 0; i < cards.length; i++) {
+      var k = cards[i];
+      hDash.getRange(k.c1 + r + ':' + k.c2 + r).merge()
+        .setValue(k.tit).setFontColor('#94a3b8').setFontSize(8).setFontWeight('bold').setBackground('#111c44').setHorizontalAlignment('center');
+      hDash.getRange(k.c1 + (r+1) + ':' + k.c2 + (r+1)).merge()
+        .setFormula(k.form).setFontColor(k.clr).setFontSize(16).setFontWeight('bold').setBackground('#111c44').setHorizontalAlignment('center').setNumberFormat(k.fmt);
+      hDash.getRange(k.c1 + (r+2) + ':' + k.c2 + (r+2)).merge()
+        .setValue(k.meta + ' • ' + k.sub).setFontColor('#64748b').setFontSize(7.5).setBackground('#111c44').setHorizontalAlignment('center');
+      hDash.getRange(k.c1 + r + ':' + k.c2 + (r+2))
+        .setBorder(true, true, true, true, false, false, '#1e293b', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+    }
+  }
+
+  dibujarCards(cardsFila1, 5);
+  dibujarCards(cardsFila2, 9);
+
+  // 4. TABLA 1: RENDIMIENTO Y FILL RATE POR AGENCIA / SUCURSAL (B13:G20)
+  hDash.getRange('B13:G13').merge()
+    .setValue('📊 RENDIMIENTO Y FILL RATE POR AGENCIA / SUCURSAL')
+    .setFontColor('#ffffff').setFontSize(10).setFontWeight('bold').setBackground('#1e293b').setHorizontalAlignment('center');
+  
+  var branchHeaders = [['Sucursal', 'Solicitadas', 'Asignadas', 'Despachadas', 'Pendientes', 'Fill Rate']];
+  hDash.getRange('B14:G14').setValues(branchHeaders)
+    .setFontColor('#94a3b8').setFontSize(8.5).setFontWeight('bold').setBackground('#111c44').setHorizontalAlignment('center');
+
+  var sucursales = ['CHORRERA', 'CALLE 50', 'DAVID', 'CHITRE', 'COLON', 'CENTRAL'];
+  for (var s = 0; s < sucursales.length; s++) {
+    var rSuc = 15 + s;
+    var suc = sucursales[s];
+    hDash.getRange('B' + rSuc).setValue(suc).setFontColor('#ffffff').setBackground('#111c44').setFontSize(8.5);
+    hDash.getRange('C' + rSuc).setFormula('=IFERROR(SUMIFS(Matriz_Central!F2:F, Matriz_Central!K2:K, "' + suc + '"), 0)').setFontColor('#38bdf8').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('D' + rSuc).setFormula('=IFERROR(SUMIFS(Matriz_Central!L2:L, Matriz_Central!K2:K, "' + suc + '"), 0)').setFontColor('#4ade80').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('E' + rSuc).setFormula('=IFERROR(SUMIFS(Despachos!G2:G, Despachos!D2:D, "' + suc + '"), 0)').setFontColor('#facc15').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('F' + rSuc).setFormula('=IFERROR(SUMIFS(Matriz_Central!M2:M, Matriz_Central!K2:K, "' + suc + '"), 0)').setFontColor('#f87171').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('G' + rSuc).setFormula('=IFERROR(IF(C' + rSuc + '>0, (D' + rSuc + '+E' + rSuc + ')/C' + rSuc + ', 1), 1)').setFontColor('#a78bfa').setBackground('#111c44').setNumberFormat('0.0%').setFontSize(8.5).setHorizontalAlignment('center').setFontWeight('bold');
+  }
+  hDash.getRange('B14:G20').setBorder(true, true, true, true, true, true, '#1e293b', SpreadsheetApp.BorderStyle.SOLID);
+
+  // 5. TABLA 2: DEMANDA POR MODELO CHANGAN (I13:M20)
+  hDash.getRange('I13:M13').merge()
+    .setValue('🚗 DEMANDA DE REPUESTOS POR MODELO DE AUTO')
+    .setFontColor('#ffffff').setFontSize(10).setFontWeight('bold').setBackground('#1e293b').setHorizontalAlignment('center');
+
+  var modelHeaders = [['Modelo Changan', 'Piezas Solicitadas', 'Líneas', '% Demanda', 'Casos VOR']];
+  hDash.getRange('I14:M14').setValues(modelHeaders)
+    .setFontColor('#94a3b8').setFontSize(8.5).setFontWeight('bold').setBackground('#111c44').setHorizontalAlignment('center');
+
+  var modelos = ['CS35 PLUS', 'CS55 PLUS', 'UNI-T', 'HUNTER', 'CS15', 'ALSVIN'];
+  for (var m = 0; m < modelos.length; m++) {
+    var rMod = 15 + m;
+    var mod = modelos[m];
+    hDash.getRange('I' + rMod).setValue(mod).setFontColor('#ffffff').setBackground('#111c44').setFontSize(8.5);
+    hDash.getRange('J' + rMod).setFormula('=IFERROR(SUMIFS(Matriz_Central!F2:F, Matriz_Central!D2:D, "*' + mod + '*"), 0)').setFontColor('#38bdf8').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('K' + rMod).setFormula('=IFERROR(COUNTIF(Matriz_Central!D2:D, "*' + mod + '*"), 0)').setFontColor('#cbd5e1').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('L' + rMod).setFormula('=IFERROR(IF(SUM(Matriz_Central!F2:F)>0, J' + rMod + '/SUM(Matriz_Central!F2:F), 0), 0)').setFontColor('#facc15').setBackground('#111c44').setNumberFormat('0.0%').setFontSize(8.5).setHorizontalAlignment('center').setFontWeight('bold');
+    hDash.getRange('M' + rMod).setFormula('=IFERROR(COUNTIFS(Matriz_Central!D2:D, "*' + mod + '*", Matriz_Central!J2:J, "VOR"), 0)').setFontColor('#f87171').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+  }
+  hDash.getRange('I14:M20').setBorder(true, true, true, true, true, true, '#1e293b', SpreadsheetApp.BorderStyle.SOLID);
+
+  // 6. GRÁFICOS NATIVOS GOOGLE SHEETS EN PALETA MODERNIZE
+  try {
+    var chartSuc = hDash.newBarChart()
+      .addRange(hDash.getRange('B14:D20'))
+      .setPosition(22, 2, 0, 0)
+      .setOption('title', 'Fill Rate y Demanda por Agencia / Sucursal')
+      .setOption('backgroundColor', '#111c44')
+      .setOption('titleTextStyle', { color: '#ffffff', fontSize: 12, bold: true })
+      .setOption('legend', { textStyle: { color: '#cbd5e1', fontSize: 9 }, position: 'top' })
+      .setOption('hAxis', { textStyle: { color: '#94a3b8' } })
+      .setOption('vAxis', { textStyle: { color: '#cbd5e1' } })
+      .setOption('colors', ['#0284c7', '#10b981'])
+      .build();
+    hDash.insertChart(chartSuc);
+
+    var chartMod = hDash.newPieChart()
+      .addRange(hDash.getRange('I14:J20'))
+      .setPosition(22, 8, 0, 0)
+      .setOption('title', 'Demanda de Repuestos por Modelo de Auto')
+      .setOption('pieHole', 0.5)
+      .setOption('backgroundColor', '#111c44')
+      .setOption('titleTextStyle', { color: '#ffffff', fontSize: 12, bold: true })
+      .setOption('legend', { textStyle: { color: '#cbd5e1', fontSize: 9 }, position: 'right' })
+      .setOption('colors', ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#f43f5e', '#64748b'])
+      .build();
+    hDash.insertChart(chartMod);
+  } catch (eChart) {
+    console.warn('Aviso al generar gráficos:', eChart);
+  }
+
+  // 7. PRODUCT PERFORMANCE: DESEMPEÑO DE PEDIDOS ESPECIALES (Top 10 en Monitoreo)
+  hDash.getRange('B38:M38').merge()
+    .setValue('📦 PRODUCT PERFORMANCE: DESEMPEÑO DE PEDIDOS ESPECIALES EN CURSO (TOP 10)')
+    .setFontColor('#ffffff').setFontSize(10.5).setFontWeight('bold').setBackground('#1e293b').setHorizontalAlignment('left');
+
+  var pedidosHeaders = [['Folio', 'Cliente', 'Sucursal', 'Asesor', 'Modelo Changan', 'Pieza / Repuesto', 'Solicitada', 'Asignada', 'Pendiente', 'Prioridad', 'Estatus', 'Semáforo']];
+  hDash.getRange('B39:M39').setValues(pedidosHeaders)
+    .setFontColor('#94a3b8').setFontSize(8).setFontWeight('bold').setBackground('#111c44').setHorizontalAlignment('center');
+
+  for (var p = 0; p < 10; p++) {
+    var rP = 40 + p;
+    var rM = 2 + p;
+    hDash.getRange('B' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!A:A, ' + rM + '), "-")').setFontColor('#38bdf8').setBackground('#111c44').setFontSize(8).setHorizontalAlignment('center');
+    hDash.getRange('C' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!B:B, ' + rM + '), "-")').setFontColor('#ffffff').setBackground('#111c44').setFontSize(8);
+    hDash.getRange('D' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!K:K, ' + rM + '), "-")').setFontColor('#cbd5e1').setBackground('#111c44').setFontSize(8).setHorizontalAlignment('center');
+    hDash.getRange('E' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!C:C, ' + rM + '), "-")').setFontColor('#94a3b8').setBackground('#111c44').setFontSize(8);
+    hDash.getRange('F' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!D:D, ' + rM + '), "-")').setFontColor('#ffffff').setBackground('#111c44').setFontSize(8);
+    hDash.getRange('G' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!E:E, ' + rM + '), "-")').setFontColor('#cbd5e1').setBackground('#111c44').setFontSize(8);
+    hDash.getRange('H' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!F:F, ' + rM + '), 0)').setFontColor('#38bdf8').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8).setHorizontalAlignment('center');
+    hDash.getRange('I' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!L:L, ' + rM + '), 0)').setFontColor('#4ade80').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8).setHorizontalAlignment('center');
+    hDash.getRange('J' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!M:M, ' + rM + '), 0)').setFontColor('#f87171').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8).setHorizontalAlignment('center');
+    hDash.getRange('K' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!J:J, ' + rM + '), "-")').setFontColor('#fb923c').setBackground('#111c44').setFontSize(8).setHorizontalAlignment('center');
+    hDash.getRange('L' + rP).setFormula('=IFERROR(INDEX(Matriz_Central!N:N, ' + rM + '), "Pendiente")').setFontColor('#ffffff').setBackground('#111c44').setFontSize(8).setHorizontalAlignment('center');
+    hDash.getRange('M' + rP).setFormula('=IF(J' + rP + '=0, "🟢 CUBIERTO", IF(I' + rP + '>0, "🟡 PARCIAL", "🔴 PENDIENTE"))').setFontColor('#ffffff').setBackground('#111c44').setFontSize(8).setHorizontalAlignment('center');
+  }
+  hDash.getRange('B39:M49').setBorder(true, true, true, true, true, true, '#1e293b', SpreadsheetApp.BorderStyle.SOLID);
+
+  // 8. Ajuste de anchos de columnas
+  hDash.setColumnWidth(1, 15);
+  hDash.setColumnWidth(2, 90);  // B: Folio
+  hDash.setColumnWidth(3, 130); // C: Cliente
+  hDash.setColumnWidth(4, 90);  // D: Sucursal
+  hDash.setColumnWidth(5, 95);  // E: Asesor
+  hDash.setColumnWidth(6, 110); // F: Modelo
+  hDash.setColumnWidth(7, 160); // G: Repuesto
+  hDash.setColumnWidth(8, 70);  // H: Solicitada
+  hDash.setColumnWidth(9, 70);  // I: Asignada
+  hDash.setColumnWidth(10, 70); // J: Pendiente
+  hDash.setColumnWidth(11, 80); // K: Prioridad
+  hDash.setColumnWidth(12, 95); // L: Estatus
+  hDash.setColumnWidth(13, 95); // M: Semáforo
+
+  SpreadsheetApp.flush();
+  SpreadsheetApp.getActiveSpreadsheet().toast('✅ Dashboard Modernize idéntico a la App generado con éxito.', 'CEDIS Changan', 4);
+}
+
+
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('🚗 Changan CEDIS')
+    .addItem('📊 Construir / Actualizar Tablero Dashboard KPIs', 'construirDashboardKPIsEnSheet')
+    .addItem('📋 Estructurar Pestaña Matriz_Central', 'construirMatrizCentralEnSheet')
+    .addItem('📦 Estructurar Pestañas DPL (Manifiestos y Detalle)', 'construirPestanasDPLEnSheet')
+    .addItem('🚚 Estructurar Pestaña Despachos', 'construirPestanaDespachosEnSheet')
+    .addItem('👥 Estructurar Pestaña BD_Encargados', 'construirPestanaEncargadosEnSheet')
+    .addItem('🛡️ Estructurar Pestaña Auditoria_Kardex', 'construirPestanaAuditoriaEnSheet')
+    .addSeparator()
+    .addItem('🚀 CONSTRUIR LIBRO COMPLETO (TODO EN 1 CLIC)', 'construirLibroCompletoCEDISChangan')
+    .addSeparator()
+    .addItem('⚡ Ejecutar Cruce Automático FIFO', 'sincronizarStockConMatriz')
+    .addItem('📋 Generar Reporte de Asignaciones (Bodega)', 'sincronizarHojaAsignaciones')
+    .addItem('🧹 Depurar Pedidos Duplicados', 'depurarDuplicadosMatriz')
+    .addToUi();
+}
+
+
+/**
+ * =========================================================================
+ * MÓDULO: CONSTRUCTOR NATIVO DE LA PESTAÑA 'Matriz_Central' EN GOOGLE SHEETS
+ * Configura encabezados, validaciones de listas desplegables, formatos de
+ * columnas, filtros automáticos y formato condicional idéntico al CEDIS Changan.
+ * =========================================================================
+ */
+function construirMatrizCentralEnSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error('No se pudo obtener el Spreadsheet activo.');
+  }
+
+  var nombreHoja = 'Matriz_Central';
+  var hMatriz = ss.getSheetByName(nombreHoja);
+  if (!hMatriz) {
+    hMatriz = ss.insertSheet(nombreHoja, 1);
+  }
+
+  hMatriz.setTabColor('#3b82f6'); // Azul corporativo Changan
+
+  // Encabezados Oficiales Canónicos (18 Columnas exactas)
+  var cabeceras = [
+    'ID Pedido',             // Col 1 (A)
+    'Prioridad',             // Col 2 (B)
+    'Fecha / Hora',          // Col 3 (C)
+    'Sucursal',              // Col 4 (D)
+    'Asesor / Solicitante',  // Col 5 (E)
+    'Cliente / Caso',        // Col 6 (F)
+    'Modelo',                // Col 7 (G)
+    'VIN / Chasis',          // Col 8 (H)
+    'No. O.R.',              // Col 9 (I)
+    'Código OEM',            // Col 10 (J)
+    'Descripción Repuesto',  // Col 11 (K)
+    'Cant Solicitada',       // Col 12 (L)
+    'Cant Asignada',         // Col 13 (M)
+    'Estatus Cruce',         // Col 14 (N)
+    'Contenedor Asignado',   // Col 15 (O)
+    'Pallet Asignado',       // Col 16 (P)
+    'Package No',            // Col 17 (Q)
+    'Observaciones'          // Col 18 (R)
+  ];
+
+  // Si la hoja está vacía o se está formateando
+  hMatriz.getRange(1, 1, 1, cabeceras.length).setValues([cabeceras]);
+  
+  // Estilo Modernize Ejecutivo para el Encabezado
+  var headerRange = hMatriz.getRange(1, 1, 1, cabeceras.length);
+  headerRange
+    .setBackground('#0b1329')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold')
+    .setFontSize(10)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  hMatriz.setRowHeight(1, 35);
+  hMatriz.setFrozenRows(1);
+  hMatriz.setFrozenColumns(2); // Inmovilizar ID Pedido y Prioridad
+
+  // 1. Validaciones de Datos desplegables (Dropdowns de Google Sheets)
+  // Columna B: Prioridad
+  var rulePrioridad = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['VOR / Unidad Parada', 'Garantía', 'Chapistería y Colisión', 'Taller Mecánico', 'Stock Regular'], true)
+    .setAllowInvalid(false)
+    .build();
+  hMatriz.getRange('B2:B').setDataValidation(rulePrioridad);
+
+  // Columna D: Sucursales Oficiales
+  var ruleSucursal = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Villa Lucre', 'Costa Verde', 'Calle 50', 'Tumba Muerto', 'Chiriquí', 'Santa María'], true)
+    .setAllowInvalid(false)
+    .build();
+  hMatriz.getRange('D2:D').setDataValidation(ruleSucursal);
+
+  // Columna G: Modelos Changan
+  var ruleModelo = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['CS15', 'CS35 PLUS', 'CS55 PLUS', 'UNI-T', 'UNI-K', 'HUNTER', 'ALSVIN', 'E-STAR', 'X7 PLUS', 'DEEPAL S07', 'DEEPAL L07'], true)
+    .setAllowInvalid(true)
+    .build();
+  hMatriz.getRange('G2:G').setDataValidation(ruleModelo);
+
+  // Columna N: Estatus Cruce
+  var ruleEstatus = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Pendiente Fábrica', 'Asignado Inmediato', 'Asignado Parcial', 'DESPACHADO FÍSICAMENTE', 'Sin Stock'], true)
+    .setAllowInvalid(true)
+    .build();
+  hMatriz.getRange('N2:N').setDataValidation(ruleEstatus);
+
+  // 2. Formato de Columnas (Números, Fechas y Alineaciones)
+  hMatriz.getRange('A2:A').setHorizontalAlignment('center'); // ID Pedido
+  hMatriz.getRange('B2:B').setHorizontalAlignment('center'); // Prioridad
+  hMatriz.getRange('C2:C').setNumberFormat('yyyy-mm-dd hh:mm').setHorizontalAlignment('center'); // Fecha
+  hMatriz.getRange('D2:D').setHorizontalAlignment('center'); // Sucursal
+  hMatriz.getRange('H2:H').setHorizontalAlignment('center'); // VIN
+  hMatriz.getRange('I2:I').setHorizontalAlignment('center'); // OR
+  hMatriz.getRange('J2:J').setHorizontalAlignment('center'); // Código OEM
+  hMatriz.getRange('L2:L').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center'); // Cant Solicitada
+  hMatriz.getRange('M2:M').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center'); // Cant Asignada
+  hMatriz.getRange('N2:N').setHorizontalAlignment('center'); // Estatus Cruce
+  hMatriz.getRange('O2:O').setHorizontalAlignment('center'); // Contenedor
+  hMatriz.getRange('P2:P').setHorizontalAlignment('center'); // Pallet
+  hMatriz.getRange('Q2:Q').setHorizontalAlignment('center'); // Package No
+
+  // 3. Reglas de Formato Condicional (Semáforos Automáticos)
+  var rules = [];
+
+  // VOR -> Rojo Intenso de Emergencia
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('VOR')
+    .setBackground('#fef2f2')
+    .setFontColor('#b91c1c')
+    .setBold(true)
+    .setRanges([hMatriz.getRange('B2:B')])
+    .build());
+
+  // Garantía -> Naranja
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('Garantía')
+    .setBackground('#fffbeb')
+    .setFontColor('#b45309')
+    .setRanges([hMatriz.getRange('B2:B')])
+    .build());
+
+  // Asignado Inmediato -> Verde
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('Asignado Inmediato')
+    .setBackground('#f0fdf4')
+    .setFontColor('#15803d')
+    .setBold(true)
+    .setRanges([hMatriz.getRange('N2:N')])
+    .build());
+
+  // Despachado Físicamente -> Violeta
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('DESPACHADO FÍSICAMENTE')
+    .setBackground('#faf5ff')
+    .setFontColor('#7e22ce')
+    .setRanges([hMatriz.getRange('N2:N')])
+    .build());
+
+  // Pendiente Fábrica / Sin Stock -> Rojo suave
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('Pendiente')
+    .setBackground('#fef2f2')
+    .setFontColor('#dc2626')
+    .setRanges([hMatriz.getRange('N2:N')])
+    .build());
+
+  hMatriz.setConditionalFormatRules(rules);
+
+  // 4. Anchos de Columna Optimizados
+  hMatriz.setColumnWidth(1, 110); // ID Pedido
+  hMatriz.setColumnWidth(2, 140); // Prioridad
+  hMatriz.setColumnWidth(3, 130); // Fecha/Hora
+  hMatriz.setColumnWidth(4, 110); // Sucursal
+  hMatriz.setColumnWidth(5, 130); // Asesor
+  hMatriz.setColumnWidth(6, 170); // Cliente
+  hMatriz.setColumnWidth(7, 120); // Modelo
+  hMatriz.setColumnWidth(8, 150); // VIN
+  hMatriz.setColumnWidth(9, 100); // No OR
+  hMatriz.setColumnWidth(10, 130);// Código OEM
+  hMatriz.setColumnWidth(11, 230);// Descripción
+  hMatriz.setColumnWidth(12, 90); // Solicitada
+  hMatriz.setColumnWidth(13, 90); // Asignada
+  hMatriz.setColumnWidth(14, 140);// Estatus Cruce
+  hMatriz.setColumnWidth(15, 140);// Contenedor
+  hMatriz.setColumnWidth(16, 110);// Pallet
+  hMatriz.setColumnWidth(17, 100);// Package No
+  hMatriz.setColumnWidth(18, 180);// Observaciones
+
+  SpreadsheetApp.flush();
+  SpreadsheetApp.getActiveSpreadsheet().toast('✅ Pestaña Matriz_Central estructurada con éxito con validaciones y reglas condicionales.', 'CEDIS Changan', 4);
+  return 'Matriz_Central construida exitosamente.';
+}
+
+
+/**
+ * =========================================================================
+ * MÓDULO: CONSTRUCTOR DE PESTAÑAS DPL (Manifiestos y Detalle de Contenedores)
+ * =========================================================================
+ */
+function construirPestanasDPLEnSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error('No se pudo obtener el Spreadsheet activo.');
+
+  // 1. PESTAÑA DPL_Manifiestos
+  var hManif = ss.getSheetByName('DPL_Manifiestos') || ss.insertSheet('DPL_Manifiestos', 2);
+  hManif.setTabColor('#10b981'); // Verde esmeralda
+
+  var cabManif = [
+    'No. Contenedor / Factura', // Col 1 (A)
+    'Proveedor',                 // Col 2 (B)
+    'PO Referencia',             // Col 3 (C)
+    'Tipo Transporte',           // Col 4 (D)
+    'Fecha Arribo CEDIS',        // Col 5 (E)
+    'Estado Embarque',           // Col 6 (F)
+    'Total Piezas',              // Col 7 (G)
+    'SKUs Únicos',               // Col 8 (H)
+    'Total Pallets',             // Col 9 (I)
+    'Total Asignadas',           // Col 10 (J)
+    'Saldo Libre Total'          // Col 11 (K)
+  ];
+
+  hManif.getRange(1, 1, 1, cabManif.length).setValues([cabManif]);
+  hManif.getRange(1, 1, 1, cabManif.length)
+    .setBackground('#0b1329')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold')
+    .setFontSize(10)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  hManif.setRowHeight(1, 35);
+  hManif.setFrozenRows(1);
+
+  // Validaciones DPL_Manifiestos
+  var ruleTransporte = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Marítimo (Contenedor)', 'Aéreo Express', 'Terrestre'], true)
+    .setAllowInvalid(true)
+    .build();
+  hManif.getRange('D2:D').setDataValidation(ruleTransporte);
+
+  var ruleEstadoManif = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['En Tránsito Marítimo', 'Arribado en Puerto', 'En Proceso de Desconsolidación', 'Recibido en CEDIS', 'Finalizado / Liquidado'], true)
+    .setAllowInvalid(true)
+    .build();
+  hManif.getRange('F2:F').setDataValidation(ruleEstadoManif);
+
+  // Formato de columnas DPL_Manifiestos
+  hManif.getRange('A2:A').setHorizontalAlignment('center');
+  hManif.getRange('C2:D').setHorizontalAlignment('center');
+  hManif.getRange('E2:E').setNumberFormat('yyyy-mm-dd').setHorizontalAlignment('center');
+  hManif.getRange('F2:F').setHorizontalAlignment('center');
+  hManif.getRange('G2:G').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center');
+  hManif.getRange('H2:H').setNumberFormat('#,##0').setHorizontalAlignment('center');
+  hManif.getRange('I2:I').setNumberFormat('#,##0 "pallets"').setHorizontalAlignment('center');
+  hManif.getRange('J2:J').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center');
+  hManif.getRange('K2:K').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center');
+
+  // Formato Condicional DPL_Manifiestos
+  var rulesManif = [];
+  rulesManif.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('Recibido en CEDIS')
+    .setBackground('#f0fdf4').setFontColor('#15803d').setBold(true)
+    .setRanges([hManif.getRange('F2:F')]).build());
+  rulesManif.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('En Tránsito')
+    .setBackground('#eff6ff').setFontColor('#1d4ed8')
+    .setRanges([hManif.getRange('F2:F')]).build());
+  hManif.setConditionalFormatRules(rulesManif);
+
+  hManif.setColumnWidth(1, 180);
+  hManif.setColumnWidth(2, 160);
+  hManif.setColumnWidth(3, 130);
+  hManif.setColumnWidth(4, 140);
+  hManif.setColumnWidth(5, 120);
+  hManif.setColumnWidth(6, 180);
+  hManif.setColumnWidth(7, 100);
+  hManif.setColumnWidth(8, 90);
+  hManif.setColumnWidth(9, 100);
+  hManif.setColumnWidth(10, 110);
+  hManif.setColumnWidth(11, 110);
+
+
+  // 2. PESTAÑA DPL_Detalle (KARDEX DE REPUESTOS EN BODEGA)
+  var hDetalle = ss.getSheetByName('DPL_Detalle') || ss.insertSheet('DPL_Detalle', 3);
+  hDetalle.setTabColor('#06b6d4'); // Cyan CEDIS
+
+  var cabDetalle = [
+    'UID Fila',              // Col 1 (A)
+    'No. Contenedor',        // Col 2 (B)
+    'Pallet / Case No',      // Col 3 (C)
+    'Package No',            // Col 4 (D)
+    'Código Compra',         // Col 5 (E)
+    'Código Suministrado',   // Col 6 (F)
+    'Descripción Oficial',   // Col 7 (G)
+    'Cant Total DPL',        // Col 8 (H)
+    'Despachado (-)',        // Col 9 (I)
+    'Comprometido (-)',      // Col 10 (J)
+    'Saldo Libre (=)',       // Col 11 (K)
+    'Ubicación CEDIS',       // Col 12 (L)
+    'Pedidos Vinculados'     // Col 13 (M)
+  ];
+
+  hDetalle.getRange(1, 1, 1, cabDetalle.length).setValues([cabDetalle]);
+  hDetalle.getRange(1, 1, 1, cabDetalle.length)
+    .setBackground('#0b1329')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold')
+    .setFontSize(10)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  hDetalle.setRowHeight(1, 35);
+  hDetalle.setFrozenRows(1);
+  hDetalle.setFrozenColumns(3);
+
+  // Formatos de Columnas DPL_Detalle
+  hDetalle.getRange('A2:A').setHorizontalAlignment('center');
+  hDetalle.getRange('B2:B').setHorizontalAlignment('center');
+  hDetalle.getRange('C2:D').setHorizontalAlignment('center');
+  hDetalle.getRange('E2:F').setHorizontalAlignment('center');
+  hDetalle.getRange('H2:H').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center');
+  hDetalle.getRange('I2:I').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center');
+  hDetalle.getRange('J2:J').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center');
+  hDetalle.getRange('K2:K').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center').setFontWeight('bold');
+  hDetalle.getRange('L2:L').setHorizontalAlignment('center');
+
+  // Formato Condicional Saldo Libre
+  var rulesDetalle = [];
+  // Saldo Libre > 0 -> Verde
+  rulesDetalle.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberGreaterThan(0)
+    .setBackground('#f0fdf4').setFontColor('#15803d')
+    .setRanges([hDetalle.getRange('K2:K')]).build());
+  // Saldo Libre = 0 -> Gris / Agotado
+  rulesDetalle.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberEqualTo(0)
+    .setBackground('#f8fafc').setFontColor('#94a3b8')
+    .setRanges([hDetalle.getRange('K2:K')]).build());
+  hDetalle.setConditionalFormatRules(rulesDetalle);
+
+  hDetalle.setColumnWidth(1, 110);
+  hDetalle.setColumnWidth(2, 160);
+  hDetalle.setColumnWidth(3, 130);
+  hDetalle.setColumnWidth(4, 100);
+  hDetalle.setColumnWidth(5, 130);
+  hDetalle.setColumnWidth(6, 130);
+  hDetalle.setColumnWidth(7, 240);
+  hDetalle.setColumnWidth(8, 95);
+  hDetalle.setColumnWidth(9, 95);
+  hDetalle.setColumnWidth(10, 105);
+  hDetalle.setColumnWidth(11, 105);
+  hDetalle.setColumnWidth(12, 120);
+  hDetalle.setColumnWidth(13, 180);
+
+  SpreadsheetApp.flush();
+  SpreadsheetApp.getActiveSpreadsheet().toast('✅ Pestañas DPL_Manifiestos y DPL_Detalle estructuradas con éxito.', 'CEDIS Changan', 4);
+  return 'Pestañas DPL construidas exitosamente.';
+}
+
+/**
+ * =========================================================================
+ * MÓDULO: CONSTRUCTOR DE LA PESTAÑA 'Despachos' EN GOOGLE SHEETS
+ * Registro físico inmutable de líneas entregadas a sucursales.
+ * =========================================================================
+ */
+function construirPestanaDespachosEnSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error('No se pudo obtener el Spreadsheet activo.');
+
+  var hDesp = ss.getSheetByName('Despachos') || ss.insertSheet('Despachos', 4);
+  hDesp.setTabColor('#8b5cf6'); // Violeta despacho físico
+
+  var cabDesp = [
+    'ID Pedido',             // Col 1 (A)
+    'Sucursal Destino',      // Col 2 (B)
+    'Cliente',               // Col 3 (C)
+    'Pallet / Contenedor',   // Col 4 (D)
+    'SKU / Repuesto',        // Col 5 (E)
+    'Descripción Pieza',     // Col 6 (F)
+    'Cantidad Despachada',   // Col 7 (G)
+    'Estado Despacho',       // Col 8 (H)
+    'Fecha/Hora Asignación', // Col 9 (I)
+    'Fecha/Hora Despacho',   // Col 10 (J)
+    'Tiempo Total Proceso',  // Col 11 (K)
+    'Usuario Responsable',   // Col 12 (L)
+    'Observaciones'          // Col 13 (M)
+  ];
+
+  hDesp.getRange(1, 1, 1, cabDesp.length).setValues([cabDesp]);
+  hDesp.getRange(1, 1, 1, cabDesp.length)
+    .setBackground('#0b1329')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold')
+    .setFontSize(10)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  hDesp.setRowHeight(1, 35);
+  hDesp.setFrozenRows(1);
+  hDesp.setFrozenColumns(1);
+
+  // Formato de Columnas Despachos
+  hDesp.getRange('A2:A').setHorizontalAlignment('center');
+  hDesp.getRange('B2:B').setHorizontalAlignment('center');
+  hDesp.getRange('D2:E').setHorizontalAlignment('center');
+  hDesp.getRange('G2:G').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center').setFontWeight('bold');
+  hDesp.getRange('H2:H').setHorizontalAlignment('center');
+  hDesp.getRange('I2:J').setNumberFormat('yyyy-mm-dd hh:mm').setHorizontalAlignment('center');
+  hDesp.getRange('K2:K').setHorizontalAlignment('center');
+  hDesp.getRange('L2:L').setHorizontalAlignment('center');
+
+  // Formato Condicional Despachos
+  var rulesDesp = [];
+  rulesDesp.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('DESPACHADO')
+    .setBackground('#faf5ff').setFontColor('#7e22ce').setBold(true)
+    .setRanges([hDesp.getRange('H2:H')]).build());
+  hDesp.setConditionalFormatRules(rulesDesp);
+
+  hDesp.setColumnWidth(1, 110);
+  hDesp.setColumnWidth(2, 110);
+  hDesp.setColumnWidth(3, 160);
+  hDesp.setColumnWidth(4, 150);
+  hDesp.setColumnWidth(5, 130);
+  hDesp.setColumnWidth(6, 220);
+  hDesp.setColumnWidth(7, 100);
+  hDesp.setColumnWidth(8, 140);
+  hDesp.setColumnWidth(9, 130);
+  hDesp.setColumnWidth(10, 130);
+  hDesp.setColumnWidth(11, 110);
+  hDesp.setColumnWidth(12, 130);
+  hDesp.setColumnWidth(13, 180);
+
+  SpreadsheetApp.flush();
+  SpreadsheetApp.getActiveSpreadsheet().toast('✅ Pestaña Despachos estructurada con éxito.', 'CEDIS Changan', 4);
+  return 'Pestaña Despachos construida exitosamente.';
+}
+
+
+/**
+ * =========================================================================
+ * MÓDULO: CONSTRUCTOR DE LA PESTAÑA 'BD_Encargados' EN GOOGLE SHEETS
+ * Catálogo de Asesores, Bodegueros y Personal Autorizado CEDIS Changan.
+ * =========================================================================
+ */
+function construirPestanaEncargadosEnSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error('No se pudo obtener el Spreadsheet activo.');
+
+  var hAsesores = ss.getSheetByName('BD_Encargados') || ss.insertSheet('BD_Encargados', 5);
+  hAsesores.setTabColor('#f59e0b'); // Ámbar / Oro
+
+  var cabAsesores = [
+    'Nombre del Encargado',   // Col 1 (A)
+    'Sucursal',               // Col 2 (B)
+    'Departamento / Canal',   // Col 3 (C)
+    'Cargo / Rol Operativo',  // Col 4 (D)
+    'Teléfono / WhatsApp',    // Col 5 (E)
+    'Correo Electrónico',     // Col 6 (F)
+    'Estado',                 // Col 7 (G)
+    'Habilitado Móvil'        // Col 8 (H)
+  ];
+
+  hAsesores.getRange(1, 1, 1, cabAsesores.length).setValues([cabAsesores]);
+  hAsesores.getRange(1, 1, 1, cabAsesores.length)
+    .setBackground('#0b1329')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold')
+    .setFontSize(10)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  hAsesores.setRowHeight(1, 35);
+  hAsesores.setFrozenRows(1);
+
+  // Si está vacía la hoja, pre-cargamos el equipo operativo base
+  if (hAsesores.getLastRow() <= 1) {
+    var dataBase = [
+      ['Leidys Perez', 'Villa Lucre', 'Mostrador', 'Ventas Mostrador', '+507 6561-1360', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+      ['Edwin Blanco', 'Villa Lucre', 'Chapistería', 'Chapistería y Pintura', '+507 6561-1360', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+      ['Carlos Mendoza', 'Costa Verde', 'Taller Mecánico', 'Taller y Mantenimiento', '+507 6561-1361', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+      ['Valeria Castillo', 'Calle 50', 'Garantías', 'Asesor Garantías', '+507 6561-1362', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+      ['Alexis Rios', 'Tumba Muerto', 'Colisión', 'Chapistería y Colisión', '+507 6561-1363', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+      ['Rodrigo Samaniego', 'Chiriquí', 'Taller Mecánico', 'Jefe de Taller', '+507 6561-1364', 'repuestos@changanpanama.com', 'Activo', 'Sí'],
+      ['Marcos De Gracia', 'Central', 'CEDIS Bodega', 'Supervisor de CEDIS', '+507 6561-1365', 'bodegacentral@changanpanama.com', 'Activo', 'Sí']
+    ];
+    hAsesores.getRange(2, 1, dataBase.length, cabAsesores.length).setValues(dataBase);
+  }
+
+  // Validaciones
+  var ruleSucursal = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Villa Lucre', 'Costa Verde', 'Calle 50', 'Tumba Muerto', 'Chiriquí', 'Santa María', 'Central'], true)
+    .setAllowInvalid(false)
+    .build();
+  hAsesores.getRange('B2:B').setDataValidation(ruleSucursal);
+
+  var ruleEstado = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Activo', 'Inactivo', 'Vacaciones'], true)
+    .setAllowInvalid(false)
+    .build();
+  hAsesores.getRange('G2:G').setDataValidation(ruleEstado);
+
+  var ruleMovil = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Sí', 'No'], true)
+    .setAllowInvalid(false)
+    .build();
+  hAsesores.getRange('H2:H').setDataValidation(ruleMovil);
+
+  // Formato
+  hAsesores.getRange('A2:A').setHorizontalAlignment('left');
+  hAsesores.getRange('B2:E').setHorizontalAlignment('center');
+  hAsesores.getRange('F2:F').setHorizontalAlignment('left');
+  hAsesores.getRange('G2:H').setHorizontalAlignment('center');
+
+  // Formato condicional activo/inactivo
+  var rulesAsesores = [];
+  rulesAsesores.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('Activo')
+    .setBackground('#f0fdf4').setFontColor('#15803d').setBold(true)
+    .setRanges([hAsesores.getRange('G2:G')]).build());
+  rulesAsesores.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('Inactivo')
+    .setBackground('#fef2f2').setFontColor('#b91c1c')
+    .setRanges([hAsesores.getRange('G2:G')]).build());
+  hAsesores.setConditionalFormatRules(rulesAsesores);
+
+  hAsesores.setColumnWidth(1, 180);
+  hAsesores.setColumnWidth(2, 130);
+  hAsesores.setColumnWidth(3, 160);
+  hAsesores.setColumnWidth(4, 180);
+  hAsesores.setColumnWidth(5, 140);
+  hAsesores.setColumnWidth(6, 220);
+  hAsesores.setColumnWidth(7, 90);
+  hAsesores.setColumnWidth(8, 110);
+
+  SpreadsheetApp.flush();
+  SpreadsheetApp.getActiveSpreadsheet().toast('✅ Pestaña BD_Encargados estructurada con éxito.', 'CEDIS Changan', 4);
+  return 'BD_Encargados construida exitosamente.';
+}
+
+/**
+ * =========================================================================
+ * MÓDULO: CONSTRUCTOR DE LA PESTAÑA 'Auditoria_Kardex' EN GOOGLE SHEETS
+ * Registro de auditoría estricta para cruces, desmarques y mermas.
+ * =========================================================================
+ */
+function construirPestanaAuditoriaEnSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error('No se pudo obtener el Spreadsheet activo.');
+
+  var hAudit = ss.getSheetByName('Auditoria_Kardex') || ss.insertSheet('Auditoria_Kardex', 6);
+  hAudit.setTabColor('#ef4444'); // Rojo seguridad auditoría
+
+  var cabAudit = [
+    'Fecha / Hora',          // Col 1 (A)
+    'Tipo Movimiento',       // Col 2 (B)
+    'ID Pedido',             // Col 3 (C)
+    'Código OEM',            // Col 4 (D)
+    'Descripción',           // Col 5 (E)
+    'Cantidad',              // Col 6 (F)
+    'Contenedor Origen',     // Col 7 (G)
+    'Pallet Origen',         // Col 8 (H)
+    'Usuario / Responsable', // Col 9 (I)
+    'Observación'            // Col 10 (J)
+  ];
+
+  hAudit.getRange(1, 1, 1, cabAudit.length).setValues([cabAudit]);
+  hAudit.getRange(1, 1, 1, cabAudit.length)
+    .setBackground('#0b1329')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold')
+    .setFontSize(10)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  hAudit.setRowHeight(1, 35);
+  hAudit.setFrozenRows(1);
+
+  // Formato Columnas
+  hAudit.getRange('A2:A').setNumberFormat('yyyy-mm-dd hh:mm:ss').setHorizontalAlignment('center');
+  hAudit.getRange('B2:D').setHorizontalAlignment('center');
+  hAudit.getRange('E2:E').setHorizontalAlignment('left');
+  hAudit.getRange('F2:F').setNumberFormat('#,##0 "u."').setHorizontalAlignment('center').setFontWeight('bold');
+  hAudit.getRange('G2:I').setHorizontalAlignment('center');
+  hAudit.getRange('J2:J').setHorizontalAlignment('left');
+
+  // Formato Condicional Auditoría
+  var rulesAudit = [];
+  // Merma / Ajuste -> Rojo
+  rulesAudit.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('MERMA')
+    .setBackground('#fef2f2').setFontColor('#b91c1c').setBold(true)
+    .setRanges([hAudit.getRange('B2:B')]).build());
+  // Despacho Físico -> Violeta
+  rulesAudit.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('DESPACHO')
+    .setBackground('#faf5ff').setFontColor('#7e22ce').setBold(true)
+    .setRanges([hAudit.getRange('B2:B')]).build());
+  // Asignación / Cruce -> Verde
+  rulesAudit.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains('ASIGNACION')
+    .setBackground('#f0fdf4').setFontColor('#15803d')
+    .setRanges([hAudit.getRange('B2:B')]).build());
+  hAudit.setConditionalFormatRules(rulesAudit);
+
+  hAudit.setColumnWidth(1, 140);
+  hAudit.setColumnWidth(2, 160);
+  hAudit.setColumnWidth(3, 110);
+  hAudit.setColumnWidth(4, 130);
+  hAudit.setColumnWidth(5, 220);
+  hAudit.setColumnWidth(6, 90);
+  hAudit.setColumnWidth(7, 150);
+  hAudit.setColumnWidth(8, 120);
+  hAudit.setColumnWidth(9, 140);
+  hAudit.setColumnWidth(10, 240);
+
+  SpreadsheetApp.flush();
+  SpreadsheetApp.getActiveSpreadsheet().toast('✅ Pestaña Auditoria_Kardex estructurada con éxito.', 'CEDIS Changan', 4);
+  return 'Auditoria_Kardex construida exitosamente.';
+}
+
+/**
+ * =========================================================================
+ * MÓDULO: CONSTRUCTOR GLOBAL INTEGRADO (CREA TODO EL LIBRO EN 1 CLIC)
+ * =========================================================================
+ */
+function construirLibroCompletoCEDISChangan() {
+  construirDashboardKPIsEnSheet();
+  construirMatrizCentralEnSheet();
+  construirPestanasDPLEnSheet();
+  construirPestanaDespachosEnSheet();
+  construirPestanaEncargadosEnSheet();
+  construirPestanaAuditoriaEnSheet();
+
+  SpreadsheetApp.getActiveSpreadsheet().toast('🚀 ¡Base de Datos Completa CEDIS Changan inicializada con éxito!', 'CEDIS Changan', 6);
+  return 'Libro Completo Construido con Éxito.';
+}

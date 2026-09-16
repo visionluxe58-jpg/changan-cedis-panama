@@ -1,0 +1,431 @@
+{
+  "version": "2.5.0",
+  "appName": "CEDIS Changan Auto Panamá - Central Hub",
+  "exportedAt": "2026-08-29T14:15:00.000Z",
+  "totalOrders": 8,
+  "totalContainers": 3,
+  "totalCatalogParts": 30,
+  "totalModels": 24,
+  "orders": [
+    {
+      "id": "ORD-2026-001",
+      "orderNumber": "PED-2026-4401",
+      "createdAt": "2026-08-20",
+      "branch": "Costa Verde",
+      "collaboratorName": "Miguel Ángel Castillo",
+      "channel": "Taller",
+      "orderType": "Especial",
+      "quotationNumber": "COT-8912",
+      "clientName": "Transportes Logísticos del Oeste S.A.",
+      "clientPhone": "+507 6891-2304",
+      "clientEmail": "mantenimiento@transoeste.pa",
+      "plate": "CM-4921",
+      "vin": "LS4A2B119NA04821",
+      "changanModel": "CS35 Plus",
+      "paymentStatus": "Cancelado",
+      "receiptOrInvoiceNumber": "FAC-CV-2026-0419",
+      "overallStatus": "EN BODEGA CEDIS",
+      "assignedContainerId": "2608M00000EA0115",
+      "isBilled": true,
+      "billingInvoiceNumber": "FAC-CV-2026-0419",
+      "items": [
+        {
+          "id": "ITM-001-1",
+          "code": "PA201189-0101",
+          "description": "LATCH SWITCH CARGO DOOR",
+          "quantityRequested": 1,
+          "quantityAssigned": 1,
+          "quantityDispatched": 0,
+          "containerId": "2608M00000EA0115",
+          "locationInCedis": "L-02-C-K05",
+          "status": "EN BODEGA CEDIS"
+        },
+        {
+          "id": "ITM-001-2",
+          "code": "JPVR-B511-0N01A",
+          "description": "B511 NAVIGATION SYSTEM",
+          "quantityRequested": 1,
+          "quantityAssigned": 1,
+          "quantityDispatched": 0,
+          "containerId": "2608M00000EA0115",
+          "locationInCedis": "E-01-A-N02",
+          "status": "EN BODEGA CEDIS"
+        }
+      ],
+      "observations": [
+        {
+          "id": "OBS-001",
+          "date": "2026-08-28T14:30:00Z",
+          "author": "CEDIS Operaciones",
+          "content": "Repuestos verificados en Bodega CEDIS tras descarga del contenedor aéreo.",
+          "type": "general"
+        }
+      ]
+    },
+    {
+      "id": "ORD-2026-002",
+      "orderNumber": "PED-2026-4402",
+      "createdAt": "2026-08-21",
+      "branch": "Chiriquí",
+      "collaboratorName": "Erick Samudio",
+      "channel": "Taller",
+      "orderType": "Emergencia",
+      "quotationNumber": "COT-9104",
+      "clientName": "Hacienda Ganadera Boquete S.A.",
+      "clientPhone": "+507 6712-9901",
+      "plate": "CH-8832",
+      "vin": "LS4A3C228PA01948",
+      "changanModel": "Hunter Pick-up",
+      "paymentStatus": "Abonado",
+      "receiptOrInvoiceNumber": "REC-CH-8812",
+      "overallStatus": "EN TRÁNSITO",
+      "assignedContainerId": "2606M00000SF0005",
+      "isBilled": false,
+      "items": [
+        {
+          "id": "ITM-002-1",
+          "code": "B511F260204-0900",
+          "description": "SHOCK DAMPER ASSY, FR-LH",
+          "quantityRequested": 2,
+          "quantityAssigned": 2,
+          "quantityDispatched": 0,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "E-02-B-B12",
+          "status": "EN TRÁNSITO"
+        },
+        {
+          "id": "ITM-002-2",
+          "code": "B511F260204-1400",
+          "description": "SHOCK DAMPER ASSY, FR-RH",
+          "quantityRequested": 2,
+          "quantityAssigned": 2,
+          "quantityDispatched": 0,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "E-02-B-B13",
+          "status": "EN TRÁNSITO"
+        },
+        {
+          "id": "ITM-002-3",
+          "code": "B511F260301-0100",
+          "description": "BRAKE DISC, FR",
+          "quantityRequested": 2,
+          "quantityAssigned": 2,
+          "quantityDispatched": 0,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "G-01-A-A10",
+          "status": "EN TRÁNSITO"
+        }
+      ],
+      "observations": [
+        {
+          "id": "OBS-003",
+          "date": "2026-08-22T09:00:00Z",
+          "author": "CEDIS Importaciones",
+          "content": "Asignado a Contenedor Marítimo 2606M00000SF0005 en tránsito hacia Puerto de Balboa.",
+          "type": "general"
+        }
+      ]
+    },
+    {
+      "id": "ORD-2026-003",
+      "orderNumber": "PED-2026-4403",
+      "createdAt": "2026-08-22",
+      "branch": "Calle 50",
+      "collaboratorName": "Valeria Guardia",
+      "channel": "Aseguradora",
+      "orderType": "Especial",
+      "quotationNumber": "COT-8955",
+      "clientName": "Aseguradora Ancon S.A. / Lic. Roberto Chen",
+      "clientPhone": "+507 6500-1122",
+      "plate": "BF-3190",
+      "vin": "LS4A1A056MA99104",
+      "changanModel": "UNI-T",
+      "paymentStatus": "Cancelado",
+      "receiptOrInvoiceNumber": "FAC-C50-9011",
+      "overallStatus": "EN TRÁNSITO",
+      "assignedContainerId": "2606M00000SF0005",
+      "isBilled": true,
+      "billingInvoiceNumber": "FAC-C50-9011",
+      "items": [
+        {
+          "id": "ITM-003-1",
+          "code": "B511F270103-0101",
+          "description": "FR DOOR ASSY, LH",
+          "quantityRequested": 1,
+          "quantityAssigned": 1,
+          "quantityDispatched": 0,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "S-03-A-C03",
+          "status": "EN TRÁNSITO"
+        },
+        {
+          "id": "ITM-003-2",
+          "code": "B511F270101-0100",
+          "description": "ENGINE HOOD ASSY",
+          "quantityRequested": 1,
+          "quantityAssigned": 1,
+          "quantityDispatched": 0,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "S-02-A-A01",
+          "status": "EN TRÁNSITO"
+        }
+      ],
+      "observations": [
+        {
+          "id": "OBS-004",
+          "date": "2026-08-22T16:00:00Z",
+          "author": "Sucursal Calle 50",
+          "content": "Caso de colisión autorizado por la compañía de seguros.",
+          "type": "general"
+        }
+      ]
+    },
+    {
+      "id": "ORD-2026-004",
+      "orderNumber": "PED-2026-4404",
+      "createdAt": "2026-08-18",
+      "branch": "Tumba Muerto",
+      "collaboratorName": "Jorge Arrocha",
+      "channel": "Flotas",
+      "orderType": "Especial",
+      "quotationNumber": "COT-8740",
+      "clientName": "Car Rental Panamá Express",
+      "clientPhone": "+507 6614-2289",
+      "plate": "PA-5541",
+      "vin": "LS4A1B022PA33810",
+      "changanModel": "Alsvin Sedan",
+      "paymentStatus": "Cancelado",
+      "receiptOrInvoiceNumber": "FAC-TM-3112",
+      "overallStatus": "DESPACHADO",
+      "assignedContainerId": "2606M00000SF0005",
+      "dispatchDate": "2026-08-28T11:20:00Z",
+      "isBilled": true,
+      "billingInvoiceNumber": "FAC-TM-3112",
+      "items": [
+        {
+          "id": "ITM-004-1",
+          "code": "S111F260204-1504",
+          "updatedCode": "S111F260204-1504-REV",
+          "description": "SHOCK ABSORBER ASSY, RR",
+          "quantityRequested": 4,
+          "quantityAssigned": 4,
+          "quantityDispatched": 4,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "E-02-B-A04",
+          "status": "DESPACHADO"
+        },
+        {
+          "id": "ITM-004-2",
+          "code": "B511F260302-1200",
+          "description": "BRAKE SHOE ASSY, RR-RH",
+          "quantityRequested": 4,
+          "quantityAssigned": 4,
+          "quantityDispatched": 4,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "B-01-B-A06",
+          "status": "DESPACHADO"
+        }
+      ],
+      "observations": [
+        {
+          "id": "OBS-005",
+          "date": "2026-08-28T11:20:00Z",
+          "author": "CEDIS Despacho",
+          "content": "Guía de despacho #GD-9941 entregada a ruta logística hacia Tumba Muerto.",
+          "type": "general"
+        }
+      ]
+    },
+    {
+      "id": "ORD-2026-005",
+      "orderNumber": "PED-2026-4405",
+      "createdAt": "2026-08-15",
+      "branch": "Villa Lucre",
+      "collaboratorName": "Anabella Rivera",
+      "channel": "Mesón",
+      "orderType": "Especial",
+      "quotationNumber": "COT-8619",
+      "clientName": "Ing. Fernando De Gracia",
+      "clientPhone": "+507 6445-9011",
+      "plate": "AF-1094",
+      "vin": "LS4A2B114NA09412",
+      "changanModel": "CS55 Plus",
+      "paymentStatus": "Cancelado",
+      "receiptOrInvoiceNumber": "FAC-VL-1904",
+      "overallStatus": "RECIBIDO EN SUCURSAL",
+      "assignedContainerId": "2608M00000EA0115",
+      "dispatchDate": "2026-08-26T10:00:00Z",
+      "branchReceivedDate": "2026-08-27T15:30:00Z",
+      "isBilled": true,
+      "billingInvoiceNumber": "FAC-VL-1904",
+      "items": [
+        {
+          "id": "ITM-005-1",
+          "code": "EA15010-0702",
+          "description": "EXHAUST MANIFOLD & CONVERTER ASSY",
+          "quantityRequested": 1,
+          "quantityAssigned": 1,
+          "quantityDispatched": 1,
+          "containerId": "2608M00000EA0115",
+          "locationInCedis": "M-03-B-F08",
+          "status": "RECIBIDO EN SUCURSAL"
+        }
+      ],
+      "observations": [
+        {
+          "id": "OBS-006",
+          "date": "2026-08-27T15:30:00Z",
+          "author": "Sucursal Villa Lucre",
+          "content": "Repuesto recibido en mesón. Cliente notificado para retiro.",
+          "type": "general"
+        }
+      ]
+    },
+    {
+      "id": "ORD-2026-006",
+      "orderNumber": "PED-2026-4406",
+      "createdAt": "2026-08-24",
+      "branch": "Santa María",
+      "collaboratorName": "Ricardo Méndez",
+      "channel": "Taller",
+      "orderType": "Garantía",
+      "quotationNumber": "GAR-2026-018",
+      "clientName": "Doctora Carolina Boyd",
+      "clientPhone": "+507 6902-3344",
+      "plate": "SM-7719",
+      "vin": "LS4A3A019PA11490",
+      "changanModel": "UNI-K",
+      "paymentStatus": "Cancelado",
+      "receiptOrInvoiceNumber": "GAR-CHANGAN-HQ-09",
+      "overallStatus": "PENDIENTE",
+      "isBilled": false,
+      "items": [
+        {
+          "id": "ITM-006-1",
+          "code": "TB-104501-0100",
+          "description": "TURBOCHARGER ASSY 1.5T",
+          "quantityRequested": 1,
+          "quantityAssigned": 0,
+          "quantityDispatched": 0,
+          "status": "PENDIENTE"
+        }
+      ],
+      "observations": [
+        {
+          "id": "OBS-007",
+          "date": "2026-08-24T11:00:00Z",
+          "author": "Garantías Changan Panamá",
+          "content": "Aprobado por el departamento técnico para solicitud directa a fábrica en Chongqing.",
+          "type": "general"
+        }
+      ]
+    },
+    {
+      "id": "ORD-2026-007",
+      "orderNumber": "PED-2026-4407",
+      "createdAt": "2026-08-25",
+      "branch": "Costa Verde",
+      "collaboratorName": "Miguel Ángel Castillo",
+      "channel": "Taller",
+      "orderType": "Especial",
+      "quotationNumber": "COT-9220",
+      "clientName": "Constructora Arraiján del Pacífico",
+      "clientPhone": "+507 6554-1029",
+      "plate": "PA-9014",
+      "vin": "LS4A3C229PA08192",
+      "changanModel": "Hunter Pick-up",
+      "paymentStatus": "Abonado",
+      "receiptOrInvoiceNumber": "REC-CV-7819",
+      "overallStatus": "EN TRÁNSITO",
+      "assignedContainerId": "2606M00000SF0005",
+      "isBilled": false,
+      "items": [
+        {
+          "id": "ITM-007-1",
+          "code": "B511F260401-0100",
+          "description": "STEERING GEAR ASSY (Caja Dirección)",
+          "quantityRequested": 1,
+          "quantityAssigned": 1,
+          "quantityDispatched": 0,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "D-04-C-M01",
+          "status": "EN TRÁNSITO"
+        },
+        {
+          "id": "ITM-007-2",
+          "code": "B511F260202-0100",
+          "description": "ARM ASSY, FR-LH (Brazo Suspensión)",
+          "quantityRequested": 1,
+          "quantityAssigned": 1,
+          "quantityDispatched": 0,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "E-02-B-A04",
+          "status": "EN TRÁNSITO"
+        }
+      ],
+      "observations": [
+        {
+          "id": "OBS-008",
+          "date": "2026-08-25T15:00:00Z",
+          "author": "Sucursal Costa Verde",
+          "content": "Se requiere entrega expedita para vehículo de gerencia de obra.",
+          "type": "general"
+        }
+      ]
+    },
+    {
+      "id": "ORD-2026-008",
+      "orderNumber": "PED-2026-4408",
+      "createdAt": "2026-08-26",
+      "branch": "Calle 50",
+      "collaboratorName": "Valeria Guardia",
+      "channel": "Mesón",
+      "orderType": "Especial",
+      "quotationNumber": "COT-9311",
+      "clientName": "Taller Especializado AutoTech PTY",
+      "clientPhone": "+507 6789-0123",
+      "plate": "BJ-6022",
+      "vin": "LS4A2B118NA03319",
+      "changanModel": "CS35 Plus",
+      "paymentStatus": "Cancelado",
+      "receiptOrInvoiceNumber": "FAC-C50-9180",
+      "overallStatus": "EN BODEGA CEDIS",
+      "assignedContainerId": "2608M00000EA0115",
+      "isBilled": true,
+      "billingInvoiceNumber": "FAC-C50-9180",
+      "items": [
+        {
+          "id": "ITM-008-1",
+          "code": "S101038-2200",
+          "description": "RELAY-HPY0/012H-TR(555)",
+          "quantityRequested": 2,
+          "quantityAssigned": 2,
+          "quantityDispatched": 0,
+          "containerId": "2608M00000EA0115",
+          "locationInCedis": "E-03-A-R15",
+          "status": "EN BODEGA CEDIS"
+        },
+        {
+          "id": "ITM-008-2",
+          "code": "B211075-1600",
+          "description": "CLAMP NUTS",
+          "quantityRequested": 4,
+          "quantityAssigned": 4,
+          "quantityDispatched": 0,
+          "containerId": "2606M00000SF0005",
+          "locationInCedis": "R-01-A-H04",
+          "status": "EN BODEGA CEDIS"
+        }
+      ],
+      "observations": [
+        {
+          "id": "OBS-009",
+          "date": "2026-08-28T16:00:00Z",
+          "author": "CEDIS Despacho",
+          "content": "Piezas etiquetadas y listas para consolidar en ruta urbana.",
+          "type": "general"
+        }
+      ]
+    }
+  ]
+}
