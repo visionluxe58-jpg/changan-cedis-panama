@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Sidebar, ModuloActivo } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 import { FormularioRequisicion } from './components/FormularioRequisicion';

@@ -1,4 +1,4 @@
-﻿import { SecurityUtils } from '../utils/security';
+import { SecurityUtils } from '../utils/security';
 import { appsScriptClient } from '../services/appsScriptClient';
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
