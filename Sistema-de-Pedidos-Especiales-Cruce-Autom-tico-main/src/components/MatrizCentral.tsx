@@ -1556,7 +1556,7 @@ export const MatrizCentral: React.FC<MatrizCentralProps> = ({
                           <option value="EN TRÁNSITO" className="bg-slate-900 text-blue-400">EN TRÁNSITO</option>
                           <option value="EN BODEGA" className="bg-slate-900 text-sky-400">EN BODEGA</option>
                           <option value="POR ENVIAR" className="bg-slate-900 text-amber-400">POR ENVIAR</option>
-                          <option value="DESPACHADO" disabled={fila.cantidadAsignada <= 0} className={fila.cantidadAsignada > 0 ? "bg-slate-900 text-purple-400" : "bg-slate-900 text-slate-600 italic"}>DESPACHADO {fila.cantidadAsignada <= 0 ? '(Requiere Asignación)' : ''}</option>
+                          <option value="DESPACHADO" disabled={fila.cantidadAsignada <= 0 && estatusSelectValue !== 'DESPACHADO'} className={fila.cantidadAsignada > 0 || estatusSelectValue === 'DESPACHADO' ? "bg-slate-900 text-purple-400 font-bold" : "bg-slate-900 text-slate-600 italic"}>DESPACHADO {fila.cantidadAsignada <= 0 && estatusSelectValue !== 'DESPACHADO' ? '(Requiere Asignación)' : ''}</option>
                           <option value="RECIBIDO" className="bg-slate-900 text-emerald-400">RECIBIDO</option>
                         </select>
                       </td>

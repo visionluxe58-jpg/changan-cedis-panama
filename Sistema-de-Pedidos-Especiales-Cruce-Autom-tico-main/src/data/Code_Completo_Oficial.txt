@@ -1998,7 +1998,7 @@ function construirDashboardKPIsEnSheet() {
 
   // 3. OCHO (8) TARJETAS KPIS CON SEMÁFORO INTERNACIONAL (Idénticas a la App)
   var cardsFila1 = [
-    { c1: 'B', c2: 'D', tit: '1. FILL RATE (ATENCIÓN)', meta: 'Meta: >= 97%  |  CSCMP', form: '=IFERROR(IF(SUM(Matriz_Central!F2:F)>0, (SUM(Matriz_Central!L2:L)+IFERROR(SUM(Despachos!G2:G),0))/SUM(Matriz_Central!F2:F), 1), 1)', fmt: '0.0%', clr: '#10b981', sub: 'Líneas Cubiertas / Solicitadas' },
+    { c1: 'B', c2: 'D', tit: '1. FILL RATE (ATENCIÓN)', meta: 'Meta: >= 97%  |  CSCMP', form: '=IFERROR(IF(SUM(Matriz_Central!L2:L)>0, (SUM(Matriz_Central!M2:M)+IFERROR(SUM(Despachos!G2:G),0))/SUM(Matriz_Central!L2:L), 1), 1)', fmt: '0.0%', clr: '#10b981', sub: 'Líneas Cubiertas / Solicitadas' },
     { c1: 'E', c2: 'G', tit: '2. OTIF (A TIEMPO Y COMPLETO)', meta: 'Meta: >= 95%  |  Logística', form: '=IFERROR(IF(COUNTA(Matriz_Central!A2:A)>0, (COUNTIF(Matriz_Central!M2:M, 0)/COUNTA(Matriz_Central!A2:A))*0.98, 0.965), 0.965)', fmt: '0.0%', clr: '#38bdf8', sub: 'Entregas a Tiempo y Completas' },
     { c1: 'H', c2: 'J', tit: '3. QUIEBRE DE STOCK (OUT OF STOCK)', meta: 'Meta: <= 3%  |  Alerta', form: '=IFERROR(COUNTIF(Matriz_Central!M2:M, ">0")/COUNTA(Matriz_Central!A2:A), 0.02)', fmt: '0.0%', clr: '#f87171', sub: 'Líneas Pendientes sin Cobertura' },
     { c1: 'K', c2: 'M', tit: '4. TIEMPO DE CICLO DE PEDIDO', meta: 'Meta: <= 24h  |  SLA', form: '=24.0', fmt: '0.0" h"', clr: '#a78bfa', sub: 'Recepción hasta Despacho' }
@@ -2007,7 +2007,7 @@ function construirDashboardKPIsEnSheet() {
   var cardsFila2 = [
     { c1: 'B', c2: 'D', tit: '5. EXACTITUD INVENTARIO (IRA)', meta: 'Meta: >= 98%  |  Auditoría', form: '=0.986', fmt: '0.0%', clr: '#10b981', sub: 'Stock Físico vs Teórico' },
     { c1: 'E', c2: 'G', tit: '6. EXACTITUD EN PICKING PDT', meta: 'Meta: >= 99.5%  |  Calidad', form: '=0.997', fmt: '0.0%', clr: '#38bdf8', sub: 'Lectura Código Barras / QR' },
-    { c1: 'H', c2: 'J', tit: '7. EFECTIVIDAD CRUCE DPL', meta: 'Meta: >= 85%  |  Cross-dock', form: '=IFERROR(IF(SUM(Matriz_Central!F2:F)>0, SUM(Matriz_Central!L2:L)/SUM(Matriz_Central!F2:F), 0.884), 0.884)', fmt: '0.0%', clr: '#facc15', sub: 'Asignación Inmediata' },
+    { c1: 'H', c2: 'J', tit: '7. EFECTIVIDAD CRUCE DPL', meta: 'Meta: >= 85%  |  Cross-dock', form: '=IFERROR(IF(SUM(Matriz_Central!L2:L)>0, SUM(Matriz_Central!M2:M)/SUM(Matriz_Central!L2:L), 0.884), 0.884)', fmt: '0.0%', clr: '#facc15', sub: 'Asignación Inmediata' },
     { c1: 'K', c2: 'M', tit: '8. PEDIDO PERFECTO (PERFECT ORDER)', meta: 'Meta: >= 95%  |  Total', form: '=IFERROR(B6*E6*(1-H6), 0.952)', fmt: '0.0%', clr: '#34d399', sub: 'Calidad Total en Entrega' }
   ];
 
@@ -2045,10 +2045,10 @@ function construirDashboardKPIsEnSheet() {
     var rSuc = 15 + s;
     var suc = sucursales[s];
     hDash.getRange('B' + rSuc).setValue(suc).setFontColor('#ffffff').setBackground('#111c44').setFontSize(8.5);
-    hDash.getRange('C' + rSuc).setFormula('=IFERROR(SUMIFS(Matriz_Central!F2:F, Matriz_Central!K2:K, "' + suc + '"), 0)').setFontColor('#38bdf8').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
-    hDash.getRange('D' + rSuc).setFormula('=IFERROR(SUMIFS(Matriz_Central!L2:L, Matriz_Central!K2:K, "' + suc + '"), 0)').setFontColor('#4ade80').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
-    hDash.getRange('E' + rSuc).setFormula('=IFERROR(SUMIFS(Despachos!G2:G, Despachos!D2:D, "' + suc + '"), 0)').setFontColor('#facc15').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
-    hDash.getRange('F' + rSuc).setFormula('=IFERROR(SUMIFS(Matriz_Central!M2:M, Matriz_Central!K2:K, "' + suc + '"), 0)').setFontColor('#f87171').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('C' + rSuc).setFormula('=IFERROR(SUMIFS(Matriz_Central!L2:L, Matriz_Central!D2:D, "' + suc + '"), 0)').setFontColor('#38bdf8').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('D' + rSuc).setFormula('=IFERROR(SUMIFS(Matriz_Central!M2:M, Matriz_Central!D2:D, "' + suc + '"), 0)').setFontColor('#4ade80').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('E' + rSuc).setFormula('=IFERROR(SUMIFS(Despachos!G2:G, Despachos!B2:B, "' + suc + '"), 0)').setFontColor('#facc15').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('F' + rSuc).setFormula('=IFERROR(C' + rSuc + ' - D' + rSuc + ' - E' + rSuc + ', 0)').setFontColor('#f87171').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
     hDash.getRange('G' + rSuc).setFormula('=IFERROR(IF(C' + rSuc + '>0, (D' + rSuc + '+E' + rSuc + ')/C' + rSuc + ', 1), 1)').setFontColor('#a78bfa').setBackground('#111c44').setNumberFormat('0.0%').setFontSize(8.5).setHorizontalAlignment('center').setFontWeight('bold');
   }
   hDash.getRange('B14:G20').setBorder(true, true, true, true, true, true, '#1e293b', SpreadsheetApp.BorderStyle.SOLID);
@@ -2067,10 +2067,10 @@ function construirDashboardKPIsEnSheet() {
     var rMod = 15 + m;
     var mod = modelos[m];
     hDash.getRange('I' + rMod).setValue(mod).setFontColor('#ffffff').setBackground('#111c44').setFontSize(8.5);
-    hDash.getRange('J' + rMod).setFormula('=IFERROR(SUMIFS(Matriz_Central!F2:F, Matriz_Central!D2:D, "*' + mod + '*"), 0)').setFontColor('#38bdf8').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
-    hDash.getRange('K' + rMod).setFormula('=IFERROR(COUNTIF(Matriz_Central!D2:D, "*' + mod + '*"), 0)').setFontColor('#cbd5e1').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
-    hDash.getRange('L' + rMod).setFormula('=IFERROR(IF(SUM(Matriz_Central!F2:F)>0, J' + rMod + '/SUM(Matriz_Central!F2:F), 0), 0)').setFontColor('#facc15').setBackground('#111c44').setNumberFormat('0.0%').setFontSize(8.5).setHorizontalAlignment('center').setFontWeight('bold');
-    hDash.getRange('M' + rMod).setFormula('=IFERROR(COUNTIFS(Matriz_Central!D2:D, "*' + mod + '*", Matriz_Central!J2:J, "VOR"), 0)').setFontColor('#f87171').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('J' + rMod).setFormula('=IFERROR(SUMIFS(Matriz_Central!L2:L, Matriz_Central!G2:G, "*' + mod + '*"), 0)').setFontColor('#38bdf8').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('K' + rMod).setFormula('=IFERROR(COUNTIF(Matriz_Central!G2:G, "*' + mod + '*"), 0)').setFontColor('#cbd5e1').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
+    hDash.getRange('L' + rMod).setFormula('=IFERROR(IF(SUM(Matriz_Central!L2:L)>0, J' + rMod + '/SUM(Matriz_Central!L2:L), 0), 0)').setFontColor('#facc15').setBackground('#111c44').setNumberFormat('0.0%').setFontSize(8.5).setHorizontalAlignment('center').setFontWeight('bold');
+    hDash.getRange('M' + rMod).setFormula('=IFERROR(COUNTIFS(Matriz_Central!G2:G, "*' + mod + '*", Matriz_Central!B2:B, "*VOR*"), 0)').setFontColor('#f87171').setBackground('#111c44').setNumberFormat('#,##0').setFontSize(8.5).setHorizontalAlignment('center');
   }
   hDash.getRange('I14:M20').setBorder(true, true, true, true, true, true, '#1e293b', SpreadsheetApp.BorderStyle.SOLID);
 
