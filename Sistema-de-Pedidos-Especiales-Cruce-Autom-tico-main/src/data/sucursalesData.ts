@@ -25,69 +25,57 @@ export const SUCURSALES_PORTAL: ConfiguracionSucursal[] = [
     id: 'costa_verde',
     nombre: 'Costa Verde',
     prefijo: 'CV',
-    tipoEquipo: 'INDIVIDUAL',
-    badge: 'Más alto',
+    tipoEquipo: 'MULTIPLE',
+    badge: 'Equipo Múltiple',
     canalDefecto: 'Taller',
-    asesorFijo: {
-      id: 'usr_cv_01',
-      nombre: 'Arquímedes Jordan',
-      cargo: 'Asesor Técnico de Servicio',
-      area: 'Taller',
-      correo: 'taller.costaverde@changanpanama.com'
-    }
+    descripcionEquipo: 'Arquímedes Jordan, Juan Arrocha. Selecciona tu usuario oficial.',
+    equipo: [
+      {
+        id: 'usr_cv_01',
+        nombre: 'Arquímedes Jordan',
+        cargo: 'Ejecutiva de Venta de Repuestos',
+        area: 'Taller',
+        correo: 'repuestospanamaoeste@changanpanama.com'
+      },
+      {
+        id: 'usr_cv_02',
+        nombre: 'Juan Arrocha',
+        cargo: 'Asistente de Bodega',
+        area: 'Repuestos',
+        correo: 'bodegacostaverde@changanpanama.com'
+      }
+    ]
   },
   {
     id: 'calle_50',
     nombre: 'Calle 50',
     prefijo: 'C50',
-    tipoEquipo: 'MULTIPLE',
-    badge: 'Equipo Múltiple',
+    tipoEquipo: 'INDIVIDUAL',
+    badge: 'Taller / Mostrador',
     canalDefecto: 'Taller',
-    descripcionEquipo: 'Edilson, Valeria, Carlos, Roberto. Te preguntará quién eres para reconocer tu área',
-    equipo: [
-      {
-        id: 'usr_c50_01',
-        nombre: 'Edilson Uribe',
-        cargo: 'Asesor Senior de Servicio',
-        area: 'Taller',
-        correo: 'servicio.c50@changanpanama.com'
-      },
-      {
-        id: 'usr_c50_02',
-        nombre: 'Valeria Castillo',
-        cargo: 'Especialista en Garantías Oficiales',
-        area: 'Garantías',
-        correo: 'garantias.c50@changanpanama.com'
-      },
-      {
-        id: 'usr_c50_03',
-        nombre: 'Carlos Mendoza',
-        cargo: 'Ventas de Mostrador y Flotas',
-        area: 'Mostrador',
-        correo: 'repuestos.c50@changanpanama.com'
-      },
-      {
-        id: 'usr_c50_04',
-        nombre: 'Roberto González',
-        cargo: 'Facturador y Supervisor de Taller',
-        area: 'Taller',
-        correo: 'taller.c50@changanpanama.com'
-      }
-    ]
+    descripcionEquipo: 'Edilson Uribe - Asesor Oficial Calle 50',
+    asesorFijo: {
+      id: 'usr_c50_01',
+      nombre: 'Edilson Uribe',
+      cargo: 'Ejecutiva de Venta de Repuestos',
+      area: 'Taller',
+      correo: 'repuestoscalle50@changanpanama.com'
+    }
   },
   {
     id: 'tumba_muerto',
     nombre: 'Tumba Muerto',
     prefijo: 'TM',
     tipoEquipo: 'INDIVIDUAL',
-    badge: 'Más alto',
+    badge: 'Taller / Mostrador',
     canalDefecto: 'Taller',
+    descripcionEquipo: 'Ulises Barría - Asesor Oficial Tumba Muerto',
     asesorFijo: {
       id: 'usr_tm_01',
       nombre: 'Ulises Barría',
-      cargo: 'Asesor de Servicio y Colisión',
+      cargo: 'Ejecutiva de Venta de Repuestos',
       area: 'Taller',
-      correo: 'repuestos.tm@changanpanama.com'
+      correo: 'repuestostm@changanpanama.com'
     }
   },
   {
@@ -95,14 +83,15 @@ export const SUCURSALES_PORTAL: ConfiguracionSucursal[] = [
     nombre: 'Chiriquí',
     prefijo: 'CH',
     tipoEquipo: 'INDIVIDUAL',
-    badge: 'Más alto',
+    badge: 'Taller / Mostrador',
     canalDefecto: 'Taller',
+    descripcionEquipo: 'Nivardo Gutiérrez - Asesor Oficial Chiriquí',
     asesorFijo: {
       id: 'usr_ch_01',
       nombre: 'Nivardo Gutiérrez',
-      cargo: 'Asesor Integral Chiriquí',
+      cargo: 'Ejecutiva de Venta de Repuestos',
       area: 'Taller',
-      correo: 'sucursal.chiriqui@changanpanama.com'
+      correo: 'bodegachiriqui@changanpanama.com'
     }
   },
   {
@@ -112,6 +101,7 @@ export const SUCURSALES_PORTAL: ConfiguracionSucursal[] = [
     tipoEquipo: 'INDIVIDUAL',
     badge: 'Mostrador',
     canalDefecto: 'Mostrador',
+    descripcionEquipo: 'Marcos Vega - Asesor Oficial Santa María',
     asesorFijo: {
       id: 'usr_sm_01',
       nombre: 'Marcos Vega',
@@ -127,32 +117,32 @@ export const SUCURSALES_PORTAL: ConfiguracionSucursal[] = [
     tipoEquipo: 'MULTIPLE',
     badge: 'Equipo Múltiple',
     canalDefecto: 'Mostrador',
-    descripcionEquipo: 'Leidys, Edwin, Pedro, Luis, Daniel. Te preguntará quién eres para reconocer tu área',
+    descripcionEquipo: 'Leidys Pérez, Edwin Blanco, Pedro, Luis Rodríguez, Daniel Saldaña. Selecciona tu usuario oficial.',
     equipo: [
       {
         id: 'usr_vl_01',
-        nombre: 'Leidys Pérez',
-        cargo: 'Ventas Mostrador',
+        nombre: 'Leidys Perez',
+        cargo: 'Ejecutiva de Venta de Repuestos',
         area: 'Mostrador',
-        correo: 'repuestos.vl@changanpanama.com'
+        correo: 'repuestos@changanpanama.com'
       },
       {
         id: 'usr_vl_02',
         nombre: 'Edwin Blanco',
-        cargo: 'Consultor de estructuras metálicas',
+        cargo: 'Ejecutivo de Venta de Repuestos Chapisteria',
         area: 'Chapistería',
-        correo: 'chapisteria.vl@changanpanama.com'
+        correo: 'repuestos4@changanpanama.com'
       },
       {
         id: 'usr_vl_03',
-        nombre: 'Pedro',
-        cargo: 'Facturador de Taller',
+        nombre: 'Pedro Guerrel',
+        cargo: 'Facturador de taller',
         area: 'Taller',
         correo: 'taller.vl@changanpanama.com'
       },
       {
         id: 'usr_vl_04',
-        nombre: 'Luis Rodríguez',
+        nombre: 'Luis Rodriguez',
         cargo: 'Supervisor de Repuestos',
         area: 'Repuestos',
         correo: 'supervisor.repuestos@changanpanama.com'

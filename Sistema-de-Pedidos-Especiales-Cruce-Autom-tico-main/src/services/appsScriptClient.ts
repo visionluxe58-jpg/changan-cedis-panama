@@ -1,3 +1,4 @@
+import { CABECERAS_MATRIZ_SINCRONIZADA, DETALLES_MATRIZ_SINCRONIZADA } from '../data/matrizBaseSincronizada';
 import { InsforgeService } from './insforgeClient';
 ﻿import { SecurityUtils } from '../utils/security';
 import { 
@@ -1262,10 +1263,12 @@ class AppsScriptClientService {
   private cargarDatosLocales(): void {
     try {
       const cab = this.safeGet(STORAGE_KEYS.CABECERA);
-      this.cabeceras = cab ? JSON.parse(cab) : CABECERAS_BASE_9_SEP;
+      const parsedCab = cab ? JSON.parse(cab) : null;
+      this.cabeceras = (parsedCab && Array.isArray(parsedCab) && parsedCab.length > 50) ? parsedCab : CABECERAS_MATRIZ_SINCRONIZADA;
 
       const det = this.safeGet(STORAGE_KEYS.DETALLE);
-      const parsedDet: DetalleRepuesto[] = det ? JSON.parse(det) : DETALLES_BASE_9_SEP;
+      const loadedDet = det ? JSON.parse(det) : null;
+      const parsedDet: DetalleRepuesto[] = (loadedDet && Array.isArray(loadedDet) && loadedDet.length > 50) ? loadedDet : DETALLES_MATRIZ_SINCRONIZADA;
       this.detalles = parsedDet.filter(d => d.estatusLinea !== 'Despachado' && !this.isLineaDespachada(d.lineaId, d.pedidoId, d.codigoRepuesto));
 
       const man = this.safeGet(STORAGE_KEYS.MANIFIESTOS);
@@ -1301,8 +1304,8 @@ class AppsScriptClientService {
       this.depurarDuplicadosEnMemoria();
     } catch (e) {
       console.error('Error cargando almacén canónico:', e);
-      this.cabeceras = CABECERAS_BASE_9_SEP;
-      this.detalles = DETALLES_BASE_9_SEP;
+      this.cabeceras = CABECERAS_MATRIZ_SINCRONIZADA;
+      this.detalles = DETALLES_MATRIZ_SINCRONIZADA;
       this.manifiestos = CONTENEDORES_CANONICOS;
       this.dplDetalle = DPL_DETALLE_CANONICO;
       this.modelos = MODELOS_OFICIALES;
