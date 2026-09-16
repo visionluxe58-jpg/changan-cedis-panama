@@ -40,7 +40,7 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       const pdt = params.get('pdt') || params.get('modo');
       const op = params.get('operador') || params.get('op');
-      return pdt === 'cedis' || pdt === 'sucursal' || pdt === 'pdt-cedis' || pdt === 'pdt' || Boolean(op);
+      return pdt === 'cedis' || pdt === 'pdt-cedis' || Boolean(op);
     } catch (e) {
       return false;
     }
@@ -56,8 +56,8 @@ export default function App() {
       if (params.get('modulo') === 'pdt' || params.get('pdt') === '1') {
         return 'pdt';
       }
-      if (params.get('portal') === 'sucursales') {
-        return 'formulario';
+      if (params.get('portal') === 'sucursales' || params.get('pdt') === 'sucursal' || params.get('modo') === 'sucursal') {
+        return 'portal';
       }
     }
     const usr = appsScriptClient.getUsuarioActivo();
@@ -139,7 +139,9 @@ export default function App() {
         handleCambiarUsuario(usrCedis);
         setModalPDTAbierto(true);
       } else if (pdtParam === 'sucursal' || pdtParam === 'true' || pdtParam === 'pdt') {
-        setModalPDTAbierto(true);
+        const usrAsesor = USUARIOS_OFICIALES.find(u => u.rol === 'SUCURSAL_ASESOR') || USUARIOS_OFICIALES[1];
+        handleCambiarUsuario(usrAsesor);
+        setModuloActivo('portal');
       }
     } catch (e) {
       console.warn('Error leyendo query params:', e);

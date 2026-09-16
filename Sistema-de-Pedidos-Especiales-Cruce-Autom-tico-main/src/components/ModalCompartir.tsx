@@ -33,15 +33,15 @@ interface ModalCompartirProps {
 
 // Enlaces HTTPS cortos garantizados para WhatsApp (reconocidos como hipervínculo azul en cualquier celular)
 export const ENLACES_WHATSAPP_PDT: Record<string, string> = {
-  CE001: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=cedis&operador=CE001', // Issac
-  CE002: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=cedis&operador=CE002', // Josue
-  CE003: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=cedis&operador=CE003', // Felix
-  CE004: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=cedis&operador=CE004', // Dilan
-  CE005: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=cedis&operador=CE005', // Joel (Admin)
-  CE006: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=cedis&operador=CE006', // Emanuel
-  CE007: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=cedis&operador=CE007', // Angel
-  cedis_general: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=cedis',
-  sucursal_general: 'https://score-quote-pickup-church.trycloudflare.com/?pdt=sucursal',
+  CE001: 'https://changan-cedis-panama.vercel.app/?pdt=cedis&operador=CE001', // Issac
+  CE002: 'https://changan-cedis-panama.vercel.app/?pdt=cedis&operador=CE002', // Josue
+  CE003: 'https://changan-cedis-panama.vercel.app/?pdt=cedis&operador=CE003', // Felix
+  CE004: 'https://changan-cedis-panama.vercel.app/?pdt=cedis&operador=CE004', // Dilan
+  CE005: 'https://changan-cedis-panama.vercel.app/?pdt=cedis&operador=CE005', // Joel (Admin)
+  CE006: 'https://changan-cedis-panama.vercel.app/?pdt=cedis&operador=CE006', // Emanuel
+  CE007: 'https://changan-cedis-panama.vercel.app/?pdt=cedis&operador=CE007', // Angel
+  cedis_general: 'https://changan-cedis-panama.vercel.app/?pdt=cedis',
+  sucursal_general: 'https://changan-cedis-panama.vercel.app/?pdt=sucursal',
 };
 
 const STORAGE_KEY_CUSTOM_HOST = 'changan_custom_share_host_v1';
@@ -67,13 +67,13 @@ export const ModalCompartir: React.FC<ModalCompartirProps> = ({
     // Si está en localhost, sugerir la IP local de red detectada
     if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
       const port = window.location.port ? `:${window.location.port}` : '';
-      return 'https://score-quote-pickup-church.trycloudflare.com';
+      return 'https://changan-cedis-panama.vercel.app';
     }
     return typeof window !== 'undefined' ? window.location.origin : '';
   });
 
   const [editandoHost, setEditandoHost] = useState<boolean>(false);
-  const [usarEnlaceCorto, setUsarEnlaceCorto] = useState<boolean>(true);
+  const [usarEnlaceCorto, setUsarEnlaceCorto] = useState<boolean>(false);
 
   if (!isOpen) return null;
 
