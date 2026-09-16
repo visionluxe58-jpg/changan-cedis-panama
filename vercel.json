@@ -1,0 +1,11 @@
+{
+  "framework": "vite",
+  "buildCommand": "cd Sistema-de-Pedidos-Especiales-Cruce-Autom-tico-main && npm install && npm run build",
+  "outputDirectory": "Sistema-de-Pedidos-Especiales-Cruce-Autom-tico-main/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
