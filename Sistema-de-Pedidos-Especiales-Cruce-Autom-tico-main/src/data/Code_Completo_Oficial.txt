@@ -2613,7 +2613,6 @@ function migrarDespachosHistoricosDesdeObservaciones() {
 
   // Asegurar que la pestaña Despachos exista y tenga cabeceras canónicas
   construirPestanaDespachosEnSheet();
-  migrarDespachosHistoricosDesdeObservaciones();
   var hDesp = ss.getSheetByName(CONFIG.HOJA_DESPACHOS || 'Despachos');
 
   var mData = hMatriz.getDataRange().getValues();
