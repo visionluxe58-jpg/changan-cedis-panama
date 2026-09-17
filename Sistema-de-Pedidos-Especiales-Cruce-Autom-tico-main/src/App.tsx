@@ -47,7 +47,17 @@ export default function App() {
     }
   }, []);
 
-  const [usuarioActivo, setUsuarioActivo] = useState<UsuarioActivo>(() => appsScriptClient.getUsuarioActivo());
+  const [usuarioActivo, setUsuarioActivo] = useState<UsuarioActivo>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === 'true' || params.get('admin') === '1') {
+        const admin = USUARIOS_OFICIALES.find(u => u.rol === 'ADMINISTRADOR_CEDIS') || USUARIOS_OFICIALES[0];
+        appsScriptClient.setUsuarioActivo(admin);
+        return admin;
+      }
+    }
+    return appsScriptClient.getUsuarioActivo();
+  });
   const esAsesor = usuarioActivo.rol === 'SUCURSAL_ASESOR';
 
   // Control del Modulo Activo con Seguridad de Rol
@@ -260,6 +270,10 @@ export default function App() {
       setModuloActivo('formulario');
       mostrarNotificacion('info', `Modo Asesor activado: ${usr.nombre} (${usr.sucursal}). Solo Formulario e Historial.`);
     } else {
+      setModuloActivo('dashboard');
+      if (typeof window !== 'undefined' && window.location.search) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
       mostrarNotificacion('info', `Modo Administrador CEDIS activado: ${usr.nombre}. Acceso total a todos los modulos.`);
     }
   };

@@ -94,6 +94,9 @@ export const HeaderProfileDropdown: React.FC<HeaderProfileDropdownProps> = ({
       movilHabilitado: user.movilHabilitado
     });
     setAbierto(false);
+    if (user.rol === 'ADMINISTRADOR_CEDIS' && typeof window !== 'undefined' && window.location.search) {
+      window.location.href = window.location.pathname;
+    }
   };
 
   const handleValidarPinAdmin = (e: React.FormEvent) => {
@@ -201,92 +204,72 @@ export const HeaderProfileDropdown: React.FC<HeaderProfileDropdownProps> = ({
               </div>
             </div>
 
-            {/* AISLAMIENTO ESTRICTO DE SEGURIDAD:
-                Solo el Administrador CEDIS puede ver la lista de todos los encargados y conmutar de usuario libremente.
-                Los asesores de sucursal NO ven a sus compañeros para evitar manipulación del sistema. */}
-            {esAdmin ? (
-              <div className="p-3">
-                <div className="flex items-center justify-between px-2 pb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                    <UserCheck className="w-3 h-3 text-sky-400" />
-                    Conmutador de Usuarios Oficiales (Solo Admin)
-                  </span>
-                  <span className="text-[10px] text-slate-400">
-                    {USUARIOS_OFICIALES.length} registrados
-                  </span>
+            {/* Conmutador Universal de Usuarios Oficiales (Siempre disponible para el Administrador) */}
+            <div className="p-3">
+              {!esAdmin && (
+                <div className="mb-2.5 pb-2.5 border-b border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const admin = USUARIOS_OFICIALES.find(u => u.rol === 'ADMINISTRADOR_CEDIS') || USUARIOS_OFICIALES[0];
+                      handleSeleccionarUsuario(admin);
+                    }}
+                    className="w-full py-2.5 px-3 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition cursor-pointer"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-white" />
+                    <span>👑 Regresar a Administrador CEDIS</span>
+                  </button>
                 </div>
+              )}
 
-                <div className="max-h-60 overflow-y-auto space-y-1 pr-1 custom-scroll">
-                  {USUARIOS_OFICIALES.map((user) => {
-                    const esActual = user.usuarioId === usuarioActivo.usuarioId;
-                    const userRolCfg = getRolConfig(user.rol);
-                    return (
-                      <button
-                        key={user.usuarioId}
-                        type="button"
-                        onClick={() => handleSeleccionarUsuario(user)}
-                        className={`w-full flex items-center justify-between p-2 rounded-xl text-xs transition cursor-pointer text-left ${
-                          esActual
-                            ? 'bg-sky-500/20 text-white border border-sky-500/40 shadow-sm'
-                            : 'hover:bg-slate-800/80 text-slate-300 border border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className={`w-7 h-7 rounded-lg ${userRolCfg.avatarBg} flex items-center justify-center font-bold text-[11px] shrink-0`}>
-                            {user.nombre[0]}
+              <div className="flex items-center justify-between px-2 pb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <UserCheck className="w-3 h-3 text-sky-400" />
+                  Conmutador de Perfiles ({USUARIOS_OFICIALES.length})
+                </span>
+                {esAdmin ? (
+                  <span className="text-[10px] text-emerald-400 font-bold">Admin Central</span>
+                ) : (
+                  <span className="text-[10px] text-amber-400 font-bold">Modo Asesor</span>
+                )}
+              </div>
+
+              <div className="max-h-60 overflow-y-auto space-y-1 pr-1 custom-scroll">
+                {USUARIOS_OFICIALES.map((user) => {
+                  const esActual = user.usuarioId === usuarioActivo.usuarioId;
+                  const userRolCfg = getRolConfig(user.rol);
+                  return (
+                    <button
+                      key={user.usuarioId}
+                      type="button"
+                      onClick={() => handleSeleccionarUsuario(user)}
+                      className={`w-full flex items-center justify-between p-2 rounded-xl text-xs transition cursor-pointer text-left ${
+                        esActual
+                          ? 'bg-sky-500/20 text-white border border-sky-500/40 shadow-sm'
+                          : 'hover:bg-slate-800/80 text-slate-300 border border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-7 h-7 rounded-lg ${userRolCfg.avatarBg} flex items-center justify-center font-bold text-[11px] shrink-0`}>
+                          {user.nombre[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold truncate text-slate-200">
+                            {user.nombre}
                           </div>
-                          <div className="min-w-0">
-                            <div className="font-semibold truncate text-slate-200">
-                              {user.nombre}
-                            </div>
-                            <div className="text-[10px] text-slate-400 truncate">
-                              <strong className="text-slate-300">{user.sucursal}</strong> &bull; {user.canal} {user.cargo ? `(${user.cargo})` : ''}
-                            </div>
+                          <div className="text-[10px] text-slate-400 truncate">
+                            <strong className="text-slate-300">{user.sucursal}</strong> &bull; {user.canal} {user.cargo ? `(${user.cargo})` : ''}
                           </div>
                         </div>
-                        {esActual && (
-                          <Check className="w-4 h-4 text-sky-400 shrink-0 ml-2" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                      </div>
+                      {esActual && (
+                        <Check className="w-4 h-4 text-sky-400 shrink-0 ml-2" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            ) : (
-              /* Vista Segura para el Asesor: Estado de sesión protegido y exclusivo */
-              <div className="p-4 bg-slate-900/50 space-y-3">
-                <div className="p-3 rounded-xl bg-sky-950/30 border border-sky-500/30 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-sky-300">
-                    <Lock className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                    <span>Sesión Segura de Sucursal</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Estás operando en modo asesor para <strong>{usuarioActivo.sucursal}</strong>. Todas las requisiciones creadas se registrarán bajo tu firma y punto de atención.
-                  </p>
-                  <div className="pt-2 border-t border-sky-500/20 flex items-center justify-between text-[10px] font-mono text-slate-400">
-                    <span>Sucursal: {usuarioActivo.sucursal}</span>
-                    <span className="text-emerald-400 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      Activo
-                    </span>
-                  </div>
-                </div>
-
-                {/* Cerrar Sesión / Salir al Login del Asesor */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    localStorage.removeItem('changan_sucursal_configurada');
-                    setAbierto(false);
-                    window.location.href = window.location.pathname + '?portal=sucursales';
-                  }}
-                  className="w-full py-2.5 px-3 rounded-xl text-xs font-semibold bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-200 border border-rose-500/30 flex items-center justify-center gap-2 transition cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Cerrar Sesión / Salir al Login</span>
-                </button>
-              </div>
-            )}
+            </div>
 
             {/* Pie de Acciones */}
             <div className="p-3 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between gap-2">

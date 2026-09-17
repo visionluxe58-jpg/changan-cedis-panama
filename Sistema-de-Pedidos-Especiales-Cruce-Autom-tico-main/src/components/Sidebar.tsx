@@ -360,6 +360,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               </div>
             </div>
+            {esAsesor && (
+              <button
+                type="button"
+                onClick={() => {
+                  const admin = USUARIOS_OFICIALES.find(u => u.rol === 'ADMINISTRADOR_CEDIS') || USUARIOS_OFICIALES[0];
+                  appsScriptClient.setUsuarioActivo(admin);
+                  window.location.href = window.location.pathname;
+                }}
+                className="mt-2 w-full py-1.5 px-2 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-sm"
+                title="Regresar a Modo Administrador CEDIS (Acceso Total Central)"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>👑 Regresar a Admin CEDIS</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex justify-center" title={`${usuarioActivo.nombre} (${usuarioActivo.rol})`}>

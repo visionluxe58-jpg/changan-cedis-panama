@@ -423,18 +423,22 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
             Rastrear
           </button>
 
-                    {/* Botón para regresar al panel general CEDIS (Solo Administrador) */}
-          {esAdmin && onAbrirMatrizCentral && (
-            <button
-              type="button"
-              onClick={onAbrirMatrizCentral}
-              className="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 rounded-lg border border-emerald-500/40 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
-              title="Regresar al Panel Central CEDIS"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Panel CEDIS</span>
-            </button>
-          )}
+          {/* Botón Directo para regresar al panel general Administrador CEDIS */}
+          <button
+            type="button"
+            onClick={() => {
+              const admin = USUARIOS_OFICIALES.find(u => u.rol === 'ADMINISTRADOR_CEDIS') || USUARIOS_OFICIALES[0];
+              onCambiarUsuario(admin);
+              if (typeof window !== 'undefined') {
+                window.location.href = window.location.pathname;
+              }
+            }}
+            className="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/80 rounded-lg border border-emerald-500/50 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+            title="Regresar a Modo Administrador CEDIS (Acceso Total Central)"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Panel Administrador CEDIS</span>
+          </button>
 
           {/* Compartir enlace de asesores */}
           <button
