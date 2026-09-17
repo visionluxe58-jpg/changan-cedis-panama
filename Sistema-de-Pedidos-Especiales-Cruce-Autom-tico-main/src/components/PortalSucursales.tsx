@@ -102,7 +102,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
   const [filtroModelo, setFiltroModelo] = useState<string>('TODOS');
   const [busquedaPedidos, setBusquedaPedidos] = useState<string>('');
 
-  // Sincronizar pestaa externa (ej: cuando se registra un pedido y se navega al libro de pedidos)
+  // Sincronizar pestaña externa (ej: cuando se registra un pedido y se navega al libro de pedidos)
   useEffect(() => {
     if (tabExterna && tabExterna !== tabActiva) {
       setTabActiva(tabExterna);
@@ -224,7 +224,7 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
       'Fecha CreaciÃ³n',
       'Sucursal',
       'Asesor',
-      'Tipo de RequisiciÃ³n',
+      'Tipo de Requisición',
       'Cliente',
       'Placa',
       'Modelo Changan',
@@ -377,79 +377,92 @@ export const PortalSucursales: React.FC<PortalSucursalesProps> = ({
         </div>
 
         {/* Center: Live Enlace */}
-        <div className="hidden xl:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <div className="px-3 py-1 rounded-md bg-[#1e293b] border border-slate-700 text-xs font-mono text-slate-300 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>RED CEDIS: ONLINE</span>
           </div>
-          <div className="px-3 py-1 rounded-md bg-[#1e293b] border border-slate-700 text-xs font-mono text-slate-300 flex items-center gap-1.5">
-            <Truck className="w-3.5 h-3.5 text-blue-400" />
-            <span>PEDIDOS SUCURSAL: <strong className="text-white">{pedidosAgrupados.length}</strong></span>
-          </div>
+          {esAdmin && (
+            <div className="px-3 py-1 rounded-md bg-[#1e293b] border border-slate-700 text-xs font-mono text-slate-300 flex items-center gap-1.5">
+              <Truck className="w-3.5 h-3.5 text-blue-400" />
+              <span>PEDIDOS SUCURSAL: <strong className="text-white">{pedidosAgrupados.length}</strong></span>
+            </div>
+          )}
         </div>
 
-        {/* Right: Navigation Tabs ERP */}
+        {/* Right: Acciones y Navegación (Estrictamente Nueva Requisición para Asesor, completo para Admin) */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <nav className="flex items-center gap-1 bg-[#1e293b] p-1 rounded-lg border border-slate-700">
-            <button
-              type="button"
-              onClick={() => { setTabActiva('nueva'); if (onCambiarTab) onCambiarTab('nueva'); }}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                tabActiva === 'nueva'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-              }`}
-            >
-              + Nueva RequisiciÃ³n
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTabActiva('historial'); if (onCambiarTab) onCambiarTab('historial'); }}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                tabActiva === 'historial'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-              }`}
-            >
-              Libro de Pedidos ({pedidosAgrupados.length})
-            </button>
-          </nav>
+          {esAdmin ? (
+            /* Vista del Administrador con todas las herramientas de gestión */
+            <>
+              <nav className="flex items-center gap-1 bg-[#1e293b] p-1 rounded-lg border border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => { setTabActiva('nueva'); if (onCambiarTab) onCambiarTab('nueva'); }}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                    tabActiva === 'nueva'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                  }`}
+                >
+                  + Nueva Requisición
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setTabActiva('historial'); if (onCambiarTab) onCambiarTab('historial'); }}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                    tabActiva === 'historial'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                  }`}
+                >
+                  Libro de Pedidos ({pedidosAgrupados.length})
+                </button>
+              </nav>
 
-          <button
-            type="button"
-            onClick={() => abrirRastreadorUniversal()}
-            className="hidden sm:inline-flex px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-[#1e293b] hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors cursor-pointer"
-          >
-            Rastrear
-          </button>
+              <button
+                type="button"
+                onClick={() => abrirRastreadorUniversal()}
+                className="hidden sm:inline-flex px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-[#1e293b] hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors cursor-pointer"
+              >
+                Rastrear
+              </button>
 
-          {/* Botón Directo para regresar al panel general Administrador CEDIS */}
-          <button
-            type="button"
-            onClick={() => {
-              const admin = USUARIOS_OFICIALES.find(u => u.rol === 'ADMINISTRADOR_CEDIS') || USUARIOS_OFICIALES[0];
-              onCambiarUsuario(admin);
-              if (typeof window !== 'undefined') {
-                window.location.href = window.location.pathname;
-              }
-            }}
-            className="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/80 rounded-lg border border-emerald-500/50 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
-            title="Regresar a Modo Administrador CEDIS (Acceso Total Central)"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Panel Administrador CEDIS</span>
-          </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const admin = USUARIOS_OFICIALES.find(u => u.rol === 'ADMINISTRADOR_CEDIS') || USUARIOS_OFICIALES[0];
+                  onCambiarUsuario(admin);
+                  if (typeof window !== 'undefined') {
+                    window.location.href = window.location.pathname;
+                  }
+                }}
+                className="px-3 py-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/80 rounded-lg border border-emerald-500/50 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                title="Regresar a Modo Administrador CEDIS (Acceso Total Central)"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline">Panel Administrador CEDIS</span>
+              </button>
 
-          {/* Compartir enlace de asesores */}
-          <button
-            type="button"
-            onClick={copiarEnlacePortal}
-            className="px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-[#1e293b] hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors cursor-pointer flex items-center gap-1"
-            title="Copiar enlace para asesores"
-          >
-            <Share2 className="w-3.5 h-3.5 text-blue-400" />
-            <span className="hidden sm:inline">{copiadoEnlace ? 'Copiado' : 'Compartir'}</span>
-          </button>
+              <button
+                type="button"
+                onClick={copiarEnlacePortal}
+                className="px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-[#1e293b] hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors cursor-pointer flex items-center gap-1"
+                title="Copiar enlace para asesores"
+              >
+                <Share2 className="w-3.5 h-3.5 text-blue-400" />
+                <span className="hidden sm:inline">{copiadoEnlace ? 'Copiado' : 'Compartir'}</span>
+              </button>
+            </>
+          ) : (
+            /* Vista Limpia y Exclusiva del Asesor: Cero distracciones, solo Requisición */
+            <div className="flex items-center gap-2">
+              <div className="px-3.5 py-1.5 rounded-xl bg-blue-600/90 text-white font-bold text-xs shadow-md shadow-blue-900/30 flex items-center gap-1.5 border border-blue-400/30">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span>Ingreso de Requisición</span>
+              </div>
+            </div>
+          )}
         </div>
 
       </header>
