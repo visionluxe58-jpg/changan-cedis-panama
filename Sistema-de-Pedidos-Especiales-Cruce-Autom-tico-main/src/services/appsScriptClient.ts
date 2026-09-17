@@ -1131,8 +1131,13 @@ class AppsScriptClientService {
         // Filtrar nuevamente cualquier lÃ­nea que haya sido despachada
         const detallesActivos = arrDet.filter(d => d.estatusLinea !== 'Despachado' && !this.isLineaDespachada(d.lineaId, d.pedidoId, d.codigoRepuesto));
 
-        this.cabeceras = Object.values(mapCab);
-        this.detalles = detallesActivos;
+        // PRESERVAR pedidos creados localmente que aún no están en la respuesta de Google Sheets
+        const pedidosEnSheets = new Set(Object.keys(mapCab));
+        const cabecerasLocalesPendientes = this.cabeceras.filter(c => !pedidosEnSheets.has(c.pedidoId) && !this.isPedidoTombstoned(c.pedidoId));
+        const detallesLocalesPendientes = this.detalles.filter(d => !pedidosEnSheets.has(d.pedidoId) && !this.isPedidoTombstoned(d.pedidoId) && d.estatusLinea !== 'Despachado' && !this.isLineaDespachada(d.lineaId, d.pedidoId, d.codigoRepuesto));
+
+        this.cabeceras = [...cabecerasLocalesPendientes, ...Object.values(mapCab)];
+        this.detalles = [...detallesLocalesPendientes, ...detallesActivos];
       } else {
         // Fallback a tablas separadas de cabeceras y detalles
         if (Array.isArray(data.cabeceras) && data.cabeceras.length > 0) {
@@ -1283,7 +1288,11 @@ class AppsScriptClientService {
     };
   }
 
-  private cargarDatosLocales(): void {
+  public recargarDatosLocales(): void {
+    this.cargarDatosLocales();
+  }
+
+  public cargarDatosLocales(): void {
     try {
       const cab = this.safeGet(STORAGE_KEYS.CABECERA);
       const parsedCab = cab ? JSON.parse(cab) : null;
@@ -2422,12 +2431,10 @@ class AppsScriptClientService {
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           signal: controller ? controller.signal : undefined,
           body: JSON.stringify({
-            action: "crearPedido",
-            userEmail: "visionluxe58@gmail.com",
+            action: "bulkUploadMatriz",
+            userEmail: this.usuarioActivo.correo || "visionluxe58@gmail.com",
             operationId: operationId,
-            pedidoId: idAsignado,
-            ...cabecera,
-            items: items
+            rows: filasMatriz
           })
         });
 

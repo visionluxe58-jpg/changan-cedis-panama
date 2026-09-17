@@ -119,6 +119,7 @@ export default function App() {
   };
 
   const recargarDatos = useCallback(() => {
+    appsScriptClient.recargarDatosLocales();
     setMatriz(appsScriptClient.getMatrizCentral());
     setInventario(appsScriptClient.getDPLDetalle());
     setManifiestos(appsScriptClient.getManifiestos());

@@ -556,6 +556,14 @@ export const FormularioRequisicion: React.FC<FormularioRequisicionProps> = ({
 
       if (resultado.success) {
         const idFinal = resultado.pedidoId || numeroPedido;
+        // Inmediatamente notificar al sistema para reflejar en la Matriz Central
+        if (onPedidoCreado) {
+          try {
+            onPedidoCreado(idFinal);
+          } catch (e) {
+            console.warn('Error notificando onPedidoCreado:', e);
+          }
+        }
         const ahoraStr = new Date().toLocaleDateString('es-PA') + ' ' + new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' });
 
         const datosDoc: ComprobantePedidoData = {

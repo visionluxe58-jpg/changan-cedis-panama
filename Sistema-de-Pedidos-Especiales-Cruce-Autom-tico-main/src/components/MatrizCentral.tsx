@@ -217,7 +217,7 @@ export const MatrizCentral: React.FC<MatrizCentralProps> = ({
     // Si la pestaña seleccionada es DESPACHADO, tomar los registros archivados de despachos
     const fuenteFilas = filtroEstado === 'DESPACHADO' ? despachadosList : filas;
 
-    return fuenteFilas.filter((f) => {
+    const resultado = fuenteFilas.filter((f) => {
       // 1. Filtro de estado de línea (Todos, Asignado, Pendiente, Despachado)
       if (filtroEstado === 'PENDIENTE' && f.estatusLinea !== 'Pendiente' && f.estatusLinea !== 'Sin Stock') {
         return false;
@@ -314,6 +314,27 @@ export const MatrizCentral: React.FC<MatrizCentralProps> = ({
         f.palletAsignado.toLowerCase().includes(q) ||
         (f.estatusGeneral && f.estatusGeneral.toLowerCase().includes(q))
       );
+    });
+
+    // Ordenar de más reciente a más antiguo (pedidos nuevos o del día siempre arriba)
+    return resultado.sort((a, b) => {
+      const norm = (d) => {
+        if (!d) return '';
+        if (d.includes('/')) {
+          const parts = d.split(' ')[0].split('/');
+          if (parts.length === 3) {
+            const hora = d.includes(' ') ? d.split(' ')[1] : '';
+            return parts[2] + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0') + ' ' + hora;
+          }
+        }
+        return d;
+      };
+      const fA = norm(a.fechaCreacion);
+      const fB = norm(b.fechaCreacion);
+      if (fA !== fB) {
+        return fB.localeCompare(fA);
+      }
+      return (b.pedidoId || '').localeCompare(a.pedidoId || '');
     });
   }, [
     filas, 
