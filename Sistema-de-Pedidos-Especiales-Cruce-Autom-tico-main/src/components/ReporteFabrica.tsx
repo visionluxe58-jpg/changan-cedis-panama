@@ -170,9 +170,78 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
     });
   }, [simuladorCodigo, simuladorDesc, simuladorPeso, simuladorLargo, simuladorAncho, simuladorAlto]);
 
-  // 1. Filtrar los ítems del reporte por el rango de fechas seleccionado
+  // Convertir dinámicamente toda la data real de CEDIS (detalles + cabeceras) al formato oficial de fábrica
+  const itemsGeneradosDesdeCEDIS = useMemo<ItemOrderingTemplate[]>(() => {
+    if (!detalles || detalles.length === 0) return [];
+
+    const cabMap = new Map<string, SolicitudCabecera>();
+    cabeceras.forEach(c => cabMap.set(c.pedidoId, c));
+
+    return detalles
+      .filter(d => d.estatusLinea !== 'Despachado' && Boolean(d.codigoRepuesto && d.codigoRepuesto.trim()))
+      .map(lin => {
+        const cab = cabMap.get(lin.pedidoId);
+        const cod = (lin.codigoRepuesto || '').trim().toUpperCase();
+        const desc = (lin.descripcionOficial || lin.codigoActualizado || lin.codigoRepuesto || '').trim();
+        const clasif = clasificarRepuesto(cod, desc);
+        const cant = Number(lin.cantidadSolicitada) || 1;
+        const fCreacion = cab ? (parseFechaISO(cab.fechaCreacion) || cab.fechaCreacion) : '2026-09-10';
+
+        return {
+          id: `REP-${lin.pedidoId}-${cod}-${lin.lineaId || ''}`,
+          partsCode: cod,
+          orderingQuantity: cant,
+          comment: desc.toUpperCase(),
+          categorizacion: clasif.categorizacion,
+          pesoUnitarioKg: clasif.pesoUnitarioKg,
+          largoCm: clasif.largoCm,
+          anchoCm: clasif.anchoCm,
+          altoCm: clasif.altoCm,
+          pesoVolumetricoKg: clasif.pesoVolumetricoKg,
+          categoriaEstructura: clasif.categoria,
+          motivoClasificacion: clasif.motivo,
+          esDGR: clasif.esDGR,
+          sucursal: cab?.sucursal || 'Bodega Central',
+          pedidoId: lin.pedidoId,
+          modeloChangan: cab?.modeloChangan || '',
+          cliente: cab?.cliente || '',
+          vin: cab?.vin || '',
+          numeroOR: cab?.numeroOR || cab?.cotizacion || '',
+          tipoSolicitud: cab?.tipoPedido || 'Especial',
+          quincena: quincenaSeleccionada,
+          fechaCreacion: fCreacion
+        };
+      });
+  }, [detalles, cabeceras, quincenaSeleccionada]);
+
+  // Sincronización automática de datos reales de CEDIS al montar o actualizar
+  useEffect(() => {
+    if (itemsGeneradosDesdeCEDIS.length > 0) {
+      const guardado = localStorage.getItem('changan_cedis_reporte_fabrica_v1');
+      let esDataEjemplo = true;
+      if (guardado) {
+        try {
+          const parsed = JSON.parse(guardado);
+          esDataEjemplo = Array.isArray(parsed) && (parsed.length <= 20 || parsed.some(x => x.id === 'REP-01'));
+        } catch (e) {
+          esDataEjemplo = true;
+        }
+      }
+
+      if (esDataEjemplo || items.length <= 20 || items.some(x => x.id === 'REP-01')) {
+        setItems(itemsGeneradosDesdeCEDIS);
+        localStorage.setItem('changan_cedis_reporte_fabrica_v1', JSON.stringify(itemsGeneradosDesdeCEDIS));
+      }
+    }
+  }, [itemsGeneradosDesdeCEDIS]);
+
+  // 1. Filtrar los ítems del reporte por el rango de fechas seleccionado con datos 100% reales
   const itemsEnRango = useMemo(() => {
-    return items.filter((it) => {
+    const fuenteBase = (items && items.length > 20 && !items.some(x => x.id === 'REP-01'))
+      ? items
+      : (itemsGeneradosDesdeCEDIS.length > 0 ? itemsGeneradosDesdeCEDIS : items);
+
+    return fuenteBase.filter((it) => {
       if (periodoPreset === "ALL") return true;
       if (!fechaDesde && !fechaHasta) return true;
 
@@ -190,7 +259,7 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
       if (fechaHasta && fechaItem > fechaHasta) return false;
       return true;
     });
-  }, [items, fechaDesde, fechaHasta, periodoPreset, cabeceras]);
+  }, [items, itemsGeneradosDesdeCEDIS, fechaDesde, fechaHasta, periodoPreset, cabeceras]);
 
   // 2. Consolidación inteligente por SKU para fábrica
   const itemsConsolidados = useMemo(() => {
@@ -389,7 +458,7 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
   // Restaurar plantilla canónica del ejemplo del usuario
   const handleRestaurarEjemplo = () => {
     if (window.confirm('¿Deseas restablecer el cuadro al ejemplo oficial exacto de fábrica (20 repuestos clasificados)?')) {
-      guardarItems(ITEMS_EJEMPLO_REPORTE_FABRICA);
+      if (itemsGeneradosDesdeCEDIS.length > 0) { guardarItems(itemsGeneradosDesdeCEDIS); } else { guardarItems(ITEMS_EJEMPLO_REPORTE_FABRICA); }
     }
   };
 
