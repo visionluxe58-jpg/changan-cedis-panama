@@ -171,6 +171,29 @@ export default function App() {
 
   useEffect(() => {
     if (esModoPDTExclusivo) return;
+    // PURGA AUTOMÁTICA ESTRICTA: Eliminar permanentemente del navegador cualquier pedido o cliente demo/prueba
+    try {
+      ['changan_pedidos_cabecera', 'changan_pedidos_detalle'].forEach(k => {
+        const item = localStorage.getItem(k);
+        if (item && (item.includes('TEST') || item.includes('PRUEBA') || item.includes('PED-CH-2044'))) {
+          try {
+            const parsed = JSON.parse(item);
+            if (Array.isArray(parsed)) {
+              const clean = parsed.filter((x: any) => {
+                const s = (x.pedidoId || x.cliente || x.codigoRepuesto || '').toUpperCase();
+                return !s.includes('TEST') && !s.includes('PRUEBA') && !s.includes('DEMO') && x.pedidoId !== 'PED-CH-2044';
+              });
+              localStorage.setItem(k, JSON.stringify(clean));
+            }
+          } catch (e) {}
+        }
+      });
+      const alerta = localStorage.getItem('changan_alerta_nuevo_pedido');
+      if (alerta && (alerta.includes('TEST') || alerta.includes('PRUEBA'))) {
+        localStorage.removeItem('changan_alerta_nuevo_pedido');
+      }
+    } catch (e) {}
+
     recargarDatos();
 
     // Sincronizacion Canonica al inicio

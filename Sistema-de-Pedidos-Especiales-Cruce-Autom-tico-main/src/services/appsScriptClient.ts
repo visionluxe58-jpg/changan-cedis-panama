@@ -718,7 +718,7 @@ class AppsScriptClientService {
       const arrC: string[] = rawC ? JSON.parse(rawC) : [];
 
       // Pre-cargar permanentemente clientes y pedidos eliminados por el usuario
-      const defaultP = ['PED-CV-001', 'PED-CV-002', 'PED-CV-023'];
+      const defaultP = ['PED-CV-001', 'PED-CV-002', 'PED-CV-023', 'PED-TEST-VERIF-1', 'PED-CH-2044', 'PED-TEST-9999'];
       const defaultC = ['JOSE GONZALEZ', 'JOSÃ‰ GONZÃLEZ'];
 
       defaultP.forEach(id => arrP.push(id));
@@ -745,12 +745,31 @@ class AppsScriptClientService {
 
   public isPedidoTombstoned(pedidoId: string): boolean {
     if (!pedidoId) return false;
-    return this.tombstonesPedidos.has(pedidoId.trim().toUpperCase());
+    const pUpper = pedidoId.trim().toUpperCase();
+    if (
+      pUpper.includes('TEST') || 
+      pUpper.includes('DEMO') || 
+      pUpper.includes('PRUEBA') || 
+      pUpper === 'PED-CH-2044' ||
+      pUpper === 'PED-TEST-VERIF-1'
+    ) {
+      return true;
+    }
+    return this.tombstonesPedidos.has(pUpper);
   }
 
   public isClienteTombstoned(cliente: string): boolean {
     if (!cliente) return false;
     const cNorm = cliente.trim().toUpperCase();
+    if (
+      cNorm.includes('PRUEBA') || 
+      cNorm.includes('TEST') || 
+      cNorm.includes('DEMO') || 
+      cNorm === 'PRUEBA' ||
+      cNorm.includes('CLIENTE PRUEBA')
+    ) {
+      return true;
+    }
     for (const tomb of this.tombstonesClientes) {
       if (cNorm === tomb || cNorm.includes(tomb) || areClientsSamePerson(cNorm, tomb)) {
         return true;
@@ -1296,12 +1315,19 @@ class AppsScriptClientService {
     try {
       const cab = this.safeGet(STORAGE_KEYS.CABECERA);
       const parsedCab = cab ? JSON.parse(cab) : null;
-      this.cabeceras = (parsedCab && Array.isArray(parsedCab) && parsedCab.length > 50) ? parsedCab : CABECERAS_MATRIZ_SINCRONIZADA;
+      const rawCabList = (parsedCab && Array.isArray(parsedCab) && parsedCab.length > 50) ? parsedCab : CABECERAS_MATRIZ_SINCRONIZADA;
+      this.cabeceras = rawCabList.filter(c => !this.isPedidoTombstoned(c.pedidoId) && !this.isClienteTombstoned(c.cliente));
 
       const det = this.safeGet(STORAGE_KEYS.DETALLE);
       const loadedDet = det ? JSON.parse(det) : null;
       const parsedDet: DetalleRepuesto[] = (loadedDet && Array.isArray(loadedDet) && loadedDet.length > 50) ? loadedDet : DETALLES_MATRIZ_SINCRONIZADA;
-      this.detalles = parsedDet.filter(d => d.estatusLinea !== 'Despachado' && !this.isLineaDespachada(d.lineaId, d.pedidoId, d.codigoRepuesto));
+      this.detalles = parsedDet.filter(d => 
+        d.estatusLinea !== 'Despachado' && 
+        !this.isLineaDespachada(d.lineaId, d.pedidoId, d.codigoRepuesto) &&
+        !this.isPedidoTombstoned(d.pedidoId) &&
+        !String(d.codigoRepuesto || '').toUpperCase().includes('PRUEBA') &&
+        !String(d.codigoRepuesto || '').toUpperCase().includes('TEST')
+      );
 
       const man = this.safeGet(STORAGE_KEYS.MANIFIESTOS);
       const parsedMan: DPLManifiesto[] = man ? JSON.parse(man) : [];

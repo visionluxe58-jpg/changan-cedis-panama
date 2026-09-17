@@ -218,6 +218,17 @@ export const MatrizCentral: React.FC<MatrizCentralProps> = ({
     const fuenteFilas = filtroEstado === 'DESPACHADO' ? despachadosList : filas;
 
     const resultado = fuenteFilas.filter((f) => {
+      // REGLA DE ORO OPERATIVA: Eliminar terminantemente pedidos demo o de prueba
+      const pUpper = (f.pedidoId || '').toUpperCase();
+      const cUpper = (f.cliente || '').toUpperCase();
+      const kUpper = (f.codigoRepuesto || '').toUpperCase();
+      if (
+        pUpper.includes('TEST') || pUpper.includes('DEMO') || pUpper.includes('PRUEBA') || pUpper === 'PED-CH-2044' ||
+        cUpper.includes('TEST') || cUpper.includes('DEMO') || cUpper.includes('PRUEBA') || cUpper === 'PRUEBA' ||
+        kUpper.includes('TEST') || kUpper.includes('PRUEBA')
+      ) {
+        return false;
+      }
       // 1. Filtro de estado de línea (Todos, Asignado, Pendiente, Despachado)
       if (filtroEstado === 'PENDIENTE' && f.estatusLinea !== 'Pendiente' && f.estatusLinea !== 'Sin Stock') {
         return false;

@@ -1119,32 +1119,7 @@ export const CABECERAS_MATRIZ_SINCRONIZADA: SolicitudCabecera[] = [
     "actualizadoEn": "2026-09-10T12:00:00Z",
     "observaciones": "Cargado vía archivo Excel masivo"
   },
-  {
-    "pedidoId": "PED-CH-2044",
-    "fechaCreacion": "2026-09-01",
-    "sucursal": "Chiriquí",
-    "colaborador": "Nivardo Gutiérrez",
-    "canal": "Mostrador",
-    "tipoPedido": "Especial",
-    "cotizacion": "67868.0",
-    "cliente": "PRUEBA",
-    "placa": "",
-    "modeloChangan": "Hunter Plus",
-    "vin": "",
-    "numeroOR": "N/A (Pendiente)",
-    "estadoPago": "Aprobado",
-    "documentoPagoFactura": "",
-    "facturadoFinal": "No",
-    "estatusGeneral": "PENDIENTE",
-    "estatusFabrica": "En Tránsito",
-    "origen": "MATRIZ_CANONICA",
-    "version": 1,
-    "creadoPor": "Nivardo Gutiérrez",
-    "creadoEn": "2026-09-01",
-    "actualizadoPor": "CEDIS Logistics",
-    "actualizadoEn": "2026-09-10T12:00:00Z",
-    "observaciones": "Pedido transmitido desde portal sucursal Chiriquí. Colaborador: Nivardo Gutiérrez."
-  },
+  
   {
     "pedidoId": "PED-CH-2103",
     "fechaCreacion": "2026-09-03",
@@ -22220,25 +22195,7 @@ export const DETALLES_MATRIZ_SINCRONIZADA: DetalleRepuesto[] = [
     "actualizadoPor": "CEDIS Logistics",
     "actualizadoEn": "2026-09-10T12:00:00Z"
   },
-  {
-    "lineaId": "PED-CV-2109-L492",
-    "pedidoId": "PED-CV-2109",
-    "codigoRepuesto": "CÓDIGO DE PRUEBA",
-    "codigoActualizado": "CÓDIGO DE PRUEBA",
-    "descripcionOficial": "Prueba de código",
-    "cantidadSolicitada": 1,
-    "cantidadAsignada": 0,
-    "cantidadDespachada": 0,
-    "saldoPendiente": 1,
-    "estatusLinea": "PENDIENTE",
-    "palletAsignado": "",
-    "contenedorAsignado": "",
-    "packageNo": "",
-    "ubicacionCedis": "",
-    "observaciones": "Puedes colocar cualquiera observación",
-    "actualizadoPor": "CEDIS Logistics",
-    "actualizadoEn": "2026-09-10T12:00:00Z"
-  },
+  
   {
     "lineaId": "PED-CV-2139-L493",
     "pedidoId": "PED-CV-2139",
