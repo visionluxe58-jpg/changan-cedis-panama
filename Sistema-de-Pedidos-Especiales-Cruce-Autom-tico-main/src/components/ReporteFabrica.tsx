@@ -107,6 +107,28 @@ export const ReporteFabrica: React.FC<ReporteFabricaProps> = ({
   const [filtroTransporte, setFiltroTransporte] = useState<'TODOS' | 'Aereo' | 'Maritimo'>('TODOS');
   const [quincenaSeleccionada, setQuincenaSeleccionada] = useState<string>('1ra Quincena Septiembre 2026');
 
+  // Control de Rango de Fechas y Quincenas para reporte a fábrica
+  const [periodoPreset, setPeriodoPreset] = useState<string>('ALL');
+  const [fechaDesde, setFechaDesde] = useState<string>('');
+  const [fechaHasta, setFechaHasta] = useState<string>('');
+  const [modoVistaConsolidada, setModoVistaConsolidada] = useState<boolean>(false);
+  const [modalSincronizarAbierto, setModalSincronizarAbierto] = useState<boolean>(false);
+
+  const handleCambiarPresetPeriodo = (presetKey: string) => {
+    setPeriodoPreset(presetKey);
+    const conf = PRESETS_PERIODOS[presetKey];
+    if (conf) {
+      setFechaDesde(conf.desde);
+      setFechaHasta(conf.hasta);
+    }
+  };
+
+  const handleCambiarFechaManual = (desde: string, hasta: string) => {
+    setFechaDesde(desde);
+    setFechaHasta(hasta);
+    setPeriodoPreset('CUSTOM');
+  };
+
   // Notificaciones / feedback visual
   const [mensajeCopiado, setMensajeCopiado] = useState<boolean>(false);
   const [modalNuevoAbierto, setModalNuevoAbierto] = useState<boolean>(false);
